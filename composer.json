@@ -31,6 +31,7 @@
     },
     "require-dev": {
         "alebatistella/duskapiconf": "^1.2",
+        "barryvdh/laravel-debugbar": "^3.15",
         "fakerphp/faker": "^1.9.1",
         "friendsofphp/php-cs-fixer": "^3.75",
         "larastan/larastan": "^3.3",
