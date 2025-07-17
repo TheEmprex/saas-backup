@@ -10,7 +10,7 @@
     
     {{-- Sidebar --}} 
     <div :class="{ '-translate-x-full': !sidebarOpen }"
-        class="fixed top-0 left-0 flex items-stretch -translate-x-full overflow-hidden lg:translate-x-0 z-50 h-dvh md:h-screen transition-[width,transform] duration-150 ease-out bg-zinc-50 dark:bg-zinc-900 w-64 group @if(config('wave.dev_bar')){{ 'pb-10' }}@endif">  
+        class="fixed top-0 left-0 flex items-stretch -translate-x-full overflow-hidden lg:translate-x-0 z-50 h-dvh md:h-screen transition-[width,transform] duration-150 ease-out bg-zinc-50 dark:bg-zinc-800 w-64 group navbar-never-black @if(config('wave.dev_bar')){{ 'pb-10' }}@endif">
         <div class="flex flex-col justify-between w-full overflow-auto md:h-full h-svh pt-4 pb-2.5">
             <div class="relative flex flex-col">
                 <button x-on:click="sidebarOpen=false" class="flex items-center justify-center flex-shrink-0 w-10 h-10 ml-4 rounded-md lg:hidden text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 dark:hover:bg-zinc-700/70 hover:bg-gray-200/70">
@@ -18,34 +18,79 @@
                 </button>
 
                 <div class="flex items-center px-5 space-x-2">
-                    <a href="/" class="flex justify-center items-center py-4 pl-0.5 space-x-1 font-bold text-zinc-900">
+                    <a href="/" class="flex justify-center items-center py-4 pl-0.5 space-x-1 font-bold text-zinc-900 dark:text-zinc-100">
                         <x-logo class="w-auto h-7" />
                     </a>
                 </div>
                 <div class="flex items-center px-4 pt-1 pb-3">
                     <div class="relative flex items-center w-full h-full rounded-lg">
-                        <x-phosphor-magnifying-glass class="absolute left-0 w-5 h-5 ml-2 text-gray-400 -translate-y-px" />
-                        <input type="text" class="w-full py-2 pl-8 text-sm border rounded-lg bg-zinc-200/70 focus:bg-white duration-50 dark:bg-zinc-950 ease border-zinc-200 dark:border-zinc-700/70 dark:ring-zinc-700/70 focus:ring dark:text-zinc-200 dark:focus:ring-zinc-700/70 dark:focus:border-zinc-700 focus:ring-zinc-200 focus:border-zinc-300 dark:placeholder-zinc-400" placeholder="Search">
+                        <x-phosphor-magnifying-glass class="absolute left-0 w-5 h-5 ml-2 text-gray-400 dark:text-gray-500 -translate-y-px" />
+                        <input type="text" class="w-full py-2 pl-8 text-sm border rounded-lg bg-zinc-200/70 focus:bg-white duration-50 dark:bg-zinc-700 ease border-zinc-200 dark:border-zinc-600/70 dark:ring-zinc-600/70 focus:ring dark:text-zinc-200 dark:focus:ring-zinc-600/70 dark:focus:border-zinc-600 focus:ring-zinc-200 focus:border-zinc-300 dark:placeholder-zinc-400" placeholder="Search">
                     </div>
                 </div>
 
-                <div class="flex flex-col justify-start items-center px-4 space-y-1.5 w-full h-full text-slate-600 dark:text-zinc-400">
-                    <x-app.sidebar-link href="/dashboard" icon="phosphor-house" :active="Request::is('dashboard')">Dashboard</x-app.sidebar-link>
-                    <x-app.sidebar-dropdown text="Projects" icon="phosphor-stack" id="projects_dropdown" :active="(Request::is('projects'))" :open="(Request::is('project_a') || Request::is('project_b') || Request::is('project_c')) ? '1' : '0'">
-                        <x-app.sidebar-link onclick="event.preventDefault(); new FilamentNotification().title('Modify this button inside of sidebar.blade.php').send()" icon="phosphor-cube" :active="(Request::is('project_a'))">Project A</x-app.sidebar-link>
-                        <x-app.sidebar-link onclick="event.preventDefault(); new FilamentNotification().title('Modify this button inside of sidebar.blade.php').send()" icon="phosphor-cube" :active="(Request::is('project_b'))">Project B</x-app.sidebar-link>
-                        <x-app.sidebar-link onclick="event.preventDefault(); new FilamentNotification().title('Modify this button inside of sidebar.blade.php').send()" icon="phosphor-cube" :active="(Request::is('project_c'))">Project C</x-app.sidebar-link>
-                    </x-app.sidebar-dropdown>
-                    <x-app.sidebar-link onclick="event.preventDefault(); new FilamentNotification().title('Modify this button inside of sidebar.blade.php').send()" icon="phosphor-pencil-line" active="false">Stories</x-app.sidebar-link>
-                    <x-app.sidebar-link  onclick="event.preventDefault(); new FilamentNotification().title('Modify this button inside of sidebar.blade.php').send()" icon="phosphor-users" active="false">Users</x-app.sidebar-link>
+                <div class="flex flex-col justify-start items-center px-4 space-y-3 w-full h-full text-slate-600 dark:text-zinc-300">
+                    
+                    <!-- Main Navigation -->
+                    <div class="w-full">
+                        <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Main</div>
+                        <x-app.sidebar-link href="{{ route('dashboard') }}" icon="phosphor-house" :active="Request::is('dashboard')">Dashboard</x-app.sidebar-link>
+                    </div>
+                    
+                    <!-- Marketplace Section -->
+                    <div class="w-full">
+                        <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Marketplace</div>
+                        <div class="space-y-1">
+                            <x-app.sidebar-link href="{{ route('marketplace.jobs') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/jobs*')">Browse Jobs</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('marketplace.profiles') }}" icon="phosphor-users" :active="Request::is('marketplace/profiles*')">Find Talent</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('marketplace.messages') }}" icon="phosphor-chat-circle" :active="Request::is('marketplace/messages*')">Messages</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')">Post Job</x-app.sidebar-link>
+                        </div>
+                    </div>
+                    
+                    <!-- My Activity Section -->
+                    <div class="w-full">
+                        <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">My Activity</div>
+                        <div class="space-y-1">
+                            <x-app.sidebar-link href="{{ route('jobs.index') }}" icon="phosphor-briefcase" :active="Request::is('jobs')">My Jobs</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('jobs.user-applications') }}" icon="phosphor-file-text" :active="Request::is('jobs/applications')">My Applications</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('contracts.index') }}" icon="phosphor-file-text" :active="Request::is('contracts*')">My Contracts</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('profile.show') }}" icon="phosphor-user" :active="Request::is('profile')">My Profile</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('ratings.index') }}" icon="phosphor-star" :active="Request::is('ratings*')">Reviews</x-app.sidebar-link>
+                        </div>
+                    </div>
+                    
+                    <!-- System Section -->
+                    <div class="w-full">
+                        <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">System</div>
+                        <div class="space-y-1">
+                            <x-app.sidebar-link href="{{ route('notifications.index') }}" icon="phosphor-bell" :active="Request::is('notifications*')">Notifications</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('platform.analytics') }}" icon="phosphor-chart-bar" :active="Request::is('platform/analytics')">Analytics</x-app.sidebar-link>
+                            <x-app.sidebar-link href="/settings" icon="phosphor-gear" :active="Request::is('settings*')">Settings</x-app.sidebar-link>
+                        </div>
+                    </div>
+                    
+                    <!-- Admin Dashboard (visible only to admins) -->
+                    @if(auth()->check() && auth()->user()->isAdmin())
+                        <div class="w-full">
+                            <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-red-500 dark:text-red-400">Admin</div>
+                            <x-app.sidebar-link href="{{ route('filament.admin.pages.dashboard') }}" icon="phosphor-shield-star" :active="Request::is('admin*')">Admin Dashboard</x-app.sidebar-link>
+                        </div>
+                    @endif
                 </div>
             </div>
 
-            <div class="relative px-2.5 space-y-1.5 text-zinc-700 dark:text-zinc-400">
+            <div class="relative px-2.5 space-y-3 text-zinc-700 dark:text-zinc-300">
                 
-                <x-app.sidebar-link href="https://devdojo.com/wave/docs" target="_blank" icon="phosphor-book-bookmark-duotone" active="false">Documentation</x-app.sidebar-link>
-                <x-app.sidebar-link href="https://devdojo.com/questions" target="_blank" icon="phosphor-chat-duotone" active="false">Questions</x-app.sidebar-link>
-                <x-app.sidebar-link :href="route('changelogs')" icon="phosphor-book-open-text-duotone" :active="Request::is('changelog') || Request::is('changelog/*')">Changelog</x-app.sidebar-link>
+                <!-- Help Section -->
+                <div class="w-full">
+                    <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Help</div>
+                    <div class="space-y-1">
+                        <x-app.sidebar-link href="https://devdojo.com/wave/docs" target="_blank" icon="phosphor-book-bookmark-duotone" active="false">Documentation</x-app.sidebar-link>
+                        <x-app.sidebar-link href="https://devdojo.com/questions" target="_blank" icon="phosphor-chat-duotone" active="false">Questions</x-app.sidebar-link>
+                        <x-app.sidebar-link :href="route('changelogs')" icon="phosphor-book-open-text-duotone" :active="Request::is('changelog') || Request::is('changelog/*')">Changelog</x-app.sidebar-link>
+                    </div>
+                </div>
 
                 <div x-show="sidebarTip" x-data="{ sidebarTip: $persist(true) }" class="px-1 py-3" x-collapse x-cloak>
                     <div class="relative w-full px-4 py-3 space-y-1 border rounded-lg bg-zinc-50 text-zinc-700 dark:text-zinc-100 dark:bg-zinc-800 border-zinc-200/60 dark:border-zinc-700">

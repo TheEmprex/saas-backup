@@ -26,8 +26,8 @@
             evaluateScrollPosition(); 
         })
     " 
-    :class="{ 'border-gray-200/60 bg-white/90 border-b backdrop-blur-lg' : scrolled, 'border-transparent border-b bg-transparent translate-y-0' : !scrolled }" 
-    class="box-content sticky top-0 z-50 w-full h-24" 
+    :class="{ 'border-gray-200/60 bg-white/90 dark:bg-gray-900/90 dark:border-gray-700 border-b backdrop-blur-lg' : scrolled, 'border-transparent border-b bg-transparent translate-y-0' : !scrolled }" 
+    class="box-content sticky top-0 z-50 w-full h-24"
 >
     <div 
         x-show="showOverlay"
@@ -41,7 +41,7 @@
         <div class="z-30 flex items-center justify-between h-24 md:space-x-8">
             <div class="z-20 flex items-center justify-between w-full md:w-auto">
                 <div class="relative z-20 inline-flex">
-                    <a href="{{ route('home') }}" class="flex items-center justify-center space-x-3 font-bold text-zinc-900">
+                    <a href="{{ route('home') }}" class="flex items-center justify-center space-x-3 font-bold text-zinc-900 dark:text-zinc-100">
                     <x-logo class="w-auto h-8 md:h-9"></x-logo>
                     </a>
                 </div>
@@ -54,9 +54,9 @@
             </div>
 
             <nav :class="{ 'hidden' : !mobileMenuOpen, 'block md:relative absolute top-0 left-0 md:w-auto w-screen md:h-auto h-screen pointer-events-none md:z-10 z-10' : mobileMenuOpen }" class="h-full md:flex">
-                <ul :class="{ 'hidden md:flex' : !mobileMenuOpen, 'flex flex-col absolute md:relative md:w-auto w-screen h-full md:h-full md:overflow-auto overflow-scroll md:pt-0 mt-24 md:pb-0 pb-48 bg-white md:bg-transparent' : mobileMenuOpen }" id="menu" class="flex items-stretch justify-start flex-1 w-full h-full ml-0 border-t border-gray-100 pointer-events-auto md:items-center md:justify-center gap-x-8 md:w-auto md:border-t-0 md:flex-row">
+                <ul :class="{ 'hidden md:flex' : !mobileMenuOpen, 'flex flex-col absolute md:relative md:w-auto w-screen h-full md:h-full md:overflow-auto overflow-scroll md:pt-0 mt-24 md:pb-0 pb-48 bg-white dark:bg-gray-800 md:bg-transparent' : mobileMenuOpen }" id="menu" class="flex items-stretch justify-start flex-1 w-full h-full ml-0 border-t border-gray-100 dark:border-gray-700 pointer-events-auto md:items-center md:justify-center gap-x-8 md:w-auto md:border-t-0 md:flex-row">
                     <li x-data="{ open: false }" @mouseenter="showOverlay=true" @mouseleave="showOverlay=false" class="z-30 flex flex-col items-start h-auto border-b border-gray-100 md:h-full md:border-b-0 group md:flex-row md:items-center">
-                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 transition duration-300 hover:bg-gray-100 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900">
+                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900 dark:hover:text-gray-100">
                             <span class="">Platform</span>
                             <svg :class="{ 'group-hover:-rotate-180' : !mobileMenuOpen, '-rotate-180' : mobileMenuOpen && open }" class="w-5 h-5 transition-all duration-300 ease-out" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" class=""></path></svg>
                         </a>
@@ -103,7 +103,7 @@
                         </div>
                     </li>
                     <li x-data="{ open: false }" @mouseenter="showOverlay=true" @mouseleave="showOverlay=false" class="z-30 flex flex-col items-start h-auto border-b border-gray-100 md:h-full md:border-b-0 group md:flex-row md:items-center">
-                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 transition duration-300 hover:bg-gray-100 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900">
+                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900 dark:hover:text-gray-100">
                             <span class="">Resources</span>
                             <svg :class="{ 'group-hover:-rotate-180' : !mobileMenuOpen, '-rotate-180' : mobileMenuOpen && open }" class="w-5 h-5 transition-all duration-300 ease-out" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" class=""></path></svg>
                         </a>
@@ -146,13 +146,13 @@
                             </ul>
                         </div>
                     </li>
-                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
-                        <a href="{{ route('pricing') }}" class="flex items-center h-full text-sm font-semibold text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">
+                    <li class="flex-shrink-0 h-16 border-b border-gray-100 dark:border-gray-700 md:border-b-0 md:h-full">
+                        <a href="{{ route('pricing') }}" class="flex items-center h-full text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 md:px-0 px-7 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent hover:text-gray-900 dark:hover:text-gray-100">
                             Pricing
                         </a>
                     </li>
-                    <li class="flex-shrink-0 h-16 border-b border-gray-100 md:border-b-0 md:h-full">
-                        <a href="{{ route('blog') }}" class="flex items-center h-full text-sm font-semibold text-gray-700 transition duration-300 md:px-0 px-7 hover:bg-gray-100 md:hover:bg-transparent hover:text-gray-900">Blog</a>
+                    <li class="flex-shrink-0 h-16 border-b border-gray-100 dark:border-gray-700 md:border-b-0 md:h-full">
+                        <a href="{{ route('blog') }}" class="flex items-center h-full text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 md:px-0 px-7 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent hover:text-gray-900 dark:hover:text-gray-100">Blog</a>
                     </li>
 
                     @guest
@@ -162,7 +162,7 @@
                         </li>
                     @else
                         <li class="flex items-center justify-center w-full pt-3 md:hidden px-7">
-                            <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm">View Dashboard</x-button>
+                            <x-button href="{{ route('dashboard') }}" tag="a" class="w-full text-sm">View Dashboard</x-button>
                         </li>
                     @endguest
 
@@ -175,7 +175,7 @@
                     <x-button href="{{ route('register') }}" tag="a" class="text-sm">Sign Up</x-button>
                 </div>
             @else
-                <x-button href="{{ route('login') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0 hidden ml-2 md:block">View Dashboard</x-button>
+                <x-button href="{{ route('dashboard') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0 hidden ml-2 md:block">View Dashboard</x-button>
             @endguest
 
         </div>

@@ -58,7 +58,7 @@ class Checkout extends Component
                 'billing_cycle' => $this->billing_cycle_selected,
             ],
             'mode' => 'subscription',
-            'success_url' => url('subscription/welcome'),
+            'success_url' => route('subscription.dashboard'),
             'cancel_url' => url('settings/subscription'),
         ]);
 
@@ -97,7 +97,7 @@ class Checkout extends Component
         $subscription = app(AddSubscriptionIdFromTransaction::class)($transactionId);
 
         if (! is_null($subscription)) {
-            return redirect('/subscription/welcome');
+            return redirect()->route('subscription.dashboard');
         }
 
         $this->js('closeLoader()');

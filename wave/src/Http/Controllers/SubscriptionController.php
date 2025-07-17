@@ -195,7 +195,7 @@ class SubscriptionController extends Controller
                         'plan_id' => $request->plan_id,
                     ]);
 
-                    return back()->with(['message' => 'Successfully switched to the '.$plan->name.' plan.', 'message_type' => 'success']);
+                    return redirect()->route('subscription.dashboard')->with(['message' => 'Successfully switched to the '.$plan->name.' plan.', 'message_type' => 'success']);
                 }
             }
         }

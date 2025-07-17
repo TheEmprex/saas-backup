@@ -9,7 +9,6 @@ dataset('authroutes', function () {
         '/dashboard',
         '/profile/admin',
         '/notifications',
-        '/settings/profile',
         '/settings/security',
         '/settings/api',
         '/settings/subscription',

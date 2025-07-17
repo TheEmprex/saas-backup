@@ -1,0 +1,71 @@
+<svg width="240" height="60" viewBox="0 0 240 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient definitions -->
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0d9488;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f766e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Shield with checkmark (security/trust symbol) -->
+  <g transform="translate(8, 8)">
+    <!-- Shield background -->
+    <path d="M12 2L3 7V13C3 18.5 6.58 23.45 12 25C17.42 23.45 21 18.5 21 13V7L12 2Z" 
+          fill="url(#shieldGradient)" stroke="#047857" stroke-width="1"/>
+    
+    <!-- Checkmark -->
+    <path d="M9 12L11 14L15 10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Verification dots -->
+    <circle cx="12" cy="20" r="1.5" fill="url(#accentGradient)"/>
+    <circle cx="8" cy="22" r="1" fill="url(#accentGradient)" opacity="0.7"/>
+    <circle cx="16" cy="22" r="1" fill="url(#accentGradient)" opacity="0.7"/>
+  </g>
+  
+  <!-- Chat bubble with security lock -->
+  <g transform="translate(35, 12)">
+    <!-- Chat bubble -->
+    <path d="M0 4C0 1.79086 1.79086 0 4 0H16C18.2091 0 20 1.79086 20 4V14C20 16.2091 18.2091 18 16 18H8L0 24V4Z" 
+          fill="url(#logoGradient)" opacity="0.8"/>
+    
+    <!-- Lock icon inside bubble -->
+    <g transform="translate(6, 4)">
+      <rect x="2" y="4" width="6" height="6" rx="1" fill="white"/>
+      <path d="M3 4V3C3 1.89543 3.89543 1 5 1C6.10457 1 7 1.89543 7 3V4" 
+            stroke="white" stroke-width="1.5" fill="none"/>
+      <circle cx="5" cy="7" r="1" fill="url(#logoGradient)"/>
+    </g>
+  </g>
+  
+  <!-- TrustChat Pro text -->
+  <text x="70" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="url(#logoGradient)">Trust</text>
+  <text x="115" y="25" font-family="Arial, sans-serif" font-size="18" font-weight="600" fill="#0f766e">Chat</text>
+  <text x="70" y="45" font-family="Arial, sans-serif" font-size="14" font-weight="300" fill="url(#accentGradient)">PRO</text>
+  
+  <!-- Tagline -->
+  <text x="105" y="45" font-family="Arial, sans-serif" font-size="9" fill="#6b7280" font-style="italic">
+    Verified professionals only
+  </text>
+  
+  <!-- Security badge -->
+  <g transform="translate(185, 15)">
+    <rect x="0" y="0" width="45" height="16" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+    <text x="22" y="11" font-family="Arial, sans-serif" font-size="8" font-weight="600" fill="#16a34a" text-anchor="middle">
+      VERIFIED
+    </text>
+  </g>
+  
+  <!-- KYC indicator -->
+  <text x="185" y="45" font-family="Arial, sans-serif" font-size="8" fill="#059669" font-weight="500">
+    KYC ✓ Secure ✓ Trusted ✓
+  </text>
+</svg>

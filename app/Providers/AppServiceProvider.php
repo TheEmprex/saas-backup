@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +29,11 @@ class AppServiceProvider extends ServiceProvider
     {
         if ($this->app->environment() == 'production') {
             $this->app['request']->server->set('HTTPS', true);
+        }
+        
+        // Force HTTPS for tunnel URLs
+        if (str_contains(config('app.url'), 'loca.lt')) {
+            URL::forceScheme('https');
         }
 
         $this->setSchemaDefaultLength();

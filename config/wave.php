@@ -24,6 +24,7 @@ return [
     'primary_color' => '#000000',
 
     'user_model' => \App\Models\User::class,
+    'theme' => 'anchor',
     'show_docs' => env('WAVE_DOCS', true),
     'demo' => env('WAVE_DEMO', false),
     'dev_bar' => env('WAVE_BAR', false),

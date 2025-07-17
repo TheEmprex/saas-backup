@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('earnings_verifications', function (Blueprint $table) {
+            $table->string('earnings_screenshot_path')->nullable()->change();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('earnings_verifications', function (Blueprint $table) {
+            $table->string('earnings_screenshot_path')->nullable(false)->change();
+        });
+    }
+};

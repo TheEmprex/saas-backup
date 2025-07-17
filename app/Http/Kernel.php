@@ -67,5 +67,9 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        'kyc.verified' => \App\Http\Middleware\RequireKycVerification::class,
+        'subscription.limits' => \App\Http\Middleware\CheckSubscriptionLimits::class,
+        'subscription.required' => \App\Http\Middleware\RequireSubscription::class,
+        'agency.only' => \App\Http\Middleware\AgencyMiddleware::class,
     ];
 }
