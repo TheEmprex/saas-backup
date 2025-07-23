@@ -18,6 +18,8 @@ class MessageResource extends Resource
     protected static ?string $model = Message::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {
@@ -56,10 +58,8 @@ class MessageResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('sender.name')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('recipient.name')
-                    ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('jobPost.title')
                     ->numeric()

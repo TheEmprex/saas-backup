@@ -52,21 +52,11 @@
                     <div class="w-full">
                         <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">My Activity</div>
                         <div class="space-y-1">
-                            <x-app.sidebar-link href="{{ route('jobs.index') }}" icon="phosphor-briefcase" :active="Request::is('jobs')">My Jobs</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('jobs.user-applications') }}" icon="phosphor-file-text" :active="Request::is('jobs/applications')">My Applications</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('marketplace.my-jobs') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/my-jobs')">My Jobs</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('marketplace.my-applications') }}" icon="phosphor-file-text" :active="Request::is('marketplace/my-applications')">My Applications</x-app.sidebar-link>
                             <x-app.sidebar-link href="{{ route('contracts.index') }}" icon="phosphor-file-text" :active="Request::is('contracts*')">My Contracts</x-app.sidebar-link>
                             <x-app.sidebar-link href="{{ route('profile.show') }}" icon="phosphor-user" :active="Request::is('profile')">My Profile</x-app.sidebar-link>
                             <x-app.sidebar-link href="{{ route('ratings.index') }}" icon="phosphor-star" :active="Request::is('ratings*')">Reviews</x-app.sidebar-link>
-                        </div>
-                    </div>
-                    
-                    <!-- System Section -->
-                    <div class="w-full">
-                        <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">System</div>
-                        <div class="space-y-1">
-                            <x-app.sidebar-link href="{{ route('notifications.index') }}" icon="phosphor-bell" :active="Request::is('notifications*')">Notifications</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('platform.analytics') }}" icon="phosphor-chart-bar" :active="Request::is('platform/analytics')">Analytics</x-app.sidebar-link>
-                            <x-app.sidebar-link href="/settings" icon="phosphor-gear" :active="Request::is('settings*')">Settings</x-app.sidebar-link>
                         </div>
                     </div>
                     
@@ -74,7 +64,10 @@
                     @if(auth()->check() && auth()->user()->isAdmin())
                         <div class="w-full">
                             <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-red-500 dark:text-red-400">Admin</div>
-                            <x-app.sidebar-link href="{{ route('filament.admin.pages.dashboard') }}" icon="phosphor-shield-star" :active="Request::is('admin*')">Admin Dashboard</x-app.sidebar-link>
+                            <div class="space-y-1">
+                                <x-app.sidebar-link href="{{ route('filament.admin.pages.dashboard') }}" icon="phosphor-shield-star" :active="Request::is('admin') || Request::is('admin/login')">Filament Admin</x-app.sidebar-link>
+                                <x-app.sidebar-link href="{{ route('admin.dashboard') }}" icon="phosphor-gauge" :active="Request::is('admin/dashboard')">Custom Admin Dashboard</x-app.sidebar-link>
+                            </div>
                         </div>
                     @endif
                 </div>

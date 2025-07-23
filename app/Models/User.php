@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Wave\Traits\HasProfileKeyValues;
 use Wave\User as WaveUser;
 use App\Models\UserProfile;
@@ -20,13 +21,16 @@ use App\Models\UserSubscription;
 use App\Models\ChatterMicrotransaction;
 use App\Models\FeaturedJobPost;
 use App\Models\ContractReview;
+use App\Models\UserMonthlyStat;
+use App\Traits\ReviewHelper;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class User extends WaveUser
+class User extends WaveUser implements MustVerifyEmail
 {
     use HasProfileKeyValues;
     use Notifiable;
+    use ReviewHelper;
     public $guard_name = 'web';
 
     /**
@@ -47,6 +51,9 @@ class User extends WaveUser
         'user_type_id',
         'last_seen_at',
         'kyc_status',
+        'is_banned',
+        'banned_at',
+        'ban_reason',
     ];
 
     /**
@@ -63,6 +70,8 @@ class User extends WaveUser
         'email_verified_at' => 'datetime',
         'last_seen_at' => 'datetime',
         'trial_ends_at' => 'datetime',
+        'banned_at' => 'datetime',
+        'is_banned' => 'boolean',
     ];
 
     /**
@@ -147,12 +156,39 @@ class User extends WaveUser
 
     public function isChatter(): bool
     {
-        return $this->userType->name === 'chatter';
+        return $this->userType && in_array($this->userType->name, ['chatter', 'Chatter', 'Content Creator']);
     }
 
     public function isAgency(): bool
     {
-        return in_array($this->userType->name, ['ofm_agency', 'chatting_agency']);
+        return $this->userType && in_array($this->userType->name, ['ofm_agency', 'chatting_agency', 'Agency']);
+    }
+
+    public function isVA(): bool
+    {
+        return $this->userType && in_array($this->userType->name, ['va', 'VA', 'Virtual Assistant']);
+    }
+
+    public function canPostJobs(): bool
+    {
+        // Only agencies and OFM agencies can post jobs
+        return $this->isAgency() || $this->isAdmin();
+    }
+
+    public function canApplyToJobs(): bool
+    {
+        // Only chatters and VAs can apply to jobs
+        return $this->isChatter() || $this->isVA() || $this->isAdmin();
+    }
+
+    public function getLayoutType(): string
+    {
+        if ($this->isChatter() || $this->isVA()) {
+            return 'talent';
+        } elseif ($this->isAgency()) {
+            return 'agency';
+        }
+        return 'default';
     }
 
     public function requiresVerification(): bool
@@ -171,6 +207,38 @@ class User extends WaveUser
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user is banned.
+     */
+    public function isBanned(): bool
+    {
+        return $this->is_banned ?? false;
+    }
+
+    /**
+     * Ban the user.
+     */
+    public function ban(string $reason = null): void
+    {
+        $this->update([
+            'is_banned' => true,
+            'banned_at' => now(),
+            'ban_reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Unban the user.
+     */
+    public function unban(): void
+    {
+        $this->update([
+            'is_banned' => false,
+            'banned_at' => null,
+            'ban_reason' => null,
+        ]);
     }
 
     /**
@@ -204,6 +272,8 @@ class User extends WaveUser
     {
         return $this->hasMany(Rating::class, 'rated_id');
     }
+    
+    // Review methods are now provided by the ReviewHelper trait
 
     /**
      * Get the user's subscriptions.
@@ -354,6 +424,14 @@ class User extends WaveUser
     }
 
     /**
+     * Get the user's monthly statistics.
+     */
+    public function monthlyStats()
+    {
+        return $this->hasMany(UserMonthlyStat::class);
+    }
+
+    /**
      * Check if user has an active subscription.
      */
     public function hasActiveSubscription()
@@ -374,6 +452,11 @@ class User extends WaveUser
      */
     public function canPostJob()
     {
+        // First check if user type is authorized to post jobs (only agencies)
+        if (!$this->isAgency() && !$this->isAdmin()) {
+            return false;
+        }
+        
         $subscription = $this->currentSubscription();
         if (!$subscription) {
             return false;
@@ -384,8 +467,8 @@ class User extends WaveUser
             return true; // Unlimited
         }
 
-        $currentMonth = now()->format('Y-m');
-        $jobPostsThisMonth = $this->jobPosts()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
+        // Use permanent counter - doesn't decrease when jobs are deleted
+        $jobPostsThisMonth = $this->getJobPostsUsedThisMonth();
         
         return $jobPostsThisMonth < $plan->job_post_limit;
     }
@@ -405,8 +488,10 @@ class User extends WaveUser
             return true; // Unlimited
         }
 
-        $currentMonth = now()->format('Y-m');
-        $applicationsThisMonth = $this->jobApplications()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
+        $applicationsThisMonth = $this->jobApplications()
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
         
         return $applicationsThisMonth < $plan->chat_application_limit;
     }
@@ -454,8 +539,8 @@ class User extends WaveUser
             return 999; // Unlimited
         }
 
-        $currentMonth = now()->format('Y-m');
-        $jobPostsThisMonth = $this->jobPosts()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
+        // Use permanent counter - doesn't decrease when jobs are deleted
+        $jobPostsThisMonth = $this->getJobPostsUsedThisMonth();
         
         return max(0, $plan->job_post_limit - $jobPostsThisMonth);
     }
@@ -475,19 +560,25 @@ class User extends WaveUser
             return 999; // Unlimited
         }
 
-        $currentMonth = now()->format('Y-m');
-        $applicationsThisMonth = $this->jobApplications()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
+        $applicationsThisMonth = $this->jobApplications()
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
         
         return max(0, $plan->chat_application_limit - $applicationsThisMonth);
     }
 
     /**
-     * Get job posts used this month.
+     * Get job posts used this month (from permanent counter).
      */
     public function getJobPostsUsedThisMonth()
     {
-        $currentMonth = now()->format('Y-m');
-        return $this->jobPosts()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
+        $stats = $this->monthlyStats()
+            ->where('year', now()->year)
+            ->where('month', now()->month)
+            ->first();
+            
+        return $stats ? $stats->jobs_posted : 0;
     }
 
     /**
@@ -495,8 +586,10 @@ class User extends WaveUser
      */
     public function getJobApplicationsUsedThisMonth()
     {
-        $currentMonth = now()->format('Y-m');
-        return $this->jobApplications()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
+        return $this->jobApplications()
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
     }
 
     /**
@@ -536,15 +629,44 @@ class User extends WaveUser
     }
 
     /**
-     * Get the user's profile picture URL
+     * Override parent avatar method to handle persistence properly
      */
-    public function getProfilePictureUrl(): string
+    public function avatar()
     {
         if ($this->avatar && \Storage::disk('public')->exists($this->avatar)) {
             return asset('storage/' . $this->avatar);
         }
 
-        return asset('images/default-avatar.png');
+        // Return a data URL for a generated avatar with user initials
+        return $this->generateAvatarDataUrl();
+    }
+
+    /**
+     * Generate a data URL for an avatar with user initials
+     */
+    private function generateAvatarDataUrl()
+    {
+        $initials = strtoupper(substr($this->name, 0, 1));
+        if (str_contains($this->name, ' ')) {
+            $parts = explode(' ', $this->name);
+            $initials = strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+        }
+        
+        // Create a simple SVG avatar with initials
+        $svg = '<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">';
+        $svg .= '<rect width="100" height="100" fill="#6366f1"/>';
+        $svg .= '<text x="50" y="50" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">' . $initials . '</text>';
+        $svg .= '</svg>';
+        
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+    }
+
+    /**
+     * Get the user's profile picture URL
+     */
+    public function getProfilePictureUrl(): string
+    {
+        return $this->avatar();
     }
 
     /**
@@ -583,5 +705,32 @@ class User extends WaveUser
             // Assign the default role
             $user->assignRole(config('wave.default_user_role', 'registered'));
         });
+    }
+
+    /**
+     * Check if user is online (active within last 5 minutes)
+     */
+    public function isOnline(): bool
+    {
+        return $this->last_seen_at && $this->last_seen_at->diffInMinutes(now()) < 5;
+    }
+    
+    /**
+     * Check if user's profile is currently featured.
+     */
+    public function isProfileFeatured(): bool
+    {
+        return $this->userProfile && 
+               $this->userProfile->is_featured && 
+               $this->userProfile->featured_until && 
+               $this->userProfile->featured_until->isFuture();
+    }
+    
+    /**
+     * Get the featured profile until date.
+     */
+    public function getFeaturedUntil()
+    {
+        return $this->userProfile?->featured_until;
     }
 }

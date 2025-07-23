@@ -9,6 +9,10 @@ use App\Models\Rating;
 use App\Models\UserProfile;
 use App\Models\KycVerification;
 use App\Models\EarningsVerification;
+use App\Models\Contract;
+use App\Models\Earning;
+use App\Models\Analytics;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,6 +23,9 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        
+        // Get OnlyFans marketplace specific data
+        $dashboardData = $this->getOnlyFansMarketplaceData($user);
         
         // Get user's posted jobs
         $postedJobs = JobPost::where('user_id', $user->id)
@@ -47,7 +54,6 @@ class DashboardController extends Controller
         // Get verification status based on user type
         $verificationStatus = $this->getVerificationStatus($user);
         
-        
         // Legacy KYC status for backward compatibility
         $kycVerification = $user->kycVerification;
         $kycStatus = [
@@ -65,9 +71,21 @@ class DashboardController extends Controller
         
         // Get recent activity
         $recentActivity = $this->getRecentActivity($user);
+
+        // Get recent jobs
+        $recentJobs = JobPost::where('user_id', $user->id)
+            ->latest()
+            ->limit(5)
+            ->get();
         
         // Get performance metrics
         $performanceMetrics = $this->getPerformanceMetrics($user);
+        
+        // Get contracts data
+        $contractsData = $this->getContractsData($user);
+        
+        // Get earnings data
+        $earningsData = $this->getEarningsData($user);
         
         // Get admin stats if user is admin
         $adminStats = null;
@@ -75,7 +93,9 @@ class DashboardController extends Controller
             $adminStats = $this->getAdminStats();
         }
         
-        return view('theme::dashboard.index', compact(
+        return view('marketplace.dashboard', compact(
+            'user',
+            'dashboardData',
             'postedJobs',
             'myApplications',
             'pendingApplications',
@@ -85,9 +105,15 @@ class DashboardController extends Controller
             'profileCompletion',
             'analytics',
             'recentActivity',
+            'recentJobs',
             'performanceMetrics',
+            'contractsData',
+            'earningsData',
             'adminStats'
-        ));
+        ))->with([
+            'stats' => $this->getStatsForView($user, $dashboardData),
+            'featuredJobs' => $dashboardData['featured_jobs'] ?? []
+        ]);
     }
     
     private function getVerificationStatus($user)
@@ -391,6 +417,315 @@ class DashboardController extends Controller
             'earnings_pending' => EarningsVerification::where('status', 'pending')->count(),
             'earnings_approved' => EarningsVerification::where('status', 'approved')->count(),
             'earnings_rejected' => EarningsVerification::where('status', 'rejected')->count(),
+        ];
+    }
+    
+    /**
+     * Get OnlyFans marketplace specific dashboard data
+     */
+    private function getOnlyFansMarketplaceData($user)
+    {
+        $stats = [
+            'total_earnings' => $this->getTotalEarnings($user),
+            'monthly_earnings' => $this->getMonthlyEarnings($user),
+            'weekly_earnings' => $this->getWeeklyEarnings($user),
+            'active_contracts' => $this->getActiveContracts($user),
+            'completed_contracts' => $this->getCompletedContracts($user),
+            'profile_views' => $this->getProfileViews($user),
+            'response_rate' => $this->getResponseRate($user),
+            'success_rate' => $this->getSuccessRate($user),
+            'subscription_status' => $this->getSubscriptionStatus($user),
+            'featured_jobs' => $this->getFeaturedJobs(),
+            'trending_skills' => $this->getTrendingSkills(),
+            'marketplace_stats' => $this->getMarketplaceStats(),
+        ];
+        
+        return $stats;
+    }
+    
+    /**
+     * Get total earnings for user
+     */
+    private function getTotalEarnings($user)
+    {
+        return Earning::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->sum('amount');
+    }
+    
+    /**
+     * Get monthly earnings for user
+     */
+    private function getMonthlyEarnings($user)
+    {
+        return Earning::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->thisMonth()
+            ->sum('amount');
+    }
+    
+    /**
+     * Get weekly earnings for user
+     */
+    private function getWeeklyEarnings($user)
+    {
+        return Earning::where('user_id', $user->id)
+            ->where('status', 'paid')
+            ->thisWeek()
+            ->sum('amount');
+    }
+    
+    /**
+     * Get active contracts count
+     */
+    private function getActiveContracts($user)
+    {
+        return Contract::where(function($query) use ($user) {
+            $query->where('employer_id', $user->id)
+                  ->orWhere('contractor_id', $user->id);
+        })
+        ->where('status', 'active')
+        ->count();
+    }
+    
+    /**
+     * Get completed contracts count
+     */
+    private function getCompletedContracts($user)
+    {
+        return Contract::where(function($query) use ($user) {
+            $query->where('employer_id', $user->id)
+                  ->orWhere('contractor_id', $user->id);
+        })
+        ->where('status', 'completed')
+        ->count();
+    }
+    
+    /**
+     * Get profile views from analytics
+     */
+    private function getProfileViews($user)
+    {
+        return Analytics::where('user_id', $user->id)
+            ->where('metric_type', 'profile_views')
+            ->thisMonth()
+            ->sum('metric_value');
+    }
+    
+    /**
+     * Get response rate percentage
+     */
+    private function getResponseRate($user)
+    {
+        // Calculate based on message responses
+        $totalMessages = Message::where('recipient_id', $user->id)->count();
+        $respondedMessages = Message::where('sender_id', $user->id)->count();
+        
+        return $totalMessages > 0 ? round(($respondedMessages / $totalMessages) * 100, 1) : 0;
+    }
+    
+    /**
+     * Get success rate for applications/jobs
+     */
+    private function getSuccessRate($user)
+    {
+        if ($user->isChatter()) {
+            $totalApplications = JobApplication::where('user_id', $user->id)->count();
+            $acceptedApplications = JobApplication::where('user_id', $user->id)
+                ->where('status', 'accepted')
+                ->count();
+            
+            return $totalApplications > 0 ? round(($acceptedApplications / $totalApplications) * 100, 1) : 0;
+        }
+        
+        if ($user->isAgency()) {
+            $totalJobs = JobPost::where('user_id', $user->id)->count();
+            $filledJobs = JobPost::where('user_id', $user->id)
+                ->where('status', 'filled')
+                ->count();
+            
+            return $totalJobs > 0 ? round(($filledJobs / $totalJobs) * 100, 1) : 0;
+        }
+        
+        return 0;
+    }
+    
+    /**
+     * Get subscription status
+     */
+    private function getSubscriptionStatus($user)
+    {
+        try {
+            $subscriptionService = app(\App\Services\SubscriptionService::class);
+            return $subscriptionService->getSubscriptionStats($user);
+        } catch (\Exception $e) {
+            return [
+                'plan_name' => 'Free',
+                'has_subscription' => false,
+                'expires_at' => null,
+                'features' => []
+            ];
+        }
+    }
+    
+    /**
+     * Get featured jobs for dashboard
+     */
+    private function getFeaturedJobs()
+    {
+        return JobPost::where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->where('is_featured', true)
+            ->with(['user', 'user.userType', 'applications'])
+            ->latest()
+            ->limit(6)
+            ->get();
+    }
+    
+    /**
+     * Get trending skills
+     */
+    private function getTrendingSkills()
+    {
+        try {
+            // Check if skills column exists, if not return empty array
+            $skills = JobPost::where('status', 'active')
+                ->where('expires_at', '>', now())
+                ->whereNotNull('requirements') // Use requirements instead of skills
+                ->pluck('requirements')
+                ->flatMap(function($requirements) {
+                    // Extract skills from requirements text
+                    return explode(',', $requirements);
+                })
+                ->map(function($skill) {
+                    return trim($skill);
+                })
+                ->filter(function($skill) {
+                    return !empty($skill);
+                })
+                ->countBy()
+                ->sortDesc()
+                ->take(10)
+                ->toArray();
+            
+            return $skills;
+        } catch (\Exception $e) {
+            // Return empty array if there's an error
+            return [];
+        }
+    }
+    
+    /**
+     * Get marketplace statistics
+     */
+    private function getMarketplaceStats()
+    {
+        return [
+            'total_users' => \App\Models\User::count(),
+            'total_agencies' => \App\Models\User::whereHas('userType', function($query) {
+                $query->whereIn('name', ['ofm_agency', 'chatting_agency']);
+            })->count(),
+            'total_chatters' => \App\Models\User::whereHas('userType', function($query) {
+                $query->where('name', 'chatter');
+            })->count(),
+            'total_jobs' => JobPost::where('status', 'active')->count(),
+            'total_applications' => JobApplication::count(),
+            'total_contracts' => Contract::count(),
+            'total_earnings' => Earning::where('status', 'paid')->sum('amount'),
+        ];
+    }
+    
+    /**
+     * Get contracts data for user
+     */
+    private function getContractsData($user)
+    {
+        $contracts = Contract::where(function($query) use ($user) {
+            $query->where('employer_id', $user->id)
+                  ->orWhere('contractor_id', $user->id);
+        })
+        ->with(['employer', 'contractor', 'jobPost'])
+        ->latest()
+        ->limit(10)
+        ->get();
+        
+        return [
+            'recent_contracts' => $contracts,
+            'active_count' => $contracts->where('status', 'active')->count(),
+            'completed_count' => $contracts->where('status', 'completed')->count(),
+            'total_value' => $contracts->sum('total_amount'),
+        ];
+    }
+    
+    /**
+     * Get earnings data for user
+     */
+    private function getEarningsData($user)
+    {
+        $earnings = Earning::where('user_id', $user->id)
+            ->with(['contract'])
+            ->latest()
+            ->limit(10)
+            ->get();
+        
+        $monthlyEarnings = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $amount = Earning::where('user_id', $user->id)
+                ->where('status', 'paid')
+                ->whereMonth('earned_date', $month->month)
+                ->whereYear('earned_date', $month->year)
+                ->sum('amount');
+            
+            $monthlyEarnings[] = [
+                'month' => $month->format('M Y'),
+                'amount' => $amount
+            ];
+        }
+        
+        return [
+            'recent_earnings' => $earnings,
+            'monthly_trend' => $monthlyEarnings,
+            'total_pending' => $earnings->where('status', 'pending')->sum('amount'),
+            'total_paid' => $earnings->where('status', 'paid')->sum('amount'),
+        ];
+    }
+    
+    /**
+     * Get stats formatted for the view
+     */
+    private function getStatsForView($user, $dashboardData)
+    {
+        // Get basic stats
+        $jobsPosted = JobPost::where('user_id', $user->id)->count();
+        $jobsPostedThisMonth = JobPost::where('user_id', $user->id)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        
+        $applicationsSent = JobApplication::where('user_id', $user->id)->count();
+        $applicationsSentThisMonth = JobApplication::where('user_id', $user->id)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->count();
+        
+        $unreadMessages = Message::where('recipient_id', $user->id)
+            ->where('is_read', false)
+            ->count();
+        
+        $averageRating = Rating::where('rated_id', $user->id)
+            ->avg('overall_rating') ?: 0;
+        
+        $totalReviews = Rating::where('rated_id', $user->id)->count();
+        
+        return [
+            'jobs_posted' => $jobsPosted,
+            'jobs_posted_this_month' => $jobsPostedThisMonth,
+            'applications_sent' => $applicationsSent,
+            'applications_sent_this_month' => $applicationsSentThisMonth,
+            'unread_messages' => $unreadMessages,
+            'average_rating' => $averageRating,
+            'total_reviews' => $totalReviews,
         ];
     }
 }

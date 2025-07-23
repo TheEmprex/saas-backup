@@ -43,12 +43,27 @@ class UserProfile extends Model
         'experience_years',
         'languages',
         'skills',
+        'services',
         'availability',
         'hourly_rate',
         'preferred_rate_type',
         'portfolio_url',
         'linkedin_url',
         'views',
+        'is_available',
+        'response_time',
+        // Featured profile fields
+        'is_featured',
+        'featured_until',
+        'featured_payment_amount',
+        'featured_payment_id',
+        'featured_paid_at',
+        // New agency fields
+        'monthly_revenue',
+        'traffic_types',
+        'timezone',
+        'availability_hours',
+        'shift_requirements',
     ];
 
     protected $casts = [
@@ -72,9 +87,19 @@ class UserProfile extends Model
         // Additional casts for new fields
         'languages' => 'array',
         'skills' => 'array',
+        'services' => 'array',
         'experience_years' => 'integer',
         'hourly_rate' => 'decimal:2',
         'views' => 'integer',
+        'is_available' => 'boolean',
+        // Featured profile casts
+        'is_featured' => 'boolean',
+        'featured_until' => 'datetime',
+        'featured_payment_amount' => 'decimal:2',
+        'featured_paid_at' => 'datetime',
+        // New agency field casts
+        'traffic_types' => 'array',
+        'shift_requirements' => 'array',
     ];
 
     public function user(): BelongsTo

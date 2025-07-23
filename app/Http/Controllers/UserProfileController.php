@@ -21,7 +21,20 @@ class UserProfileController extends Controller
         }
         $user->load(['userProfile', 'userType', 'contractReviewsReceived.reviewer', 'contractReviewsGiven.reviewedUser']);
         
-        return view('theme::profile.show', compact('user'));
+        // Get the user profile for template compatibility
+        $profile = $user->userProfile;
+        
+        // Calculate profile statistics (similar to MarketplaceController)
+        $stats = [
+            'average_rating' => $user->contractReviewsReceived->avg('rating') ?? 0.0,
+            'total_reviews' => $user->contractReviewsReceived->count(),
+            'jobs_completed' => $user->contractReviewsReceived->count(), // Using reviews as proxy for completed jobs
+            'response_time' => 'Within 24h', // Default response time
+            'profile_complete' => $this->isProfileComplete($user),
+            'profile_completeness_percentage' => $this->calculateProfileCompleteness($user)
+        ];
+        
+        return view('theme::profile.show', compact('user', 'profile', 'stats'));
     }
     
     public function publicProfile(User $user)
@@ -34,7 +47,10 @@ class UserProfileController extends Controller
             abort(404, 'Profile not found or incomplete');
         }
         
-        return view('theme::profile.public', compact('user'));
+        // Load marketplace reviews received by this user using the ReviewHelper trait
+        $marketplaceReviews = $user->getProfileReviews(10);
+        
+        return view('theme::profile.public', compact('user', 'marketplaceReviews'));
     }
     
     public function edit()
@@ -174,6 +190,97 @@ class UserProfileController extends Controller
         }
         
         return view('theme::profile.earnings-verification', compact('user'));
+    }
+    
+    private function isProfileComplete(User $user)
+    {
+        $profile = $user->userProfile;
+        
+        if (!$profile) {
+            return false;
+        }
+        
+        // Check required fields for a complete profile
+        $requiredFields = [
+            'bio',
+            'location',
+        ];
+        
+        foreach ($requiredFields as $field) {
+            if (empty($profile->$field)) {
+                return false;
+            }
+        }
+        
+        // Check if user has avatar
+        if (!$user->avatar) {
+            return false;
+        }
+        
+        // Check if user has skills or services
+        if (empty($profile->skills) && empty($profile->services)) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private function calculateProfileCompleteness(User $user)
+    {
+        $profile = $user->userProfile;
+        
+        if (!$profile) {
+            return 10; // Base 10% for having a user account
+        }
+        
+        $score = 10; // Base score
+        
+        // Avatar (15%)
+        if ($user->avatar) {
+            $score += 15;
+        }
+        
+        // Bio (20%)
+        if (!empty($profile->bio)) {
+            $score += 20;
+        }
+        
+        // Location (10%)
+        if (!empty($profile->location)) {
+            $score += 10;
+        }
+        
+        // Skills (15%)
+        if (!empty($profile->skills)) {
+            $score += 15;
+        }
+        
+        // Services (10%)
+        if (!empty($profile->services)) {
+            $score += 10;
+        }
+        
+        // Experience years (5%)
+        if (!empty($profile->experience_years)) {
+            $score += 5;
+        }
+        
+        // Hourly rate (5%)
+        if (!empty($profile->hourly_rate)) {
+            $score += 5;
+        }
+        
+        // Portfolio URL (5%)
+        if (!empty($profile->portfolio_url)) {
+            $score += 5;
+        }
+        
+        // Languages (5%)
+        if (!empty($profile->languages)) {
+            $score += 5;
+        }
+        
+        return min($score, 100);
     }
     
     public function submitEarningsVerification(Request $request)

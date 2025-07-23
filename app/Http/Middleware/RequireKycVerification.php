@@ -52,36 +52,6 @@ class RequireKycVerification
                     ->with('warning', 'Your KYC verification is pending approval. You cannot access this feature yet.');
             }
         }
-        // For agencies, check if they have earnings verification
-        elseif ($user->userType && in_array($user->userType->name, ['ofm_agency', 'chatting_agency'])) {
-            // Agencies require earnings verification instead of KYC
-            if (!$user->hasEarningsSubmitted()) {
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'error' => 'Earnings verification required',
-                        'message' => 'You must complete earnings verification to access this feature.',
-                        'redirect' => route('profile.earnings-verification')
-                    ], 403);
-                }
-                
-                return redirect()->route('profile.earnings-verification')
-                    ->with('error', 'You must complete earnings verification to access this feature.');
-            }
-            
-            // Check if earnings verification is approved
-            if (!$user->isEarningsVerified()) {
-                if ($request->expectsJson()) {
-                    return response()->json([
-                        'error' => 'Earnings verification pending',
-                        'message' => 'Your earnings verification is pending approval. You cannot access this feature yet.',
-                        'redirect' => route('profile.earnings-verification')
-                    ], 403);
-                }
-                
-                return redirect()->route('profile.earnings-verification')
-                    ->with('warning', 'Your earnings verification is pending approval. You cannot access this feature yet.');
-            }
-        }
 
         return $next($request);
     }

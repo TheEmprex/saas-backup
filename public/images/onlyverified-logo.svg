@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circular gradient background -->
+  <defs>
+    <radialGradient id="logoGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Circular background -->
+  <circle cx="80" cy="100" r="60" fill="url(#logoGradient)" />
+  
+  <!-- White checkmark -->
+  <path d="M60 100 L75 115 L105 85" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  
+  <!-- "Only" text -->
+  <text x="170" y="85" font-family="Inter, system-ui, sans-serif" font-size="48" font-weight="700" fill="#374151">Only</text>
+  
+  <!-- "Verified" text with gradient -->
+  <text x="170" y="135" font-family="Inter, system-ui, sans-serif" font-size="48" font-weight="700" fill="url(#textGradient)">Verified</text>
+</svg>

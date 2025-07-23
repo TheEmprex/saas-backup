@@ -1,10 +1,15 @@
 <x-layouts.app>
 
-<div class="bg-white dark:bg-gray-900 min-h-screen">
+<div class="min-h-screen bg-gray-50 dark:bg-zinc-900">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">Messages</h1>
-            <p class="text-gray-600 dark:text-gray-300">Manage your conversations with agencies and chatters</p>
+        <!-- Header -->
+        <div class="mb-10">
+            <div class="text-center">
+                <h1 class="text-5xl font-black text-gray-900 dark:text-white mb-4">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Messages</span>
+                </h1>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Manage your conversations and stay connected with the OnlyFans ecosystem community</p>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -28,9 +33,17 @@
                        class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <div class="flex items-center space-x-3">
                             <div class="relative">
-                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                                    {{ substr($conversation->otherParticipant->name ?? 'N/A', 0, 1) }}
-                                </div>
+                                @if($conversation->otherParticipant->avatar)
+                                    <div class="w-10 h-10 rounded-full overflow-hidden">
+                                        <img src="{{ Storage::url($conversation->otherParticipant->avatar) }}" 
+                                             alt="{{ $conversation->otherParticipant->name }}" 
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                @else
+                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        {{ substr($conversation->otherParticipant->name ?? 'N/A', 0, 1) }}
+                                    </div>
+                                @endif
                                 @if($conversation->unread_count > 0)
                                     <div class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
                                         <span class="text-xs text-white font-medium">{{ $conversation->unread_count > 9 ? '9+' : $conversation->unread_count }}</span>

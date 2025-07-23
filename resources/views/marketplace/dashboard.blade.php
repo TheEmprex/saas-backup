@@ -1,538 +1,717 @@
 <x-layouts.app>
-<div class="min-h-screen bg-white dark:bg-zinc-900">
-    <div class="max-w-6xl mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Dashboard</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">Welcome back, {{ $user->name }}</p>
-        </div>
-
-        <!-- Main Actions -->
-        <div class="mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Browse Jobs -->
-                <a href="{{ route('marketplace.jobs') }}" class="bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6.99A23.931 23.931 0 0120 15"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Browse Jobs</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Find opportunities</p>
-                        </div>
-                    </div>
-                </a>
-
-                @if($user->isAgency())
-                <!-- Post Job -->
-                <a href="{{ route('marketplace.jobs.create') }}" class="bg-gray-50 border border-gray-200 rounded-lg p-6 hover:bg-gray-100">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-black">Post Job</h3>
-                            <p class="text-sm text-black">Create listing</p>
-                        </div>
-                    </div>
-                </a>
-                @endif
-
-                <!-- Contracts -->
-                <a href="{{ route('contracts.index') }}" class="bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Contracts</h3>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Manage contracts</p>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Profile -->
-                <a href="{{ route('profile.edit') }}" class="bg-gray-50 border border-gray-200 rounded-lg p-6 hover:bg-gray-100">
-                    <div class="flex items-center">
-                        <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-lg font-semibold text-black">Profile</h3>
-                            <p class="text-sm text-black">Edit profile</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-        
-        <!-- Recent Contracts -->
-        <div class="mt-8">
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-black">Recent Contracts</h2>
-                        <p class="text-black text-sm">Review your latest contracts and status</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @forelse($recentContracts ?? [] as $contract)
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                            <div class="flex items-start justify-between mb-3">
+    <div class="min-h-screen bg-gray-50 dark:bg-zinc-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Enhanced Header with Stats -->
+            <div class="mb-12">
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl shadow-sm p-8">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    </svg>
+                                </div>
                                 <div>
-                                    <h3 class="font-semibold text-black text-sm">{{ $contract->contractor->name }} / {{ $contract->employer->name }}</h3>
-                                    <p class="text-black text-xs">{{ ucfirst($contract->status) }}</p>
+                                    <h1 class="text-4xl font-black text-gray-900 dark:text-white mb-2">
+                                        Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{{ explode(' ', $user->name)[0] }}</span>
+                                    </h1>
+                                <p class="text-lg text-gray-600 dark:text-gray-300">Here's what's happening with your marketplace activity</p>
                                 </div>
-                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">{{ $contract->rate }} {{ $contract->currency }}/hr</span>
+                            </div>
+                            
+                            <!-- Quick Stats Row -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl p-4">
+                                    <div class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ $stats['jobs_posted'] ?? 0 }}</div>
+                                    <div class="text-sm text-blue-600 dark:text-blue-400">Jobs Posted</div>
+                                </div>
+                                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl p-4">
+                                    <div class="text-2xl font-bold text-green-700 dark:text-green-300">{{ $stats['applications_sent'] ?? 0 }}</div>
+                                    <div class="text-sm text-green-600 dark:text-green-400">Applications</div>
+                                </div>
+                                <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl p-4">
+                                    <div class="text-2xl font-bold text-purple-700 dark:text-purple-300">{{ $stats['unread_messages'] ?? 0 }}</div>
+                                    <div class="text-sm text-purple-600 dark:text-purple-400">Messages</div>
+                                </div>
+                                <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl p-4">
+                                    <div class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ number_format($stats['average_rating'] ?? 0, 1) }}</div>
+                                    <div class="text-sm text-orange-600 dark:text-orange-400">Rating</div>
+                                </div>
                             </div>
                         </div>
-                    @empty
-                        <div class="col-span-full text-center py-8">
-                            <i class="fas fa-handshake text-gray-400 text-2xl mb-4"></i>
-                            <h3 class="text-black font-semibold mb-2">No Recent Contracts</h3>
-                            <p class="text-black mb-4">Start a new contract today</p>
-                            <a href="{{ route('contracts.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                Create New Contract
-                            </a>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-        
-        <!-- Subscription Status -->
-        @if($subscriptionStats['has_subscription'])
-            <div class="mb-8">
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h2 class="text-xl font-bold text-black">{{ $subscriptionStats['plan_name'] }}</h2>
-                            <p class="text-black text-sm">Your current subscription plan</p>
-                        </div>
-                        <div class="flex space-x-3">
-                            <a href="{{ route('subscription.plans') }}" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 text-black">
-                                Change Plan
-                            </a>
-                            <a href="{{ route('subscription.dashboard') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                Manage
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        @if($user->isAgency())
-                            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-black text-sm">Job Posts</span>
-                                    <i class="fas fa-briefcase text-blue-500"></i>
-                                </div>
-                                <div class="text-xl font-bold text-black mb-2">{{ $subscriptionStats['job_posts_used'] }} / {{ $subscriptionStats['job_posts_limit'] ?: '∞' }}</div>
-                                @if($subscriptionStats['job_posts_limit'])
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-blue-500 h-2 rounded-full" style="width: {{ min(($subscriptionStats['job_posts_used'] / $subscriptionStats['job_posts_limit']) * 100, 100) }}%"></div>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
-                        @if($user->isChatter())
-                            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-black text-sm">Applications</span>
-                                    <i class="fas fa-file-alt text-green-500"></i>
-                                </div>
-                                <div class="text-xl font-bold text-black mb-2">{{ $subscriptionStats['applications_used'] }} / {{ $subscriptionStats['applications_limit'] ?: '∞' }}</div>
-                                @if($subscriptionStats['applications_limit'])
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ min(($subscriptionStats['applications_used'] / $subscriptionStats['applications_limit']) * 100, 100) }}%"></div>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
-                        <div class="bg-white border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-black text-sm">Expires</span>
-                                <i class="fas fa-calendar-alt text-purple-500"></i>
-                            </div>
-                            <div class="text-lg font-semibold text-black mb-1">{{ $subscriptionStats['expires_at'] ? \Carbon\Carbon::parse($subscriptionStats['expires_at'])->format('M d, Y') : 'Never' }}</div>
-                            @if($subscriptionStats['expires_at'])
-                                <div class="text-xs text-black">
-                                    {{ \Carbon\Carbon::parse($subscriptionStats['expires_at'])->diffForHumans() }}
-                                </div>
+                        
+                        <!-- Quick Action Panel -->
+                        <div class="flex flex-col sm:flex-row lg:flex-col gap-3">
+                            @if($user->isAgency())
+                                <a href="{{ route('marketplace.jobs.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Post New Job
+                                </a>
                             @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @else
-            <div class="mb-8">
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h2 class="text-xl font-bold text-black">No Active Subscription</h2>
-                            <p class="text-black mb-4">Unlock the full potential of our marketplace with a subscription plan.</p>
-                            <ul class="text-sm text-black space-y-1">
-                                <li>• Post unlimited jobs</li>
-                                <li>• Advanced messaging features</li>
-                                <li>• Priority support</li>
-                            </ul>
-                        </div>
-                        <div class="flex flex-col space-y-3">
-                            <a href="{{ route('subscription.plans') }}" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
-                                Choose Your Plan
-                            </a>
-                            <a href="{{ route('marketplace.jobs') }}" class="bg-white border border-gray-200 px-6 py-3 rounded-lg hover:bg-gray-50 text-black text-center">
+                            <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
                                 Browse Jobs
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
-        @endif
 
-        <!-- Featured Jobs Section -->
-        <div class="mb-8">
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-black">Featured Jobs</h2>
-                        <p class="text-black text-sm">Discover top opportunities from premium employers</p>
+        
+            <!-- Recent Contracts -->
+            <div class="mb-8">
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Contracts</span></h2>
+                            <p class="text-gray-600 dark:text-gray-400">Review your latest contracts and status</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
                     </div>
-                    <div class="flex space-x-3">
-                        <a href="{{ route('marketplace.jobs') }}" class="bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 text-black">
-                            Browse All Jobs
-                        </a>
-                        @if($user->isAgency())
-                            <a href="{{ route('marketplace.jobs.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                Post Job
-                            </a>
-                        @endif
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @forelse($recentContracts ?? [] as $contract)
+                            <div class="group bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-sm">{{ $contract->contractor->name }}</h3>
+                                            <p class="text-gray-500 dark:text-gray-400 text-xs">with {{ $contract->employer->name }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">{{ $contract->rate }} {{ $contract->currency }}/hr</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        @if($contract->status == 'active') bg-green-100 text-green-800
+                                        @elseif($contract->status == 'pending') bg-yellow-100 text-yellow-800
+                                        @elseif($contract->status == 'completed') bg-blue-100 text-blue-800
+                                        @else bg-gray-100 text-gray-800 @endif">
+                                        {{ ucfirst($contract->status) }}
+                                    </span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ $contract->created_at->diffForHumans() }}</span>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-center py-12">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Recent Contracts</h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-6">Start a new contract today and begin building professional relationships</p>
+                                <a href="{{ route('contracts.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Create New Contract
+                                </a>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @forelse($featuredJobs ?? [] as $job)
-                        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
-                                        <i class="fas fa-briefcase text-white text-sm"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="font-semibold text-black text-sm">{{ $job->title }}</h3>
-                                        <p class="text-black text-xs">{{ $job->user->name }}</p>
-                                    </div>
-                                </div>
-                                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Featured</span>
+            </div>
+        
+            <!-- Subscription Status -->
+            @if(isset($subscriptionStats['has_subscription']) && $subscriptionStats['has_subscription'])
+                <div class="mb-8">
+                    <div class="bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-lg font-semibold">Current <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">{{ $subscriptionStats['plan_name'] }}</span></h2>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm">Your current subscription plan</p>
                             </div>
-                            <div class="space-y-1 mb-3">
-                                <div class="flex items-center text-black text-xs">
-                                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
-                                    <span>{{ $job->market }}</span>
-                                </div>
-                                <div class="flex items-center text-black text-xs">
-                                    <i class="fas fa-clock mr-2 text-blue-500"></i>
-                                    <span>{{ ucfirst($job->rate_type) }}</span>
-                                </div>
-                                <div class="flex items-center text-black text-xs">
-                                    <i class="fas fa-users mr-2 text-blue-500"></i>
-                                    <span>{{ $job->applications->count() }} applications</span>
-                                </div>
+                            <div class="flex space-x-3">
+                                <a href="{{ route('subscription.plans') }}" class="bg-white dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-zinc-600 text-gray-900 dark:text-gray-100">
+                                    Change Plan
+                                </a>
+                                <a href="{{ route('subscription.dashboard') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                                    Manage
+                                </a>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="text-black font-semibold text-sm">
-                                    @if($job->rate_type === 'fixed')
-                                        ${{ number_format($job->rate, 0) }}
-                                    @else
-                                        ${{ number_format($job->rate, 0) }}/hr
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            @if($user->isAgency())
+                                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-gray-900 dark:text-gray-100 text-sm">Job Posts</span>
+                                        <i class="fas fa-briefcase text-blue-500"></i>
+                                    </div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ $subscriptionStats['job_posts_used'] }} / {{ $subscriptionStats['job_posts_limit'] ?: '∞' }}</div>
+                                    @if($subscriptionStats['job_posts_limit'])
+                                        <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-2">
+                                            <div class="bg-blue-500 h-2 rounded-full" style="width: {{ min(($subscriptionStats['job_posts_used'] / $subscriptionStats['job_posts_limit']) * 100, 100) }}%"></div>
+                                        </div>
                                     @endif
                                 </div>
-                                <a href="{{ route('marketplace.jobs.show', $job->id) }}" class="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 text-xs">
-                                    View Details
-                                </a>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="col-span-full text-center py-8">
-                            <i class="fas fa-briefcase text-gray-400 text-2xl mb-4"></i>
-                            <h3 class="text-black font-semibold mb-2">No Featured Jobs Yet</h3>
-                            <p class="text-black mb-4">Be the first to discover amazing opportunities!</p>
-                            <a href="{{ route('marketplace.jobs') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                                Browse All Jobs
-                            </a>
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <!-- Jobs Posted -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-briefcase text-white text-sm"></i>
-                    </div>
-                    <div class="text-xs text-black bg-gray-100 px-2 py-1 rounded-full">
-                        @if($user->isAgency())
-                            +{{ $stats['jobs_posted_this_month'] ?? 0 }} this month
-                        @else
-                            Total posted
-                        @endif
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <h4 class="text-2xl font-bold text-black">{{ $stats['jobs_posted'] }}</h4>
-                    <p class="text-sm text-black">Jobs Posted</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-500 h-2 rounded-full" style="width: {{ min(($stats['jobs_posted'] / 10) * 100, 100) }}%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Applications -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-file-alt text-white text-sm"></i>
-                    </div>
-                    <div class="text-xs text-black bg-gray-100 px-2 py-1 rounded-full">
-                        @if($user->isChatter())
-                            +{{ $stats['applications_sent_this_month'] ?? 0 }} this month
-                        @else
-                            Total sent
-                        @endif
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <h4 class="text-2xl font-bold text-black">{{ $stats['applications_sent'] }}</h4>
-                    <p class="text-sm text-black">Applications Sent</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ min(($stats['applications_sent'] / 20) * 100, 100) }}%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Messages -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-envelope text-white text-sm"></i>
-                    </div>
-                    <div class="text-xs text-black bg-gray-100 px-2 py-1 rounded-full">
-                        @if(($stats['unread_messages'] ?? 0) > 0)
-                            <span class="text-red-600 font-medium">New!</span>
-                        @else
-                            All read
-                        @endif
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <h4 class="text-2xl font-bold text-black">{{ $stats['unread_messages'] ?? 0 }}</h4>
-                    <p class="text-sm text-black">Unread Messages</p>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        @if(($stats['unread_messages'] ?? 0) > 0)
-                            <div class="bg-purple-500 h-2 rounded-full" style="width: 100%"></div>
-                        @else
-                            <div class="bg-gray-300 h-2 rounded-full" style="width: 100%"></div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rating -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-star text-white text-sm"></i>
-                    </div>
-                    <div class="text-xs text-black bg-gray-100 px-2 py-1 rounded-full">
-                        @if($stats['average_rating'] >= 4.5)
-                            Excellent
-                        @elseif($stats['average_rating'] >= 4.0)
-                            Very Good
-                        @elseif($stats['average_rating'] >= 3.5)
-                            Good
-                        @else
-                            Average
-                        @endif
-                    </div>
-                </div>
-                <div class="space-y-1">
-                    <h4 class="text-2xl font-bold text-black">{{ number_format($stats['average_rating'], 1) }}</h4>
-                    <p class="text-sm text-black">Average Rating</p>
-                    <div class="flex items-center space-x-1">
-                        @for($i = 1; $i <= 5; $i++)
-                            @if($i <= floor($stats['average_rating']))
-                                <i class="fas fa-star text-yellow-500 text-sm"></i>
-                            @elseif($i == ceil($stats['average_rating']) && $stats['average_rating'] - floor($stats['average_rating']) >= 0.5)
-                                <i class="fas fa-star-half-alt text-yellow-500 text-sm"></i>
-                            @else
-                                <i class="far fa-star text-gray-300 text-sm"></i>
                             @endif
-                        @endfor
-                        <span class="text-xs text-black ml-2">({{ $stats['total_reviews'] ?? 0 }} reviews)</span>
+                            @if($user->isChatter())
+                                <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-gray-900 dark:text-gray-100 text-sm">Applications</span>
+                                        <i class="fas fa-file-alt text-green-500"></i>
+                                    </div>
+                                    <div class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{{ $subscriptionStats['applications_used'] }} / {{ $subscriptionStats['applications_limit'] ?: '∞' }}</div>
+                                    @if($subscriptionStats['applications_limit'])
+                                        <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ min(($subscriptionStats['applications_used'] / $subscriptionStats['applications_limit']) * 100, 100) }}%"></div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+                            <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-gray-900 dark:text-gray-100 text-sm">Expires</span>
+                                    <i class="fas fa-calendar-alt text-purple-500"></i>
+                                </div>
+                                <div class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ $subscriptionStats['expires_at'] ? \Carbon\Carbon::parse($subscriptionStats['expires_at'])->format('M d, Y') : 'Never' }}</div>
+                                @if($subscriptionStats['expires_at'])
+                                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                                        {{ \Carbon\Carbon::parse($subscriptionStats['expires_at'])->diffForHumans() }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="mb-8">
+                    <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-700 rounded-2xl p-6 shadow-lg">
+                        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-6 lg:space-y-0">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">No <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">Active Subscription</span></h2>
+                                        <p class="text-gray-600 dark:text-gray-400">Unlock the full potential of our marketplace with a subscription plan</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Post unlimited jobs</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Advanced messaging</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Priority support</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col space-y-3">
+                                <a href="{{ route('subscription.plans') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                    Choose Your Plan
+                                </a>
+                                <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Browse Jobs
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Featured Jobs Section -->
+            <div class="mb-8">
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Featured <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Jobs</span></h2>
+                            <p class="text-gray-600 dark:text-gray-400">Discover top opportunities from premium employers</p>
+                        </div>
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @forelse($featuredJobs ?? [] as $job)
+                            <div class="group bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200">
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900 dark:text-gray-100 text-sm">{{ $job->title }}</h3>
+                                            <p class="text-gray-500 dark:text-gray-400 text-xs">by {{ $job->user->name }}</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">Featured</span>
+                                </div>
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-center text-gray-600 dark:text-gray-400 text-xs">
+                                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <span>{{ $job->market }}</span>
+                                    </div>
+                                    <div class="flex items-center text-gray-600 dark:text-gray-400 text-xs">
+                                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>{{ ucfirst($job->rate_type) }}</span>
+                                    </div>
+                                    <div class="flex items-center text-gray-600 dark:text-gray-400 text-xs">
+                                        <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <span>{{ $job->applications->count() }} applications</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="text-gray-900 dark:text-gray-100 font-semibold text-sm">
+                                        @if($job->rate_type === 'fixed')
+                                            ${{ number_format($job->fixed_rate ?? 0, 0) }}
+                                        @else
+                                            ${{ number_format($job->hourly_rate ?? 0, 0) }}/hr
+                                        @endif
+                                    </div>
+                                    <a href="{{ route('marketplace.jobs.show', $job->id) }}" class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 text-xs">
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-center py-12">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Featured Jobs Yet</h3>
+                                <p class="text-gray-600 dark:text-gray-400 mb-6">Be the first to discover amazing opportunities!</p>
+                                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                        Browse All Jobs
+                                    </a>
+                                    @if($user->isAgency())
+                                        <a href="{{ route('marketplace.jobs.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                            Post New Job
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Recent Activity -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Recent Jobs -->
-            @if($user->isAgency())
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Job Posts</h3>
-                            <a href="{{ route('marketplace.jobs.create') }}" class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 transition-colors">
-                                <i class="fas fa-plus mr-1"></i>Post Job
-                            </a>
+            
+            <!-- Statistics Cards -->
+            <div class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Statistics <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600">Overview</span></h2>
+                    <p class="text-gray-600 dark:text-gray-400">Your activity metrics and performance summary</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Jobs Posted -->
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xs text-gray-900 dark:text-gray-100 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full font-medium">
+                            @if($user->isAgency())
+                                +{{ $stats['jobs_posted_this_month'] ?? 0 }} this month
+                            @else
+                                Total posted
+                            @endif
                         </div>
                     </div>
-                    <div class="p-6">
-                        @if($recentJobs->count() > 0)
-                            <div class="space-y-4">
-                                @foreach($recentJobs as $job)
-                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                        <div>
-                                            <h4 class="font-medium text-gray-900">{{ $job->title }}</h4>
-                                            <p class="text-sm text-gray-600">{{ $job->market }} • {{ ucfirst($job->rate_type) }}</p>
-                                            <p class="text-xs text-gray-500 mt-1">{{ $job->applications->count() }} applications</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ ucfirst($job->status) }}
-                                            </span>
-                                            <p class="text-xs text-gray-500 mt-1">{{ $job->created_at->diffForHumans() }}</p>
-                                        </div>
-                                    </div>
-                                @endforeach
+                    <div class="space-y-3">
+                        <div class="flex items-baseline justify-between">
+                            <h4 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['jobs_posted'] ?? 0 }}</h4>
+                            <div class="flex items-center text-sm text-green-600 dark:text-green-400">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"></path>
+                                </svg>
+                                <span>{{ $stats['jobs_posted_this_month'] ?? 0 }}%</span>
                             </div>
-                        @else
-                            <div class="text-center py-8">
-                                <i class="fas fa-briefcase text-gray-400 text-3xl mb-4"></i>
-                                <p class="text-gray-500">No jobs posted yet</p>
-                                <a href="{{ route('marketplace.jobs.create') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                    Post your first job
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
-
-            <!-- Recent Applications -->
-            @if($user->isChatter())
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <div class="flex justify-between items-center">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Applications</h3>
-                            <a href="{{ route('marketplace.jobs') }}" class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 transition-colors">
-                                <i class="fas fa-search mr-1"></i>Find Jobs
-                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Jobs Posted</p>
+                        <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ min((($stats['jobs_posted'] ?? 0) / 10) * 100, 100) }}%"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>Progress</span>
+                            <span>{{ min((($stats['jobs_posted'] ?? 0) / 10) * 100, 100) }}%</span>
                         </div>
                     </div>
-                    <div class="p-6">
-                        @if($recentApplications->count() > 0)
-                            <div class="space-y-4">
-                                @foreach($recentApplications as $application)
-                                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                        <div>
-                                            <h4 class="font-medium text-gray-900">{{ $application->jobPost->title }}</h4>
-                                            <p class="text-sm text-gray-600">{{ $application->jobPost->user->name }}</p>
-                                            <p class="text-xs text-gray-500 mt-1">Applied {{ $application->created_at->diffForHumans() }}</p>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                                @if($application->status == 'pending') bg-yellow-100 text-yellow-800
-                                                @elseif($application->status == 'hired') bg-green-100 text-green-800
-                                                @elseif($application->status == 'rejected') bg-red-100 text-red-800
-                                                @else bg-gray-100 text-gray-800 @endif">
-                                                {{ ucfirst($application->status) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                @endforeach
+                </div>
+
+                <!-- Applications -->
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xs text-gray-900 dark:text-gray-100 bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full font-medium">
+                            @if($user->isChatter())
+                                +{{ $stats['applications_sent_this_month'] ?? 0 }} this month
+                            @else
+                                Total sent
+                            @endif
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-baseline justify-between">
+                            <h4 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['applications_sent'] ?? 0 }}</h4>
+                            <div class="flex items-center text-sm text-green-600 dark:text-green-400">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 17l9.2-9.2M17 17V7H7"></path>
+                                </svg>
+                                <span>{{ $stats['applications_sent_this_month'] ?? 0 }}%</span>
                             </div>
-                        @else
-                            <div class="text-center py-8">
-                                <i class="fas fa-file-alt text-gray-400 text-3xl mb-4"></i>
-                                <p class="text-gray-500">No applications yet</p>
-                                <a href="{{ route('marketplace.jobs') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                    Browse available jobs
-                                </a>
-                            </div>
-                        @endif
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Applications Sent</p>
+                        <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-2.5">
+                            <div class="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full transition-all duration-500" style="width: {{ min((($stats['applications_sent'] ?? 0) / 20) * 100, 100) }}%"></div>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>Progress</span>
+                            <span>{{ min((($stats['applications_sent'] ?? 0) / 20) * 100, 100) }}%</span>
+                        </div>
                     </div>
                 </div>
-            @endif
-        </div>
 
-        <!-- Quick Actions -->
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="{{ route('marketplace.jobs') }}" class="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-search text-blue-600 text-xl"></i>
+                <!-- Messages -->
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xs text-gray-900 dark:text-gray-100 bg-purple-50 dark:bg-purple-900/20 px-3 py-1 rounded-full font-medium">
+                            @if(($stats['unread_messages'] ?? 0) > 0)
+                                <span class="text-red-600 dark:text-red-400 font-bold">{{ $stats['unread_messages'] }} New!</span>
+                            @else
+                                <span class="text-green-600 dark:text-green-400">All Read</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-baseline justify-between">
+                            <h4 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['unread_messages'] ?? 0 }}</h4>
+                            <div class="flex items-center text-sm {{ ($stats['unread_messages'] ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                                @if(($stats['unread_messages'] ?? 0) > 0)
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                @else
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                @endif
+                                <span>{{ ($stats['unread_messages'] ?? 0) > 0 ? 'Action needed' : 'Up to date' }}</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Unread Messages</p>
+                        <div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-2.5">
+                            @if(($stats['unread_messages'] ?? 0) > 0)
+                                <div class="bg-gradient-to-r from-purple-500 to-purple-600 h-2.5 rounded-full transition-all duration-500" style="width: 100%"></div>
+                            @else
+                                <div class="bg-gradient-to-r from-green-500 to-green-600 h-2.5 rounded-full transition-all duration-500" style="width: 100%"></div>
+                            @endif
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>Status</span>
+                            <a href="{{ route('marketplace.messages') }}" class="text-purple-600 dark:text-purple-400 hover:underline">View All</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <h4 class="font-medium text-gray-900">Browse Jobs</h4>
-                    <p class="text-sm text-gray-600">Find opportunities</p>
+
+                <!-- Rating -->
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                            </svg>
+                        </div>
+                        <div class="text-xs text-gray-900 dark:text-gray-100 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-full font-medium">
+                            @if(($stats['average_rating'] ?? 0) >= 4.5)
+                                <span class="text-green-600 dark:text-green-400">Excellent</span>
+                            @elseif(($stats['average_rating'] ?? 0) >= 4.0)
+                                <span class="text-blue-600 dark:text-blue-400">Very Good</span>
+                            @elseif(($stats['average_rating'] ?? 0) >= 3.5)
+                                <span class="text-yellow-600 dark:text-yellow-400">Good</span>
+                            @elseif(($stats['average_rating'] ?? 0) >= 3.0)
+                                <span class="text-orange-600 dark:text-orange-400">Average</span>
+                            @else
+                                <span class="text-gray-600 dark:text-gray-400">New</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-baseline justify-between">
+                            <h4 class="text-3xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($stats['average_rating'] ?? 0, 1) }}</h4>
+                            <div class="flex items-center text-sm text-yellow-600 dark:text-yellow-400">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                </svg>
+                                <span>/5.0</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Average Rating</p>
+                        <div class="flex items-center space-x-1">
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= floor($stats['average_rating'] ?? 0))
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                @elseif($i == ceil($stats['average_rating'] ?? 0) && (($stats['average_rating'] ?? 0) - floor($stats['average_rating'] ?? 0)) >= 0.5)
+                                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                @else
+                                    <svg class="w-4 h-4 text-gray-300 dark:text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                @endif
+                            @endfor
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>{{ $stats['total_reviews'] ?? 0 }} reviews</span>
+                            <a href="#" class="text-yellow-600 dark:text-yellow-400 hover:underline">View All</a>
+                        </div>
+                    </div>
                 </div>
-            </a>
-            
-            <a href="{{ route('marketplace.profiles') }}" class="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-users text-green-600 text-xl"></i>
                 </div>
-                <div class="ml-4">
-                    <h4 class="font-medium text-gray-900">Find Talent</h4>
-                    <p class="text-sm text-gray-600">Browse profiles</p>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="mb-8">
+                <div class="mb-4">
+                    <h2 class="text-lg font-semibold">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Activity</span></h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">Your latest job posts and applications</p>
                 </div>
-            </a>
-            
-            <a href="{{ route('marketplace.messages') }}" class="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-envelope text-purple-600 text-xl"></i>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Recent Jobs -->
+                @if($user->isAgency())
+                    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow border border-gray-200 dark:border-zinc-700">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Job Posts</span></h3>
+                                <a href="{{ route('marketplace.jobs.create') }}" class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-plus mr-1"></i>Post Job
+                                </a>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            @if($recentJobs->count() > 0)
+                                <div class="space-y-4">
+                                    @foreach($recentJobs as $job)
+                                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900 dark:text-gray-100">{{ $job->title }}</h4>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $job->market }} • {{ ucfirst($job->rate_type) }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $job->applications->count() }} applications</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    {{ ucfirst($job->status) }}
+                                                </span>
+                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $job->created_at->diffForHumans() }}</p>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <i class="fas fa-briefcase text-gray-400 text-3xl mb-4"></i>
+                                    <p class="text-gray-500 dark:text-gray-400">No jobs posted yet</p>
+                                    <a href="{{ route('marketplace.jobs.create') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        Post your first job
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Recent Applications -->
+                @if($user->isChatter())
+                    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow border border-gray-200 dark:border-zinc-700">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">Applications</span></h3>
+                                <a href="{{ route('marketplace.jobs') }}" class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 transition-colors">
+                                    <i class="fas fa-search mr-1"></i>Find Jobs
+                                </a>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            @if($myApplications->count() > 0)
+                                <div class="space-y-4">
+                                    @foreach($myApplications as $application)
+                                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
+                                            <div>
+                                                <h4 class="font-medium text-gray-900 dark:text-gray-100">{{ $application->jobPost->title }}</h4>
+                                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $application->jobPost->user->name }}</p>
+                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Applied {{ $application->created_at->diffForHumans() }}</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                    @if($application->status == 'pending') bg-yellow-100 text-yellow-800
+                                                    @elseif($application->status == 'hired') bg-green-100 text-green-800
+                                                    @elseif($application->status == 'rejected') bg-red-100 text-red-800
+                                                    @else bg-gray-100 text-gray-800 @endif">
+                                                    {{ ucfirst($application->status) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-8">
+                                    <i class="fas fa-file-alt text-gray-400 text-3xl mb-4"></i>
+                                    <p class="text-gray-500 dark:text-gray-400">No applications yet</p>
+                                    <a href="{{ route('marketplace.jobs') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                        Browse available jobs
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mb-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Quick <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Actions</span></h2>
+                    <p class="text-gray-600 dark:text-gray-400">Frequently used features and shortcuts</p>
                 </div>
-                <div class="ml-4">
-                    <h4 class="font-medium text-gray-900">Messages</h4>
-                    <p class="text-sm text-gray-600">Chat with contacts</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <a href="{{ route('marketplace.jobs') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Browse Jobs</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Find opportunities</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ route('marketplace.profiles') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-green-300 dark:hover:border-green-600 transition-all duration-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">Find Talent</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Browse profiles</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ route('marketplace.messages') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Messages</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Chat with contacts</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ route('contracts.index') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition-all duration-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Contracts</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Manage contracts</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ route('profile.show') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-yellow-300 dark:hover:border-yellow-600 transition-all duration-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">Profile</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">View your profile</p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
-            </a>
-            
-            <a href="{{ route('contracts.index') }}" class="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-file-contract text-indigo-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h4 class="font-medium text-gray-900">Contracts</h4>
-                    <p class="text-sm text-gray-600">Manage contracts</p>
-                </div>
-            </a>
-        </div>
-        
-        <!-- Additional Quick Actions -->
-        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="{{ route('profile.show') }}" class="flex items-center p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-user text-yellow-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <h4 class="font-medium text-gray-900">Profile</h4>
-                    <p class="text-sm text-gray-600">View your profile</p>
-                </div>
-            </a>
+            </div>
         </div>
     </div>
-</div>
 </x-layouts.app>

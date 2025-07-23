@@ -129,6 +129,48 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Marketplace Reviews -->
+                @if($marketplaceReviews->count() > 0)
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Marketplace Reviews</h3>
+                        <div class="space-y-4">
+                            @foreach($marketplaceReviews as $marketplaceReview)
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0">
+                                                @if($marketplaceReview->rater->avatar)
+                                                    <img class="h-8 w-8 rounded-full" src="{{ Storage::url($marketplaceReview->rater->avatar) }}" alt="{{ $marketplaceReview->rater->name }}">
+                                                @else
+                                                    <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
+                                                        {{ substr($marketplaceReview->rater->name, 0, 1) }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $marketplaceReview->rater->name }}</p>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $marketplaceReview->created_at->diffForHumans() }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-400">⭐ {{ $marketplaceReview->overall_rating }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                                        {{ $marketplaceReview->review_content ?? 'No comment provided.' }}
+                                    </div>
+                                </div>
+                            @endforeach
+
+                            @if($marketplaceReviews->total() > 10)
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Showing 10 of {{ $marketplaceReviews->total() }} reviews</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- Sidebar -->
@@ -195,8 +237,12 @@
                             </div>
                         @endif
                         <div class="flex justify-between">
-                            <span class="text-sm text-gray-600 dark:text-gray-400">Reviews Received</span>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Contract Reviews</span>
                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $user->contractReviewsReceived->count() }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Marketplace Reviews</span>
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ $marketplaceReviews->total() }}</span>
                         </div>
                     </div>
                 </div>

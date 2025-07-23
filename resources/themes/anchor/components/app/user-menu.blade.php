@@ -1,6 +1,7 @@
 @props([
     'position' => 'bottom'
 ])
+@auth
 <div x-data="{ dropdownOpen: false }" :class="{ 'block z-50 w-auto lg:w-full dark:bg-zinc-900 dark:border-zinc-800' : open, 'hidden': ! open }" class="relative flex-shrink-0 sm:p-0 dark:text-zinc-200 sm:flex sm:w-auto sm:bg-transparent sm:items-center" x-cloak>
     <button @click="dropdownOpen=!dropdownOpen" class="flex p-2.5 lg:p-2 w-full space-x-1 text-[13px] hover:bg-zinc-200/70 rounded-lg justify-between items-center w-full hover:text-black dark:hover:text-zinc-100 dark:hover:bg-zinc-700/60 space-x-1.5 overflow-hidden group-hover:autoflow-auto items">
         <span class="relative flex items-center space-x-2">
@@ -55,3 +56,4 @@
         </div>
     </div>
 </div>
+@endauth

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Message extends Model
 {
@@ -28,6 +29,8 @@ class Message extends Model
         'read_at' => 'datetime',
         'attachments' => 'array',
     ];
+
+    protected $appends = ['formatted_attachments'];
 
     public function sender(): BelongsTo
     {
@@ -79,5 +82,73 @@ class Message extends Model
             'is_read' => true,
             'read_at' => now(),
         ]);
+    }
+
+    public function hasAttachments()
+    {
+        return !empty($this->attachments);
+    }
+
+    public function getFormattedAttachmentsAttribute()
+    {
+        if (empty($this->attachments)) {
+            return [];
+        }
+
+        return collect($this->attachments)->map(function ($attachment) {
+            return [
+                'name' => $attachment['name'] ?? 'Unknown',
+                'size' => $attachment['size'] ?? 0,
+                'type' => $attachment['type'] ?? 'unknown',
+                'url' => $attachment['path'] ? Storage::url($attachment['path']) : null,
+                'icon' => $this->getFileIcon($attachment['type'] ?? 'unknown'),
+                'is_image' => str_starts_with($attachment['type'] ?? '', 'image/'),
+                'is_audio' => str_starts_with($attachment['type'] ?? '', 'audio/'),
+                'is_video' => str_starts_with($attachment['type'] ?? '', 'video/'),
+                'is_document' => in_array($attachment['type'] ?? '', [
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'text/plain'
+                ]),
+                'formatted_size' => $this->formatFileSize($attachment['size'] ?? 0)
+            ];
+        })->toArray();
+    }
+
+    private function getFileIcon($mimeType)
+    {
+        $icons = [
+            'image/' => '🖼️',
+            'audio/' => '🎵',
+            'video/' => '🎬',
+            'application/pdf' => '📄',
+            'application/msword' => '📝',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => '📝',
+            'text/plain' => '📝',
+            'application/zip' => '📦',
+            'application/x-rar-compressed' => '📦',
+        ];
+
+        foreach ($icons as $type => $icon) {
+            if (str_starts_with($mimeType, $type)) {
+                return $icon;
+            }
+        }
+
+        return '📎';
+    }
+
+    private function formatFileSize($bytes)
+    {
+        if ($bytes >= 1024 * 1024 * 1024) {
+            return round($bytes / (1024 * 1024 * 1024), 2) . ' GB';
+        } elseif ($bytes >= 1024 * 1024) {
+            return round($bytes / (1024 * 1024), 2) . ' MB';
+        } elseif ($bytes >= 1024) {
+            return round($bytes / 1024, 2) . ' KB';
+        } else {
+            return $bytes . ' B';
+        }
     }
 }

@@ -269,15 +269,24 @@
                     @auth
                         @if(auth()->user()->id !== $job->user_id)
                             @php
-                                $hasApplied = $job->applications()->where('user_id', auth()->id())->exists();
+                                $userApplication = $job->applications()->where('user_id', auth()->id())->first();
+                                $hasApplied = $userApplication !== null;
                             @endphp
+                            
                             
                             @if($hasApplied)
                                 <div class="text-center">
-                                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-md mb-4">
-                                        ✓ Application Submitted
-                                    </div>
-                                    <p class="text-sm text-gray-600">You have already applied to this job.</p>
+                                    @if($userApplication->status === 'withdrawn')
+                                        <div class="bg-orange-100 text-orange-800 px-4 py-2 rounded-md mb-4">
+                                            ⚠️ Application Withdrawn
+                                        </div>
+                                        <p class="text-sm text-gray-600">You have withdrawn your application and cannot re-apply to this job.</p>
+                                    @else
+                                        <div class="bg-green-100 text-green-800 px-4 py-2 rounded-md mb-4">
+                                            ✓ Application Submitted
+                                        </div>
+                                        <p class="text-sm text-gray-600">You have already applied to this job.</p>
+                                    @endif
                                 </div>
                             @elseif($job->current_applications >= $job->max_applications)
                                 <div class="text-center">
@@ -334,7 +343,7 @@
                                         @endif
                                     </div>
                                 @else
-                                    <form action="{{ route('jobs.apply', $job->id) }}" method="POST">
+                                    <form id="job-application-form" action="{{ route('marketplace.jobs.apply', $job->id) }}" method="POST">
                                         @csrf
                                         <h3 class="text-lg font-semibold mb-4">Apply for this job</h3>
                                         
@@ -413,7 +422,7 @@
                                             >
                                         </div>
 
-                                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+                                        <button type="submit" id="submit-application" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
                                             <svg class="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                             </svg>
@@ -425,8 +434,8 @@
                         @else
                             <div class="text-center">
                                 <p class="text-sm text-gray-600 mb-4">This is your job posting.</p>
-                                <a href="{{ route('jobs.applications', $job->id) }}" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors inline-block text-center">
-                                    View Applications ({{ $job->current_applications }})
+                                <a href="{{ route('marketplace.jobs.applications', $job->id) }}" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors inline-block text-center">
+                                    View Applications ({{ $job->applications->count() }})
                                 </a>
                             </div>
                         @endif
@@ -471,7 +480,7 @@
                     @auth
                         @if(auth()->user()->id !== $job->user_id)
                             <div class="mt-4">
-                                <a href="{{ route('messages.create', $job->user_id) }}" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-center inline-block">
+                                <a href="{{ route('marketplace.messages.create', $job->user_id) }}?job_id={{ $job->id }}" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-center inline-block">
                                     Send Message
                                 </a>
                             </div>
@@ -482,5 +491,87 @@
         </div>
     </div>
 </div>
+
+<!-- Notification Popup -->
+<div id="notification-popup" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 hidden">
+    <div class="max-w-md mx-auto bg-white border border-gray-200 rounded-xl shadow-lg">
+        <div class="p-4">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg id="popup-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-3 w-0 flex-1">
+                    <p id="popup-title" class="text-sm font-semibold text-gray-900"></p>
+                    <p id="popup-message" class="mt-1 text-sm text-gray-500"></p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button type="button" onclick="closeNotification()" class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none">
+                        <span class="sr-only">Close</span>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showNotification(title, message, type = 'success') {
+    const popup = document.getElementById('notification-popup');
+    const popupTitle = document.getElementById('popup-title');
+    const popupMessage = document.getElementById('popup-message');
+    const popupIcon = document.getElementById('popup-icon');
+    
+    // Set colors based on type
+    if (type === 'success') {
+        popupIcon.className = 'w-6 h-6 text-green-500';
+        popupIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>';
+    } else if (type === 'error') {
+        popupIcon.className = 'w-6 h-6 text-red-500';
+        popupIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>';
+    }
+    
+    popupTitle.textContent = title;
+    popupMessage.textContent = message;
+    
+    popup.classList.remove('hidden');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        closeNotification();
+    }, 5000);
+}
+
+function closeNotification() {
+    const popup = document.getElementById('notification-popup');
+    popup.classList.add('hidden');
+}
+
+// Simple form submission with loading state
+document.addEventListener('DOMContentLoaded', function() {
+    const applicationForm = document.getElementById('job-application-form');
+    if (applicationForm) {
+        applicationForm.addEventListener('submit', function(e) {
+            const submitButton = document.getElementById('submit-application');
+            
+            // Disable submit button and show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+            `;
+            
+            // Let the form submit normally - no preventDefault
+        });
+    }
+});
+</script>
 
 </x-layouts.marketing>

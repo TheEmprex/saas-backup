@@ -104,7 +104,7 @@
                     </div>
                     @endif
                     
-                    <form id="job-application-form" action="{{ route('marketplace.jobs.apply', $job) }}" method="POST" enctype="multipart/form-data">
+                    <form id="job-application-form" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <!-- Basic Application Fields -->
@@ -360,14 +360,141 @@
     </div>
 </div>
 
+<!-- Popup Notification -->
+<div id="notification-popup" class="position-fixed top-0 start-50 translate-middle-x" style="z-index: 9999; margin-top: 20px; display: none;">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong id="popup-title">Success!</strong>
+        <span id="popup-message">Application submitted successfully!</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - Job application script initializing...');
     const requiresTypingTest = {{ $requiresTypingTest ?? false ? 'true' : 'false' }};
     const minWpm = {{ $job->min_typing_speed ?? 30 }};
     const minAccuracy = 85;
     
-    if (!requiresTypingTest) return;
+    console.log('requiresTypingTest:', requiresTypingTest, 'minWpm:', minWpm);
+    
+    // Popup notification functions
+    function showPopup(title, message, type = 'success') {
+        const popup = document.getElementById('notification-popup');
+        const popupTitle = document.getElementById('popup-title');
+        const popupMessage = document.getElementById('popup-message');
+        const alertDiv = popup.querySelector('.alert');
+        
+        // Reset classes
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        
+        popupTitle.textContent = title;
+        popupMessage.textContent = message;
+        
+        popup.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (popup.style.display !== 'none') {
+                popup.style.display = 'none';
+            }
+        }, 5000);
+    }
+    
+    // Handle form submission with AJAX
+    const applicationForm = document.getElementById('job-application-form');
+    if (applicationForm) {
+        applicationForm.addEventListener('submit', function(e) {
+            console.log('Form submission intercepted');
+            e.preventDefault(); // Always prevent default form submission
+            
+            if (requiresTypingTest && !testCompleted) {
+                showPopup('Error', 'Please complete the typing test before submitting your application.', 'danger');
+                return false;
+            }
+            
+            if (requiresTypingTest && testCompleted) {
+                const wpm = parseInt(document.getElementById('typing-wpm-input').value);
+                const accuracy = parseInt(document.getElementById('typing-accuracy-input').value);
+                
+                if (wpm < minWpm || accuracy < minAccuracy) {
+                    showPopup('Error', `Your typing test results do not meet the minimum requirements (${minWpm} WPM, ${minAccuracy}% accuracy). Please retake the test.`, 'danger');
+                    return false;
+                }
+            }
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const submitButton = document.getElementById('submit-application');
+            
+            console.log('Starting AJAX submission...');
+            
+            // Disable submit button
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="ti ti-loader-2 ti-spin me-2"></i>Submitting...';
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                showPopup('Error', 'Security token not found. Please refresh the page.', 'danger');
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="ti ti-send me-2"></i>Submit Application';
+                return;
+            }
+            
+            // Use debug route for now
+            fetch(`/debug-job-apply/{{ $job->id }}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken.getAttribute('content')
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    showPopup('Application Sent!', data.message || 'Your application has been submitted successfully!', 'success');
+                    // Reset form or redirect
+                    this.reset();
+                    // Hide the application form card
+                    const formCard = this.closest('.card');
+                    if (formCard) {
+                        formCard.style.display = 'none';
+                    }
+                    // Show success message in place of form
+                    const successHtml = `<div class="card"><div class="card-body text-center py-5"><div class="mb-3"><i class="ti ti-check-circle text-success" style="font-size: 4rem;"></i></div><h3 class="text-success">Application Submitted!</h3><p class="text-muted">Your application has been sent to the employer. You'll be notified if they're interested.</p><a href="/marketplace/my-applications" class="btn btn-primary">View My Applications</a></div></div>`;
+                    document.querySelector('.col-lg-8').insertAdjacentHTML('beforeend', successHtml);
+                } else {
+                    showPopup('Error', data.error || 'An error occurred while submitting your application.', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                showPopup('Error', 'An unexpected error occurred. Please try again.', 'danger');
+            })
+            .finally(() => {
+                // Re-enable submit button
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="ti ti-send me-2"></i>Submit Application';
+            });
+        });
+    } else {
+        console.error('Job application form not found!');
+    }
+    
+    if (!requiresTypingTest) {
+        // If no typing test required, we still need the form submission handler
+        return;
+    }
     
     // Test texts
     const testTexts = [
@@ -580,25 +707,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
     });
     
-    // Prevent form submission if test is required but not completed
-    document.getElementById('job-application-form').addEventListener('submit', function(e) {
-        if (requiresTypingTest && !testCompleted) {
-            e.preventDefault();
-            alert('Please complete the typing test before submitting your application.');
-            return false;
-        }
-        
-        if (requiresTypingTest && testCompleted) {
-            const wpm = parseInt(wpmInput.value);
-            const accuracy = parseInt(accuracyInput.value);
-            
-            if (wpm < minWpm || accuracy < minAccuracy) {
-                e.preventDefault();
-                alert(`Your typing test results do not meet the minimum requirements (${minWpm} WPM, ${minAccuracy}% accuracy). Please retake the test.`);
-                return false;
-            }
-        }
-    });
 });
 </script>
 @endpush

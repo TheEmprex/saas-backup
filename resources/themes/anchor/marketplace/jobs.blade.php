@@ -1,18 +1,14 @@
-<x-layouts.marketing
-    :seo="[
-        'title'         => 'Browse Jobs - OnlyFans Management Marketplace',
-        'description'   => 'Find chatting jobs with verified OnlyFans management agencies.',
-        'image'         => url('/og_image.png'),
-        'type'          => 'website'
-    ]"
->
+<x-theme::layouts.app>
 
 <div class="bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Browse Jobs</h1>
-                <p class="text-gray-600 mt-1">{{ $jobs->total() }} jobs available</p>
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                    Browse 
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Jobs</span>
+                </h1>
+                <p class="text-gray-600 dark:text-gray-300">Find your next opportunity</p>
             </div>
             <div class="flex space-x-4">
                 <a href="{{ route('marketplace.index') }}" class="text-blue-600 hover:text-blue-800">
@@ -110,7 +106,7 @@
 
                         <div class="flex items-center justify-between">
                             <div class="text-sm text-gray-500">
-                                <span>{{ $job->current_applications }}/{{ $job->max_applications }} applications</span>
+                                <span>{{ $job->applications->count() }}/{{ $job->max_applications }} applications</span>
                                 <span class="mx-2">•</span>
                                 <span>Posted {{ $job->created_at->diffForHumans() }}</span>
                             </div>
@@ -164,4 +160,4 @@
     </div>
 </div>
 
-</x-layouts.marketing>
+</x-theme::layouts.app>

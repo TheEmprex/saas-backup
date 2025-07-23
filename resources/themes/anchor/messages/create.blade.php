@@ -31,9 +31,56 @@
                 </div>
             </div>
 
+            @if(isset($job) && $job)
+                <!-- Job Context -->
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6.294a2 2 0 01-.786 1.588C16.416 17.882 12.364 19 8 19c-4.364 0-8.416-1.118-9.214-3.118A2 2 0 01-2 14.294V8a2 2 0 012-2h4"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-blue-900 mb-1">About this job</h3>
+                            <h4 class="font-medium text-gray-900 mb-2">{{ $job->title }}</h4>
+                            <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600">
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    @if($job->rate_type === 'hourly')
+                                        ${{ number_format($job->hourly_rate, 2) }}/hour
+                                    @elseif($job->rate_type === 'fixed')
+                                        ${{ number_format($job->fixed_rate, 2) }} fixed
+                                    @else
+                                        {{ $job->commission_percentage }}% commission
+                                    @endif
+                                </span>
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ $job->expected_hours_per_week ?? $job->hours_per_week }}h/week
+                                </span>
+                                <span class="inline-flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6.294a2 2 0 01-.786 1.588C16.416 17.882 12.364 19 8 19c-4.364 0-8.416-1.118-9.214-3.118A2 2 0 01-2 14.294V8a2 2 0 012-2h4"></path>
+                                    </svg>
+                                    {{ ucfirst($job->market) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Message Form -->
             <form action="{{ route('messages.web.store', $recipient->id) }}" method="POST" class="space-y-6">
                 @csrf
+                
+                @if(isset($job) && $job)
+                    <input type="hidden" name="job_post_id" value="{{ $job->id }}">
+                @endif
 
                 <div>
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
@@ -44,8 +91,8 @@
                         id="subject"
                         name="subject" 
                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="e.g., Interested in your job posting"
-                        value="{{ old('subject') }}"
+                        placeholder="@if(isset($job) && $job)Interested in: {{ $job->title }}@elsee.g., Interested in your job posting@endif"
+                        value="{{ old('subject', isset($job) && $job ? 'Interested in: ' . $job->title : '') }}"
                     >
                     @error('subject')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

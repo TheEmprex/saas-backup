@@ -18,16 +18,27 @@ class MarketplaceController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['index']);
+        $this->middleware('auth')->except(['index', 'jobs', 'jobShow', 'profiles', 'profileShow', 'profileReviews']);
     }
 
     public function dashboard()
     {
         $user = Auth::user();
         
-        // Get user's subscription stats
-        $subscriptionService = app(\App\Services\SubscriptionService::class);
-        $subscriptionStats = $subscriptionService->getSubscriptionStats($user);
+        // Get user's subscription stats - handle case where service doesn't exist
+        $subscriptionStats = [];
+        try {
+            $subscriptionService = app(\App\Services\SubscriptionService::class);
+            $subscriptionStats = $subscriptionService->getSubscriptionStats($user);
+        } catch (\Exception $e) {
+            // If service doesn't exist, provide default stats
+            $subscriptionStats = [
+                'plan_name' => 'Free',
+                'job_posts_limit' => 0,
+                'job_posts_used' => 0,
+                'features' => []
+            ];
+        }
         
         // Get user's activity stats
         $stats = [
@@ -124,41 +135,54 @@ class MarketplaceController extends Controller
             ->with(['user', 'user.userType', 'applications']);
         
         // Apply filters
-        if ($request->has('market')) {
+        if ($request->filled('market')) {
             $query->where('market', $request->market);
         }
         
-        if ($request->has('experience_level')) {
+        if ($request->filled('experience_level')) {
             $query->where('experience_level', $request->experience_level);
         }
         
-        if ($request->has('rate_type')) {
+        if ($request->filled('rate_type')) {
             $query->where('rate_type', $request->rate_type);
         }
         
-        if ($request->has('contract_type')) {
+        if ($request->filled('contract_type')) {
             $query->where('contract_type', $request->contract_type);
         }
         
-        if ($request->has('min_rate')) {
-            $query->where('hourly_rate', '>=', $request->min_rate);
+        if ($request->filled('min_rate')) {
+            $query->where(function($q) use ($request) {
+                $q->where('hourly_rate', '>=', $request->min_rate)
+                  ->orWhere('fixed_rate', '>=', $request->min_rate);
+            });
         }
         
-        if ($request->has('max_rate')) {
-            $query->where('hourly_rate', '<=', $request->max_rate);
+        if ($request->filled('max_rate')) {
+            $query->where(function($q) use ($request) {
+                $q->where('hourly_rate', '<=', $request->max_rate)
+                  ->orWhere('fixed_rate', '<=', $request->max_rate);
+            });
         }
         
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
                   ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('requirements', 'like', "%{$search}%");
+                  ->orWhere('requirements', 'like', "%{$search}%")
+                  ->orWhere('benefits', 'like', "%{$search}%");
             });
         }
         
-        $jobs = $query->orderBy('created_at', 'desc')
-                      ->paginate(20);
+        // Order by featured first, then by creation date
+        $jobs = $query->orderBy('is_featured', 'desc')
+                      ->orderBy('is_urgent', 'desc')
+                      ->orderBy('created_at', 'desc')
+                      ->paginate(18);
+        
+        // Append request parameters to pagination links
+        $jobs->appends($request->query());
         
         return view('theme::marketplace.jobs.index', compact('jobs'));
     }
@@ -180,26 +204,31 @@ class MarketplaceController extends Controller
 
     public function profiles(Request $request)
     {
-        $query = UserProfile::with(['user', 'user.userType', 'user.ratingsReceived'])
+        $query = UserProfile::with(['user', 'user.userType', 'user.contractReviewsReceived', 'user.kycVerification'])
             ->where('is_active', true)
-            ->where('is_verified', true);
+            ->where('is_verified', true)
+            ->whereHas('user.userType', function($q) {
+                $q->whereNotIn('name', ['ofm_agency', 'chatting_agency', 'agency']);
+            })
+            ->whereHas('user', function($q) {
+                // Only show profiles of users who have completed KYC verification
+                $q->whereHas('kycVerification', function($kycQuery) {
+                    $kycQuery->where('status', 'approved');
+                });
+            });
         
         // Apply filters
-        if ($request->has('user_type')) {
+        if ($request->filled('user_type')) {
             $query->whereHas('user.userType', function($q) use ($request) {
                 $q->where('name', $request->user_type);
             });
         }
         
-        if ($request->has('location')) {
+        if ($request->filled('location')) {
             $query->where('location', 'like', '%' . $request->location . '%');
         }
         
-        if ($request->has('min_rating')) {
-            $query->where('average_rating', '>=', $request->min_rating);
-        }
-        
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('bio', 'like', "%{$search}%")
@@ -207,13 +236,148 @@ class MarketplaceController extends Controller
                       $userQuery->where('name', 'like', "%{$search}%");
                   })
                   ->orWhere('skills', 'like', "%{$search}%")
-                  ->orWhere('services', 'like', "%{$search}%");
+                  ->orWhere('services', 'like', "%{$search}%")
+                  ->orWhere('title', 'like', "%{$search}%");
             });
         }
         
-        $profiles = $query->latest()->paginate(20);
+        // Get profiles first without pagination to calculate real stats
+        $allProfiles = $query->get();
         
-return view('theme::marketplace.profiles.index', compact('profiles'));
+        // Calculate real-time statistics for each profile
+        foreach ($allProfiles as $profile) {
+            $stats = $this->calculateProfileStats($profile->user);
+            $profile->calculated_average_rating = $stats['average_rating'];
+            $profile->calculated_total_reviews = $stats['total_reviews'];
+            $profile->calculated_jobs_completed = $stats['jobs_completed'];
+            $profile->calculated_response_time = $stats['response_time'];
+        }
+        
+        // Apply rating filter using calculated ratings
+        if ($request->filled('min_rating')) {
+            $allProfiles = $allProfiles->filter(function($profile) use ($request) {
+                return $profile->calculated_average_rating >= $request->min_rating;
+            });
+        }
+        
+        // Apply availability filter
+        if ($request->filled('availability')) {
+            $allProfiles = $allProfiles->filter(function($profile) use ($request) {
+                if ($request->availability === 'available') {
+                    return $profile->is_available;
+                } elseif ($request->availability === 'busy') {
+                    return !$profile->is_available;
+                }
+                return true;
+            });
+        }
+        
+        // Sort by featured status FIRST (always), then by user's selected sort option
+        $sortBy = $request->get('sort', 'featured');
+        
+        // First, let's separate featured and non-featured profiles explicitly
+        // Since we're working with UserProfile models, check the featured status directly
+        $featuredProfiles = $allProfiles->filter(function($profile) {
+            return $profile->is_featured && 
+                   $profile->featured_until && 
+                   $profile->featured_until->isFuture();
+        });
+        
+        $nonFeaturedProfiles = $allProfiles->filter(function($profile) {
+            return !($profile->is_featured && 
+                     $profile->featured_until && 
+                     $profile->featured_until->isFuture());
+        });
+        
+        // Create secondary sort criteria based on user selection
+        $secondarySortCriteria = [];
+        switch ($sortBy) {
+            case 'rating':
+                $secondarySortCriteria = [
+                    ['calculated_average_rating', 'desc'],
+                    ['calculated_total_reviews', 'desc']
+                ];
+                break;
+                
+            case 'reviews':
+                $secondarySortCriteria = [
+                    ['calculated_total_reviews', 'desc'],
+                    ['calculated_average_rating', 'desc']
+                ];
+                break;
+                
+            case 'recent':
+                $secondarySortCriteria = [['updated_at', 'desc']];
+                break;
+                
+            case 'price_low':
+                $secondarySortCriteria = [
+                    function($profile) {
+                        return $profile->hourly_rate ? $profile->hourly_rate : 9999;
+                    }
+                ];
+                break;
+                
+            case 'price_high':
+                $secondarySortCriteria = [
+                    function($profile) {
+                        return $profile->hourly_rate ? -$profile->hourly_rate : -1;
+                    }
+                ];
+                break;
+                
+            case 'featured':
+            default:
+                // Default sorting: availability, rating, and recent activity
+                $secondarySortCriteria = [
+                    ['is_available', 'desc'],
+                    ['calculated_average_rating', 'desc'],
+                    ['updated_at', 'desc']
+                ];
+                break;
+        }
+        
+        // Sort featured profiles by secondary criteria
+        if ($featuredProfiles->isNotEmpty()) {
+            $featuredProfiles = $featuredProfiles->sortBy($secondarySortCriteria);
+        }
+        
+        // Sort non-featured profiles by secondary criteria
+        if ($nonFeaturedProfiles->isNotEmpty()) {
+            $nonFeaturedProfiles = $nonFeaturedProfiles->sortBy($secondarySortCriteria);
+        }
+        
+        // Combine: Featured profiles FIRST, then non-featured profiles
+        $allProfiles = $featuredProfiles->concat($nonFeaturedProfiles);
+        
+        // Manual pagination
+        $perPage = $request->get('per_page', 12);
+        $currentPage = request()->get('page', 1);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedProfiles = $allProfiles->slice($offset, $perPage);
+        
+        // Create paginator instance
+        $profiles = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedProfiles,
+            $allProfiles->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'pageName' => 'page'
+            ]
+        );
+        
+        // Append request parameters to pagination links
+        $profiles->appends($request->query());
+        
+        // Get user types for filter dropdown (exclude agencies)
+        $userTypes = UserType::where('active', true)
+            ->whereNotIn('name', ['ofm_agency', 'chatting_agency', 'agency'])
+            ->orderBy('display_name')
+            ->get();
+        
+        return view('theme::marketplace.profiles.index', compact('profiles', 'userTypes'));
     }
 
     public function profileShow(User $user)
@@ -223,19 +387,42 @@ return view('theme::marketplace.profiles.index', compact('profiles'));
             abort(404, 'Profile not found');
         }
         
-        $user->load(['userType', 'ratingsReceived.rater', 'jobPosts' => function($query) {
+        $user->load(['userType', 'ratingsReceived.rater', 'contractReviewsReceived.reviewer', 'jobPosts' => function($query) {
             $query->where('status', 'active')->orderBy('created_at', 'desc')->limit(5);
         }]);
         
-        // Get reviews with pagination
-        $reviews = $user->ratingsReceived()->with('rater')->paginate(10);
+        // Get public marketplace reviews received by this user (for profile display)
+        // Using the ReviewHelper trait method to ensure consistent logic
+        $reviews = $user->getProfileReviews(10);
+        
+        if (!$reviews) {
+            $reviews = collect();
+        }
+        
+        // Calculate comprehensive profile statistics
+        $stats = $this->calculateProfileStats($user);
         
         // Increment view count if not viewing own profile
         if (Auth::id() !== $user->id) {
             $profile->increment('views');
         }
         
-        return view('marketplace.profiles.show', compact('user', 'profile', 'reviews'));
+        return view('theme::marketplace.profiles.show', compact('user', 'profile', 'reviews', 'stats'));
+    }
+    
+    public function profileReviews(User $user)
+    {
+        $profile = $user->userProfile;
+        if (!$profile) {
+            abort(404, 'Profile not found');
+        }
+        
+        $user->load(['userType']);
+        
+        // Get all public reviews received by this user (for dedicated reviews page)
+        $reviews = $user->getProfileReviews(20);
+        
+        return view('theme::marketplace.profiles.reviews', compact('user', 'profile', 'reviews'));
     }
 
     public function myJobs()
@@ -256,6 +443,27 @@ return view('theme::marketplace.profiles.index', compact('profiles'));
             ->paginate(15);
         
         return view('marketplace.applications.index', compact('applications'));
+    }
+    
+    public function withdrawApplication(JobApplication $application)
+    {
+        // Only the applicant can withdraw their application
+        if ($application->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        // Only allow withdrawal if status is pending
+        if ($application->status !== 'pending') {
+            return response()->json(['error' => 'Cannot withdraw application with current status'], 400);
+        }
+        
+        $jobPost = $application->jobPost;
+        $application->update(['status' => 'withdrawn']);
+        
+        // Update job post application count
+        $jobPost->decrement('current_applications');
+        
+        return response()->json(['message' => 'Application withdrawn successfully']);
     }
     
     // Static Pages
@@ -360,35 +568,65 @@ return view('theme::marketplace.profiles.index', compact('profiles'));
         $request->validate([
             'content' => 'required|string|max:2000',
             'conversation_id' => 'required|exists:users,id',
-            'attachment' => 'nullable|file|max:10240'
+            'attachment' => 'nullable|file|max:10240',
+            'job_post_id' => 'nullable|exists:job_posts,id'
         ]);
         
-        $attachmentPath = null;
+        $attachments = [];
         if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('message-attachments', 'public');
+            $file = $request->file('attachment');
+            $attachmentPath = $file->store('message-attachments', 'public');
+            $attachments = [[
+                'name' => $file->getClientOriginalName(),
+                'path' => $attachmentPath,
+                'size' => $file->getSize(),
+                'type' => $file->getMimeType(),
+            ]];
         }
         
         $message = Message::create([
             'sender_id' => Auth::id(),
             'recipient_id' => $request->conversation_id,
             'message_content' => $request->content,
-            'attachments' => $attachmentPath ? [$attachmentPath] : null,
-            'message_type' => 'text',
-            'is_read' => false
+            'attachments' => $attachments,
+            'message_type' => !empty($attachments) ? 'file' : 'text',
+            'is_read' => false,
+            'job_post_id' => $request->job_post_id
         ]);
+        
+        // Get recipient name for success message
+        $recipient = User::find($request->conversation_id);
+        $recipientName = $recipient ? $recipient->name : 'User';
+        
+        // Check if request came from profiles page
+        $referer = $request->headers->get('referer');
+        if ($referer && str_contains($referer, '/marketplace/profiles')) {
+            return redirect()->route('marketplace.profiles')
+                ->with('success', "Message sent successfully to {$recipientName}!");
+        }
         
         return redirect()->route('marketplace.messages', ['conversation' => $request->conversation_id])
             ->with('success', 'Message sent successfully!');
     }
     
-    public function createMessage(?User $user = null)
+    public function createMessage(Request $request, ?User $user = null)
     {
         $users = User::where('id', '!=', Auth::id())
             ->with('userType')
             ->limit(50)
             ->get();
+        
+        // Check if there's a job context
+        $job = null;
+        if ($request->has('job_id') && $user) {
+            $job = JobPost::findOrFail($request->get('job_id'));
+            // Verify the recipient owns this job
+            if ($job->user_id != $user->id) {
+                return redirect()->back()->with('error', 'Invalid job reference.');
+            }
+        }
             
-        return view('marketplace.messages.create', compact('users', 'user'));
+        return view('marketplace.messages.create', compact('users', 'user', 'job'));
     }
 
     public function profile()
@@ -493,5 +731,169 @@ return view('theme::marketplace.profiles.index', compact('profiles'));
     {
         // Mock data for now - this would calculate real earnings
         return 0;
+    }
+    
+    private function calculateProfileStats(User $user)
+    {
+        // Calculate average rating from contract reviews
+        $averageRating = $user->contractReviewsReceived()->avg('rating') ?? 0;
+        
+        // Count total reviews from contract reviews
+        $totalReviews = $user->contractReviewsReceived()->count();
+        
+        // Count jobs completed - this would be contracts that are marked as completed
+        $jobsCompleted = 0;
+        try {
+            // Try to get completed contracts from EmploymentContract model
+            if (class_exists('\App\Models\EmploymentContract')) {
+                $jobsCompleted = $user->chatterContracts()
+                    ->where('status', 'completed')
+                    ->count();
+                    
+                // Also count as agency if user is agency type
+                if ($user->isAgency()) {
+                    $jobsCompleted += $user->agencyContracts()
+                        ->where('status', 'completed')
+                        ->count();
+                }
+            }
+        } catch (\Exception $e) {
+            // If EmploymentContract doesn't exist or there's an error, try Contract model
+            try {
+                $jobsCompleted = Contract::where(function($query) use ($user) {
+                    $query->where('employer_id', $user->id)
+                          ->orWhere('contractor_id', $user->id);
+                })
+                ->where('status', 'completed')
+                ->count();
+            } catch (\Exception $e) {
+                // If neither model works, keep at 0
+                $jobsCompleted = 0;
+            }
+        }
+        
+        // Calculate response time based on message patterns
+        $responseTime = $this->calculateResponseTime($user);
+        
+        // Calculate profile completeness
+        $profileCompleteness = $this->calculateProfileCompleteness($user);
+        
+        return [
+            'average_rating' => round($averageRating, 1),
+            'total_reviews' => $totalReviews,
+            'jobs_completed' => $jobsCompleted,
+            'response_time' => $responseTime,
+            'profile_views' => $user->userProfile->views ?? 0,
+            'member_since' => $user->created_at,
+            'last_seen' => $user->last_seen_at,
+            'is_online' => $user->last_seen_at && $user->last_seen_at->diffInMinutes() < 10,
+            'profile_complete' => $profileCompleteness['is_complete'],
+            'profile_completeness_percentage' => $profileCompleteness['percentage']
+        ];
+    }
+    
+    private function calculateResponseTime(User $user)
+    {
+        try {
+            // Get user's messages where they replied to someone
+            $conversations = Message::select('sender_id', 'recipient_id')
+                ->where(function($query) use ($user) {
+                    $query->where('sender_id', $user->id)
+                          ->orWhere('recipient_id', $user->id);
+                })
+                ->distinct()
+                ->get();
+                
+            $responseTimes = [];
+            
+            foreach ($conversations as $conversation) {
+                $otherId = $conversation->sender_id == $user->id ? $conversation->recipient_id : $conversation->sender_id;
+                
+                // Get messages in this conversation ordered by time
+                $messages = Message::where(function($query) use ($user, $otherId) {
+                    $query->where('sender_id', $user->id)->where('recipient_id', $otherId);
+                })->orWhere(function($query) use ($user, $otherId) {
+                    $query->where('sender_id', $otherId)->where('recipient_id', $user->id);
+                })
+                ->orderBy('created_at')
+                ->limit(20) // Limit to recent messages for performance
+                ->get();
+                
+                // Find response times
+                for ($i = 1; $i < $messages->count(); $i++) {
+                    $previousMessage = $messages[$i - 1];
+                    $currentMessage = $messages[$i];
+                    
+                    // If previous was from other user and current is from this user, that's a response
+                    if ($previousMessage->sender_id == $otherId && $currentMessage->sender_id == $user->id) {
+                        $responseTime = $currentMessage->created_at->diffInMinutes($previousMessage->created_at);
+                        if ($responseTime < 1440) { // Only count responses within 24 hours
+                            $responseTimes[] = $responseTime;
+                        }
+                    }
+                }
+            }
+            
+            if (count($responseTimes) > 0) {
+                $avgMinutes = array_sum($responseTimes) / count($responseTimes);
+                if ($avgMinutes < 60) {
+                    return round($avgMinutes) . ' min';
+                } else {
+                    return round($avgMinutes / 60, 1) . ' hrs';
+                }
+            }
+            
+            return 'N/A';
+        } catch (\Exception $e) {
+            return 'N/A';
+        }
+    }
+    
+    private function calculateProfileCompleteness(User $user)
+    {
+        $profile = $user->userProfile;
+        if (!$profile) {
+            return ['is_complete' => false, 'percentage' => 0];
+        }
+        
+        $requiredFields = [
+            'bio' => !empty($profile->bio),
+            'location' => !empty($profile->location),
+            'skills' => !empty($profile->skills),
+            'experience_years' => !empty($profile->experience_years),
+            'hourly_rate' => !empty($profile->hourly_rate),
+            'services' => !empty($profile->services),
+        ];
+        
+        // Optional but recommended fields
+        $optionalFields = [
+            'languages' => !empty($profile->languages),
+            'portfolio_url' => !empty($profile->portfolio_url),
+            'phone' => !empty($profile->phone),
+            'website' => !empty($profile->website),
+        ];
+        
+        $completedRequired = array_sum($requiredFields);
+        $totalRequired = count($requiredFields);
+        $completedOptional = array_sum($optionalFields);
+        $totalOptional = count($optionalFields);
+        
+        // Calculate percentage (required fields are weighted more heavily)
+        $requiredWeight = 0.8;
+        $optionalWeight = 0.2;
+        
+        $requiredPercentage = $totalRequired > 0 ? ($completedRequired / $totalRequired) : 0;
+        $optionalPercentage = $totalOptional > 0 ? ($completedOptional / $totalOptional) : 0;
+        
+        $overallPercentage = ($requiredPercentage * $requiredWeight) + ($optionalPercentage * $optionalWeight);
+        $percentage = round($overallPercentage * 100);
+        
+        // Profile is considered complete if all required fields are filled
+        $isComplete = $completedRequired === $totalRequired;
+        
+        return [
+            'is_complete' => $isComplete,
+            'percentage' => $percentage
+        ];
     }
 }

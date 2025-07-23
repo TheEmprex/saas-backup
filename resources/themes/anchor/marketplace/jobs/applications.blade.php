@@ -10,7 +10,7 @@
 <div class="bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-6">
-            <a href="{{ route('jobs.show', $job->id) }}" class="text-blue-600 hover:text-blue-800">
+            <a href="{{ route('marketplace.jobs.show', $job->id) }}" class="text-blue-600 hover:text-blue-800">
                 ← Back to Job
             </a>
         </div>
@@ -125,7 +125,7 @@
                 @if($application->status === 'pending')
                     <div class="mt-6 pt-4 border-t border-gray-200">
                         <div class="flex space-x-4">
-                            <form action="{{ route('jobs.applications.update', [$job->id, $application->id]) }}" method="POST" class="inline">
+                            <form action="{{ route('marketplace.jobs.applications.update', [$job->id, $application->id]) }}" method="POST" class="inline">
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="status" value="accepted">
@@ -134,7 +134,7 @@
                                 </button>
                             </form>
                             
-                            <form action="{{ route('jobs.applications.update', [$job->id, $application->id]) }}" method="POST" class="inline">
+                            <form action="{{ route('marketplace.jobs.applications.update', [$job->id, $application->id]) }}" method="POST" class="inline">
                                 @csrf
                                 @method('PATCH')
                                 <input type="hidden" name="status" value="rejected">

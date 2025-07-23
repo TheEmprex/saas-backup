@@ -8,11 +8,15 @@ const activeTheme = fs.existsSync(themeFilePath) ? JSON.parse(fs.readFileSync(th
 console.log(`Active theme: ${activeTheme}`);
 
 export default defineConfig({
+    server: {
+        port: 5174,
+    },
     plugins: [
         laravel({
             input: [
                 `resources/themes/${activeTheme}/assets/css/app.css`,
                 `resources/themes/${activeTheme}/assets/js/app.js`,
+                `resources/themes/${activeTheme}/assets/js/webrtc.js`,
                 'resources/css/filament/admin/theme.css',
             ],
             refresh: [

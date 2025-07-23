@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Auth\Events\Registered;
 use App\Models\User;
 use App\Models\UserType;
+use App\Notifications\WelcomeNotification;
 
 class CustomAuthController extends Controller
 {
@@ -48,6 +50,7 @@ class CustomAuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'user_type_id' => 'required|exists:user_types,id',
+            'phone_number' => 'nullable|string|max:20|unique:users,phone_number',
         ]);
 
         if ($validator->fails()) {
@@ -59,11 +62,15 @@ class CustomAuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'user_type_id' => $request->user_type_id,
-            'email_verified_at' => now(), // Auto-verify for now
+            'phone_number' => $request->phone_number,
+            // Remove email_verified_at - let Laravel handle verification
         ]);
 
-        Auth::login($user);
+        // Fire the registered event to send verification email
+        event(new Registered($user));
 
-        return redirect()->route('dashboard')->with('success', 'Registration successful! Welcome to the marketplace.');
+        // Don't auto-login, redirect to verification notice
+        return redirect()->route('verification.notice')
+            ->with('success', 'Registration successful! Please check your email to verify your account.');
     }
 }

@@ -24,6 +24,7 @@ class Kernel extends HttpKernel
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \Filament\Http\Middleware\DisableBladeIconComponents::class,
+        \App\Http\Middleware\UpdateUserOnlineStatus::class,
     ];
 
     /**
@@ -71,5 +72,8 @@ class Kernel extends HttpKernel
         'subscription.limits' => \App\Http\Middleware\CheckSubscriptionLimits::class,
         'subscription.required' => \App\Http\Middleware\RequireSubscription::class,
         'agency.only' => \App\Http\Middleware\AgencyMiddleware::class,
+        'prevent.duplicate.registration' => \App\Http\Middleware\PreventDuplicateRegistration::class,
+        'enforce.kyc' => \App\Http\Middleware\EnforceKycVerification::class,
+        'can.post.jobs' => \App\Http\Middleware\EnsureUserCanPostJobs::class,
     ];
 }

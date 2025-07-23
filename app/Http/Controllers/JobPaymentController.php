@@ -56,6 +56,7 @@ class JobPaymentController extends Controller
                 // Create the job post
                 $jobPost = JobPost::create(array_merge($jobData, [
                     'user_id' => Auth::id(),
+                    'expires_at' => now()->addMonths(3), // Jobs expire after 3 months by default
                     'featured_cost' => $featuredCost,
                     'urgent_cost' => $urgentCost,
                     'feature_payment_required' => $totalCost > 0,
@@ -88,7 +89,7 @@ class JobPaymentController extends Controller
             // Clear session data
             session()->forget('job_data');
 
-            return redirect()->route('marketplace.jobs.index')
+            return redirect()->route('marketplace.jobs')
                 ->with('success', 'Job posted successfully!' . ($totalCost > 0 ? ' Payment of $' . $totalCost . ' processed.' : ''));
 
         } catch (\Exception $e) {

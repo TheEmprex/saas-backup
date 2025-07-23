@@ -29,6 +29,9 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\JobPaymentController;
 use App\Http\Controllers\AgencyManagementController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ContractApprovalController;
+use App\Http\Controllers\EmailVerificationController;
 
 // Wave routes first
 Wave::routes();
@@ -37,6 +40,11 @@ Wave::routes();
 Route::get('/login', function() {
     return redirect()->route('custom.login');
 })->name('custom.login.redirect');
+
+// Override the default register route to redirect to our custom register
+Route::get('/register', function() {
+    return redirect()->route('custom.register');
+})->name('custom.register.redirect');
 
 // Redirect home to marketplace
 Route::get('/', function () {
@@ -51,7 +59,10 @@ Route::get('/marketplace/chatters', [MarketplaceController::class, 'chatters'])-
 Route::get('/marketplace/agencies', [MarketplaceController::class, 'agencies'])->name('marketplace.agencies');
 
 // Marketplace job creation routes (must be before parameterized routes)
-Route::get('/marketplace/jobs/create', [JobController::class, 'create'])->name('marketplace.jobs.create')->middleware(['auth']);
+Route::get('/marketplace/jobs/create', [JobController::class, 'create'])->name('marketplace.jobs.create')->middleware(['auth', 'can.post.jobs']);
+
+// Profile review routes (must be before parameterized routes)
+Route::get('/marketplace/profiles/{user}/reviews', [MarketplaceController::class, 'profileReviews'])->name('marketplace.profiles.reviews');
 
 // Marketplace parameterized routes (must be after specific routes)
 Route::get('/marketplace/jobs/{job}', [MarketplaceController::class, 'jobShow'])->name('marketplace.jobs.show');
@@ -68,14 +79,56 @@ Route::get('/system/admin-access', function () {
     return redirect()->route('platform.analytics');
 })->name('system.admin-access')->middleware('auth');
 
-// Admin verification management routes
+// Simple test admin route
+Route::get('/admin-test', function () {
+    return 'Admin test route works! User: ' . (auth()->check() ? auth()->user()->email : 'Not logged in');
+})->name('admin.test');
+
+// Debug route to check user verification status
+Route::get('/debug-user', function () {
+    if (!auth()->check()) {
+        return 'Not logged in';
+    }
+    
+    $user = auth()->user();
+    return [
+        'user_id' => $user->id,
+        'email' => $user->email,
+        'user_type' => $user->userType ? $user->userType->name : 'No user type',
+        'is_chatter' => $user->isChatter(),
+        'is_agency' => $user->isAgency(),
+        'is_admin' => $user->isAdmin(),
+        'has_kyc_submitted' => $user->hasKycSubmitted(),
+        'is_kyc_verified' => $user->isKycVerified(),
+        'is_earnings_verified' => $user->isEarningsVerified(),
+    ];
+})->middleware('auth');
+
+
+// Admin management routes - comprehensive admin panel
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function() { return redirect()->route('platform.analytics'); })->name('dashboard');
+    // Admin dashboard
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    
+    // User management
+    Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+    Route::get('/users/{user}', [AdminController::class, 'showUser'])->name('users.show');
+    Route::post('/users/{user}/ban', [AdminController::class, 'banUser'])->name('users.ban');
+    Route::post('/users/{user}/unban', [AdminController::class, 'unbanUser'])->name('users.unban');
+    Route::post('/users/{user}/verify-email', [AdminController::class, 'verifyUserEmail'])->name('users.verify-email');
+    Route::post('/users/{user}/unverify-email', [AdminController::class, 'unverifyUserEmail'])->name('users.unverify-email');
+    Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('users.delete');
+    Route::post('/users/{user}/impersonate', [AdminController::class, 'impersonateUser'])->name('users.impersonate');
+    
+    // Stop impersonating
+    Route::post('/stop-impersonating', [AdminController::class, 'stopImpersonating'])->name('stop-impersonating');
     
     // KYC verification management
     Route::get('/kyc', [AdminController::class, 'kycVerifications'])->name('kyc.index');
     Route::get('/kyc/{verification}', [AdminController::class, 'showKycVerification'])->name('kyc.show');
     Route::patch('/kyc/{verification}/status', [AdminController::class, 'updateKycStatus'])->name('kyc.update-status');
+    Route::get('/kyc/{verification}/download/{type}', [AdminController::class, 'downloadKycFile'])->name('kyc.download');
+    Route::get('/kyc/{verification}/preview/{type}', [AdminController::class, 'previewKycFile'])->name('kyc.preview');
     
     // Earnings verification management
     Route::get('/earnings', [AdminController::class, 'earningsVerifications'])->name('earnings.index');
@@ -83,6 +136,18 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::patch('/earnings/{verification}/status', [AdminController::class, 'updateEarningsStatus'])->name('earnings.update-status');
     Route::get('/earnings/{verification}/download/{type}', [AdminController::class, 'downloadEarningsFile'])->name('earnings.download');
     Route::get('/earnings/{verification}/preview/{type}', [AdminController::class, 'previewEarningsFile'])->name('earnings.preview');
+    
+    // Job management
+    Route::get('/jobs', [AdminController::class, 'jobs'])->name('jobs.index');
+    Route::get('/jobs/{job}', [AdminController::class, 'showJob'])->name('jobs.show');
+    Route::delete('/jobs/{job}', [AdminController::class, 'deleteJob'])->name('jobs.delete');
+    
+    // Message management
+    Route::get('/messages', [AdminController::class, 'messages'])->name('messages.index');
+    Route::delete('/messages/{message}', [AdminController::class, 'deleteMessage'])->name('messages.delete');
+    
+    // API endpoints for admin dashboard
+    Route::get('/api/stats', [AdminController::class, 'getStats'])->name('api.stats');
 });
 Route::get('/platform/tools', [MarketplaceController::class, 'tools'])->name('platform.tools');
 Route::get('/platform/automation', [MarketplaceController::class, 'automation'])->name('platform.automation');
@@ -124,6 +189,46 @@ Route::get('/login-test', function () {
     return 'Test User not found';
 });
 
+// Debug profile route
+Route::get('/debug-profile', function () {
+    if (!auth()->check()) {
+        return 'Not authenticated';
+    }
+    
+    $user = auth()->user();
+    $output = [];
+    $output[] = 'User: ' . $user->name . ' (ID: ' . $user->id . ')';
+    $output[] = 'Email: ' . $user->email;
+    $output[] = 'User Type ID: ' . ($user->user_type_id ?? 'NULL');
+    
+    // Check if user has profile
+    $profile = $user->userProfile;
+    $output[] = 'Has Profile: ' . ($profile ? 'Yes' : 'No');
+    
+    // Check if user has user type
+    $userType = $user->userType;
+    $output[] = 'User Type: ' . ($userType ? $userType->name : 'NULL');
+    
+    // Check if getProfilePictureUrl method works
+    try {
+        $profilePicUrl = $user->getProfilePictureUrl();
+        $output[] = 'Profile Picture URL: ' . $profilePicUrl;
+    } catch (Exception $e) {
+        $output[] = 'Profile Picture URL Error: ' . $e->getMessage();
+    }
+    
+    // Try to load the actual controller
+    try {
+        $controller = new App\Http\Controllers\UserProfileController();
+        $response = $controller->show();
+        $output[] = 'Controller Response: Success';
+    } catch (Exception $e) {
+        $output[] = 'Controller Error: ' . $e->getMessage();
+    }
+    
+    return '<pre>' . implode("\n", $output) . '</pre>';
+});
+
 // Test public profile for Max
 Route::get('/public-max', function () {
     $user = App\Models\User::find(5);
@@ -146,28 +251,37 @@ Route::get('/work-with-us', function () {
     return view('theme::work-with-us');
 })->name('work-with-us');
 
-// Marketplace authenticated routes - require subscription
-Route::middleware(['auth'])->group(function () {
+// Job application routes - temporarily outside enforce.kyc middleware for testing
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/marketplace/jobs/{job}/apply', [JobController::class, 'apply'])->name('marketplace.jobs.apply');
+    Route::get('/marketplace/jobs/{job}/applications', [JobController::class, 'applications'])->name('marketplace.jobs.applications');
+    Route::patch('/marketplace/jobs/{job}/applications/{application}', [JobController::class, 'updateApplicationStatus'])->name('marketplace.jobs.applications.update');
+});
+
+// Marketplace authenticated routes - require subscription and email verification
+Route::middleware(['auth', 'verified', 'enforce.kyc'])->group(function () {
+    Route::get('/marketplace/dashboard', [MarketplaceController::class, 'dashboard'])->name('marketplace.dashboard');
+    Route::get('/marketplace/my-jobs', [MarketplaceController::class, 'myJobs'])->name('marketplace.my-jobs');
+    Route::get('/marketplace/my-applications', [MarketplaceController::class, 'myApplications'])->name('marketplace.my-applications');
+    Route::delete('/marketplace/applications/{application}', [MarketplaceController::class, 'withdrawApplication'])->name('marketplace.applications.withdraw');
     Route::get('/marketplace/messages', [MarketplaceController::class, 'messages'])->name('marketplace.messages');
     Route::get('/marketplace/messages/create/{user?}', [MarketplaceController::class, 'createMessage'])->name('marketplace.messages.create');
     Route::post('/marketplace/messages', [MarketplaceController::class, 'storeMessage'])->name('marketplace.messages.store');
     Route::get('/marketplace/messages/{conversation}', [MarketplaceController::class, 'showConversation'])->name('marketplace.messages.show');
-    
-    // Job application routes - require KYC verification
-    Route::post('/marketplace/jobs/{job}/apply', [JobController::class, 'apply'])->name('marketplace.jobs.apply')->middleware('kyc.verified');
-    Route::get('/marketplace/jobs/{job}/applications', [JobController::class, 'applications'])->name('marketplace.jobs.applications')->middleware('kyc.verified');
-    Route::get('/marketplace/jobs/{job}/edit', [JobController::class, 'edit'])->name('marketplace.jobs.edit')->middleware('kyc.verified');
-    Route::put('/marketplace/jobs/{job}', [JobController::class, 'update'])->name('marketplace.jobs.update')->middleware('kyc.verified');
-    Route::delete('/marketplace/jobs/{job}', [JobController::class, 'destroy'])->name('marketplace.jobs.destroy')->middleware('kyc.verified');
+    Route::get('/marketplace/jobs/{job}/edit', [JobController::class, 'edit'])->name('marketplace.jobs.edit')->middleware(['can.post.jobs', 'kyc.verified']);
+    Route::put('/marketplace/jobs/{job}', [JobController::class, 'update'])->name('marketplace.jobs.update')->middleware(['can.post.jobs', 'kyc.verified']);
+    Route::delete('/marketplace/jobs/{job}', [JobController::class, 'destroy'])->name('marketplace.jobs.destroy')->middleware(['can.post.jobs', 'kyc.verified']);
+    Route::patch('/marketplace/jobs/{job}/promote', [JobController::class, 'promote'])->name('marketplace.jobs.promote')->middleware(['can.post.jobs', 'kyc.verified']);
+    Route::get('/marketplace/jobs/create', [JobController::class, 'create'])->name('marketplace.jobs.create')->middleware(['can.post.jobs', 'kyc.verified']);
     Route::get('/marketplace/jobs/create-test', function() {
         return 'Test route works! User: ' . auth()->user()->name;
-    })->name('marketplace.jobs.create-test');
-    Route::post('/marketplace/jobs', [JobController::class, 'store'])->name('marketplace.jobs.store')->middleware('kyc.verified');
+    })->name('marketplace.jobs.create-test')->middleware('can.post.jobs');
+    Route::post('/marketplace/jobs', [JobController::class, 'store'])->name('marketplace.jobs.store')->middleware(['can.post.jobs', 'kyc.verified']);
 });
 
-// Authenticated routes
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [MarketplaceController::class, 'dashboard'])->name('dashboard');
+// Authenticated routes - require email verification
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Job routes - require subscription for most actions
     Route::get('/jobs', [JobController::class, 'index'])->name('jobs.index')->middleware('subscription.required');
@@ -184,12 +298,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/jobs/{job}/applications/{application}', [JobController::class, 'updateApplicationStatus'])->name('jobs.applications.update')->middleware(['subscription.required', 'kyc.verified']);
     Route::get('/jobs/{job}', [JobController::class, 'show'])->name('jobs.show')->middleware('subscription.required');
     
-    // Messaging routes - require subscription
-    Route::get('/messages', [MessageController::class, 'index'])->name('messages.web.index')->middleware('subscription.required');
-    Route::get('/messages/create/{user?}', [MessageController::class, 'create'])->name('messages.create')->middleware('subscription.required');
-    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.web.show')->middleware('subscription.required');
-    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.web.store')->middleware('subscription.required');
-    Route::post('/messages/{message}/mark-read', [MessageController::class, 'markAsRead'])->name('messages.web.mark-read')->middleware('subscription.required');
+    // Messaging routes - use enforce.kyc like marketplace
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.web.index')->middleware('enforce.kyc');
+    Route::get('/messages/create/{user?}', [MessageController::class, 'create'])->name('messages.create')->middleware('enforce.kyc');
+    Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.web.show')->middleware('enforce.kyc');
+    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.web.store')->middleware('enforce.kyc');
+    Route::post('/messages/{message}/mark-read', [MessageController::class, 'markAsRead'])->name('messages.web.mark-read')->middleware('enforce.kyc');
 
     // KYC routes
     Route::get('/kyc', [KycController::class, 'index'])->name('kyc.index');
@@ -207,18 +321,38 @@ Route::middleware('auth')->group(function () {
     Route::put('/ratings/{rating}', [RatingController::class, 'update'])->name('ratings.update');
     Route::delete('/ratings/{rating}', [RatingController::class, 'destroy'])->name('ratings.destroy');
     Route::get('/api/messages/unread-count', [MessageController::class, 'getUnreadCount'])->name('messages.unread-count');
+    Route::get('/api/users/{user}/status', [MessageController::class, 'getUserStatus'])->name('users.status');
     
-    // Profile routes
+    // WebRTC routes for video/audio calls
+    Route::post('/api/webrtc/signal', [\App\Http\Controllers\WebRTCController::class, 'signal'])->name('webrtc.signal');
+    Route::get('/api/webrtc/signals', [\App\Http\Controllers\WebRTCController::class, 'getSignals'])->name('webrtc.get-signals');
+    Route::post('/api/webrtc/initiate-call', [\App\Http\Controllers\WebRTCController::class, 'initiateCall'])->name('webrtc.initiate-call');
+    Route::get('/api/webrtc/incoming-calls', [\App\Http\Controllers\WebRTCController::class, 'checkIncomingCalls'])->name('webrtc.incoming-calls');
+    Route::post('/api/webrtc/respond-call', [\App\Http\Controllers\WebRTCController::class, 'respondToCall'])->name('webrtc.respond-call');
+    Route::post('/api/webrtc/end-call', [\App\Http\Controllers\WebRTCController::class, 'endCall'])->name('webrtc.end-call');
+    
+// Profile routes - require email verification for authenticated profile actions
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [UserProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [UserProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
     Route::get('/profile/kyc', [UserProfileController::class, 'kyc'])->name('profile.kyc');
     Route::post('/profile/kyc', [UserProfileController::class, 'submitKyc'])->name('profile.kyc.submit');
-    Route::get('/profile/earnings-verification', [UserProfileController::class, 'earningsVerification'])->name('profile.earnings-verification');
-    Route::post('/profile/earnings-verification', [UserProfileController::class, 'submitEarningsVerification'])->name('profile.earnings-verification.submit');
     Route::get('/profile/typing-test', [UserProfileController::class, 'typingTest'])->name('profile.typing-test');
     Route::post('/profile/typing-test', [UserProfileController::class, 'submitTypingTest'])->name('profile.typing-test.submit');
-    
+    Route::get('/profile/earnings-verification', [UserProfileController::class, 'earningsVerification'])->name('profile.earnings-verification');
+    Route::post('/profile/earnings-verification', [UserProfileController::class, 'submitEarningsVerification'])->name('profile.earnings-verification.submit');
+});
+
+// Public profile routes (no auth required)
+Route::get('/u/{user:username}', [UserProfileController::class, 'publicProfile'])->name('profile.public');
+
+// Profile feature routes - require email verification
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/profile/feature', [App\Http\Controllers\ProfileFeatureController::class, 'show'])->name('profile.feature');
+    Route::post('/profile/feature', [App\Http\Controllers\ProfileFeatureController::class, 'process'])->name('profile.feature.process');
+    Route::get('/profile/feature/status', [App\Http\Controllers\ProfileFeatureController::class, 'canFeature'])->name('profile.feature.status');
+});
     // Agency management routes (for agencies only)
     Route::middleware('agency.only')->prefix('agency')->name('agency.')->group(function () {
         Route::get('/employees', [AgencyManagementController::class, 'myEmployees'])->name('employees.index');
@@ -276,6 +410,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/contracts/{contract}/reviews/{review}/edit', [\App\Http\Controllers\ContractController::class, 'editReview'])->name('contracts.reviews.edit');
     Route::put('/contracts/{contract}/reviews/{review}', [\App\Http\Controllers\ContractController::class, 'updateReview'])->name('contracts.reviews.update');
     Route::delete('/contracts/{contract}/reviews/{review}', [\App\Http\Controllers\ContractController::class, 'destroyReview'])->name('contracts.reviews.destroy');
+    
+    // Contract approval routes
+    Route::get('/contracts/approvals', [ContractApprovalController::class, 'index'])->name('contracts.approvals.index');
+    Route::get('/contracts/approvals/{contract}', [ContractApprovalController::class, 'show'])->name('contracts.approvals.show');
+    Route::post('/contracts/approvals/{contract}/accept', [ContractApprovalController::class, 'accept'])->name('contracts.approvals.accept');
+    Route::post('/contracts/approvals/{contract}/reject', [ContractApprovalController::class, 'reject'])->name('contracts.approvals.reject');
+});
+
+// Email verification routes
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
+        ->name('verification.notice');
+    
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+    
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
 });
 
 // Custom Auth Routes (outside middleware)
@@ -287,18 +441,214 @@ Route::middleware('guest')->group(function () {
     Route::post('/custom/login', [CustomAuthController::class, 'login'])->name('custom.login.post');
 
     Route::get('/custom/register', [CustomAuthController::class, 'showRegistrationForm'])->name('custom.register');
-    Route::post('/custom/register', [CustomAuthController::class, 'register'])->name('custom.register.post');
+    Route::post('/custom/register', [CustomAuthController::class, 'register'])
+        ->name('custom.register.post')
+        ->middleware('prevent.duplicate.registration');
 });
 
 // Public profile routes
 Route::get('/profile/{user}', [UserProfileController::class, 'publicProfile'])->name('profile.public');
+
+// User status route (for real-time presence)
+Route::get('/users/{user}/status', [UserController::class, 'status'])->name('users.status');
 
 // Test route for easy public profile access
 Route::get('/test-public-profile', function () {
     return redirect()->route('profile.public', ['user' => 5]);
 })->name('test.public.profile');
 
+// Job Application Test Page
+Route::get('/test-job-applications', function () {
+    return '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Job Application Testing</title>
+        <style>
+            body { font-family: Arial; margin: 50px; background: #f8f9fa; }
+            .container { background: white; padding: 30px; border-radius: 10px; max-width: 800px; margin: 0 auto; }
+            .section { margin: 30px 0; padding: 20px; background: #f1f1f1; border-radius: 5px; }
+            h1 { color: #2c3e50; }
+            h2 { color: #34495e; }
+            .btn { display: inline-block; background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin: 5px; }
+            .btn:hover { background: #2980b9; }
+            .btn.success { background: #27ae60; }
+            .btn.danger { background: #e74c3c; }
+            .status { padding: 15px; margin: 10px 0; border-radius: 5px; }
+            .status.success { background: #d4edda; color: #155724; }
+            .status.error { background: #f8d7da; color: #721c24; }
+            .code { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔧 Job Application Testing Dashboard</h1>
+            <p>Use this page to test the job application functionality step by step.</p>
+            
+            <div class="section">
+                <h2>Step 1: Login</h2>
+                <p>First, you need to log in to test job applications:</p>
+                <a href="/test-login" class="btn success">Auto Login as Test User</a>
+                <a href="/login-max" class="btn success">Login as Max (User #5)</a>
+                <a href="/login-test" class="btn success">Login as Test User (User #2)</a>
+            </div>
+            
+            <div class="section">
+                <h2>Step 2: Check Status</h2>
+                <p>After logging in, check your application status:</p>
+                <a href="/debug-job-status/1" class="btn">Check Status for Job #1</a>
+                <a href="/debug-user" class="btn">Check User Info</a>
+            </div>
+            
+            <div class="section">
+                <h2>Step 3: Test Application</h2>
+                <p>Try the actual job application:</p>
+                <a href="/marketplace/jobs/1" class="btn">Go to Job #1</a>
+                <a href="/marketplace/jobs" class="btn">Browse All Jobs</a>
+            </div>
+            
+            <div class="section">
+                <h2>Troubleshooting</h2>
+                <div class="status">
+                    <strong>Common Issues:</strong><br>
+                    • Not logged in → Use login links above<br>
+                    • KYC verification required → Check user type and verification status<br>
+                    • Already applied → Each user can only apply once<br>
+                    • Job is full → Max applications reached<br>
+                    • Own job → Cannot apply to your own job posting
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>AJAX Testing</h2>
+                <p>Test the AJAX functionality directly:</p>
+                <div class="code" id="ajax-test">
+To test AJAX:
+1. Login using buttons above
+2. Open browser console (F12)
+3. Go to a job page
+4. Fill out the application form
+5. Submit and watch console for debug output
+                </div>
+                <button onclick="testAjax()" class="btn danger">Test AJAX Request</button>
+            </div>
+        </div>
+        
+        <script>
+        function testAjax() {
+            fetch("/debug-job-status/1")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("ajax-test").innerHTML = 
+                        "AJAX Test Result:\n" + JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    document.getElementById("ajax-test").innerHTML = 
+                        "AJAX Error:\n" + error.toString();
+                });
+        }
+        </script>
+    </body>
+    </html>
+    ';
+})->name('test.job.applications');
+
+// Simple working route
+Route::get('/simple', function () {
+    return '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>WORKING!</title>
+        <style>
+            body { font-family: Arial; margin: 50px; background: #f0f0f0; }
+            .container { background: white; padding: 30px; border-radius: 10px; }
+            h1 { color: green; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🎉 IT WORKS!</h1>
+            <p>Your Laravel application is running correctly.</p>
+            <p><strong>Current Time:</strong> ' . date('Y-m-d H:i:s') . '</p>
+            <p><a href="/test-login">Auto Login</a> | <a href="/marketplace">Marketplace</a></p>
+        </div>
+    </body>
+    </html>
+    ';
+});
+
 // API test route
 Route::get('/api-test', function () {
     return view('api-test');
 });
+
+// AJAX test route
+Route::post('/test-ajax', [JobController::class, 'testAjax'])->name('test.ajax');
+
+// Test job posting route without middleware restrictions
+Route::post('/test-job-post', [JobController::class, 'testJobPost'])->name('test.job.post')->middleware(['auth']);
+
+// Diagnostic route to help debug issues
+Route::get('/debug-job-status/{job?}', function($jobId = 1, Request $request) {
+    try {
+        $user = auth()->user();
+        $job = \App\Models\JobPost::findOrFail($jobId);
+        
+        $diagnostics = [
+            'authenticated' => auth()->check(),
+            'user_id' => $user ? $user->id : null,
+            'user_name' => $user ? $user->name : null,
+            'job_id' => $job->id,
+            'job_title' => $job->title,
+            'job_user_id' => $job->user_id,
+            'is_own_job' => $user ? ($user->id === $job->user_id) : false,
+            'has_applied' => $user ? $job->applications()->where('user_id', $user->id)->exists() : false,
+            'job_full' => $job->current_applications >= $job->max_applications,
+            'requires_verification' => $user ? $user->requiresVerification() : null,
+            'can_apply' => false
+        ];
+        
+        // Check if user can apply
+        if ($user && $user->id !== $job->user_id && !$diagnostics['has_applied'] && !$diagnostics['job_full'] && !$diagnostics['requires_verification']) {
+            $diagnostics['can_apply'] = true;
+        }
+        
+        return response()->json($diagnostics);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Debug error: ' . $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+});
+
+// Debug job application route - no middleware restrictions
+Route::post('/debug-job-apply/{job}', function($jobId, Request $request) {
+    try {
+        $user = auth()->user();
+        $job = \App\Models\JobPost::findOrFail($jobId);
+        
+        // Create a simple application without validation
+        $application = \App\Models\JobApplication::create([
+            'job_post_id' => $jobId,
+            'user_id' => $user->id,
+            'cover_letter' => $request->input('cover_letter', 'Debug application'),
+            'proposed_rate' => $request->input('proposed_rate', 25.00),
+            'available_hours' => $request->input('available_hours', 40),
+            'status' => 'pending',
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'DEBUG: Application submitted successfully!',
+            'application_id' => $application->id
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'DEBUG ERROR: ' . $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+    }
+})->middleware('auth');

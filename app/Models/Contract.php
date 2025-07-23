@@ -19,6 +19,10 @@ class Contract extends Model
         'start_date',
         'end_date',
         'status',
+        'approval_status',
+        'approved_at',
+        'rejected_at',
+        'rejection_reason',
         'total_earned',
         'hours_worked',
         'earnings_log',
@@ -30,6 +34,8 @@ class Contract extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'last_activity_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
         'rate' => 'decimal:2',
         'commission_percentage' => 'decimal:2',
         'total_earned' => 'decimal:2',
@@ -153,5 +159,76 @@ class Contract extends Model
     public function jobPost(): BelongsTo
     {
         return $this->belongsTo(JobPost::class);
+    }
+
+    // Contract Approval Methods
+    public function isPending(): bool
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    public function isAccepted(): bool
+    {
+        return $this->approval_status === 'accepted';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->approval_status === 'rejected';
+    }
+
+    public function canBeApprovedBy(User $user): bool
+    {
+        // Only contractor can approve/reject contracts
+        return $this->contractor_id === $user->id && $this->approval_status === 'pending';
+    }
+
+    public function accept(): bool
+    {
+        if ($this->approval_status !== 'pending') {
+            return false;
+        }
+
+        return $this->update([
+            'approval_status' => 'accepted',
+            'approved_at' => now(),
+            'status' => 'active', // Move from draft to active
+            'rejected_at' => null,
+            'rejection_reason' => null,
+        ]);
+    }
+
+    public function reject(string $reason = null): bool
+    {
+        if ($this->approval_status !== 'pending') {
+            return false;
+        }
+
+        return $this->update([
+            'approval_status' => 'rejected',
+            'rejected_at' => now(),
+            'rejection_reason' => $reason,
+            'status' => 'cancelled', // Move to cancelled status
+            'approved_at' => null,
+        ]);
+    }
+
+    public function getPendingContractsForUser(User $user)
+    {
+        return static::where('contractor_id', $user->id)
+                    ->where('approval_status', 'pending')
+                    ->with(['employer', 'jobPost'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+    }
+
+    public function getApprovalStatusColorAttribute(): string
+    {
+        return match ($this->approval_status) {
+            'pending' => 'yellow',
+            'accepted' => 'green',
+            'rejected' => 'red',
+            default => 'gray',
+        };
     }
 }

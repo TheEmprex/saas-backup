@@ -1,18 +1,27 @@
 {
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-wP0vNWBB.css",
+    "file": "assets/theme-ukKEYUjB.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
   "resources/themes/anchor/assets/css/app.css": {
-    "file": "assets/app-o8YxypCx.css",
+    "file": "assets/app-DFFIHzoK.css",
     "src": "resources/themes/anchor/assets/css/app.css",
     "isEntry": true
   },
   "resources/themes/anchor/assets/js/app.js": {
-    "file": "assets/app-CaUPGaqM.js",
+    "file": "assets/app-r3Ry8Uut.js",
     "name": "app",
     "src": "resources/themes/anchor/assets/js/app.js",
+    "isEntry": true,
+    "imports": [
+      "resources/themes/anchor/assets/js/webrtc.js"
+    ]
+  },
+  "resources/themes/anchor/assets/js/webrtc.js": {
+    "file": "assets/webrtc-SwG1NK7n.js",
+    "name": "webrtc",
+    "src": "resources/themes/anchor/assets/js/webrtc.js",
     "isEntry": true
   }
 }

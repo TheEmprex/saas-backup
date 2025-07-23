@@ -1,11 +1,19 @@
 <x-layouts.app>
 
 <div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Jobs</h1>
-        <a href="{{ route('marketplace.jobs.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-            Post New Job
-        </a>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                My 
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Jobs</span>
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300">Track and manage your job postings</p>
+        </div>
+        <div class="flex space-x-3 mt-4 sm:mt-0">
+            <a href="{{ route('marketplace.jobs.create') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl">
+                Post New Job
+            </a>
+        </div>
     </div>
 
     @if($jobs->count() > 0)

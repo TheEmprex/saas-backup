@@ -8,11 +8,11 @@
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div class="text-center">
                 <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                    FanConnect Pro
+                    OnlyFans Ecosystem
                     <span class="block text-yellow-400">Marketplace</span>
                 </h1>
                 <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-blue-100">
-                    Connect with professional managers, chatters, and agencies to grow your OnlyFans business
+                    Connect with professional managers, chatters, and agencies to grow your OnlyFans Ecosystem business
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     @auth
@@ -150,7 +150,7 @@
         <div class="mb-16">
             <div class="text-center mb-12">
                 <h2 class="text-3xl font-bold text-gray-900 mb-4">Find Professionals</h2>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Browse through different types of professionals and find the perfect match for your OnlyFans business needs.</p>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Browse through different types of professionals and find the perfect match for your OnlyFans Ecosystem business needs.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($userTypes as $type)

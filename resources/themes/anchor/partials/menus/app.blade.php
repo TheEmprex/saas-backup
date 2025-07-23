@@ -103,6 +103,14 @@
                             <a href="/admin" class="block px-4 py-2 text-sm leading-5 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:bg-zinc-100 focus:text-zinc-900"><i class="fa fa-bolt"></i> Admin</a>
                         @endif
                         <a href="{{ route('wave.profile', auth()->user()->username) }}" class="block px-4 py-2 text-sm leading-5 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:bg-zinc-100 focus:text-zinc-900">My Profile</a>
+                        
+                        {{-- System menu items --}}
+                        <div class="border-t border-zinc-100 my-1"></div>
+                        <div class="px-4 py-1">
+                            <span class="text-xs font-medium text-zinc-500 uppercase tracking-wider">System</span>
+                        </div>
+                        <a href="{{ route('notifications.index') }}" class="block px-4 py-2 text-sm leading-5 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:bg-zinc-100 focus:text-zinc-900">Notifications</a>
+                        <a href="{{ route('platform.analytics') }}" class="block px-4 py-2 text-sm leading-5 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:bg-zinc-100 focus:text-zinc-900">Analytics</a>
                         <a href="{{ route('wave.settings') }}" class="block px-4 py-2 text-sm leading-5 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 focus:outline-none focus:bg-zinc-100 focus:text-zinc-900">Settings</a>
 
                     </div>

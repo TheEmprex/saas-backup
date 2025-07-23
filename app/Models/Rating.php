@@ -45,6 +45,35 @@ class Rating extends Model
         'metrics' => 'array',
     ];
 
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        // Update profile ratings when a rating is created
+        static::created(function ($rating) {
+            $rating->updateProfileRatings();
+        });
+
+        // Update profile ratings when a rating is updated
+        static::updated(function ($rating) {
+            $rating->updateProfileRatings();
+            
+            // If the rated_id changed, update the old user's ratings too
+            if ($rating->wasChanged('rated_id')) {
+                $oldRatedId = $rating->getOriginal('rated_id');
+                if ($oldRatedId) {
+                    static::updateProfileRatingsForUser($oldRatedId);
+                }
+            }
+        });
+
+        // Update profile ratings when a rating is deleted
+        static::deleted(function ($rating) {
+            $rating->updateProfileRatings();
+        });
+    }
+
     public function rater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rater_id');
@@ -108,5 +137,42 @@ class Rating extends Model
         }
         
         return $breakdown;
+    }
+
+    /**
+     * Update the profile ratings for the rated user
+     */
+    public function updateProfileRatings()
+    {
+        if (!$this->rated_id) {
+            return;
+        }
+
+        static::updateProfileRatingsForUser($this->rated_id);
+    }
+
+    /**
+     * Update profile ratings for a specific user
+     */
+    public static function updateProfileRatingsForUser(int $userId)
+    {
+        $user = User::with('userProfile')->find($userId);
+        if (!$user || !$user->userProfile) {
+            return;
+        }
+
+        // Calculate ratings from public ratings only
+        $ratings = static::where('rated_id', $userId)
+            ->where('is_public', true)
+            ->get();
+
+        $totalRatings = $ratings->count();
+        $averageRating = $totalRatings > 0 ? round($ratings->avg('overall_rating'), 2) : 0;
+
+        // Update the profile
+        $user->userProfile->update([
+            'total_ratings' => $totalRatings,
+            'average_rating' => $averageRating,
+        ]);
     }
 }

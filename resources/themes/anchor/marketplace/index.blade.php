@@ -1,7 +1,7 @@
 @php
 $seoData = [
-    'title'         => 'FanConnect Pro - OnlyFans Management Hub',
-    'description'   => 'Connect chatters with agencies. Secure, verified, and professional hub for the OnlyFans ecosystem.',
+'title'         => 'OnlyFans Ecosystem - Professional Marketplace',
+'description'   => 'Connect chatters with agencies. Secure, verified, and professional hub for the OnlyFans Ecosystem.',
     'image'         => url('/og_image.png'),
     'type'          => 'website'
 ];
@@ -33,13 +33,13 @@ $seoData = [
             <h1 class="text-5xl lg:text-7xl font-bold mb-8 text-white">
                 <span class="block">Welcome to</span>
                 <span class="block bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                    FanConnect Pro
+                    OnlyFans Ecosystem
                 </span>
             </h1>
             
             <!-- Subtitle -->
             <p class="text-xl lg:text-2xl mb-12 max-w-4xl mx-auto text-blue-100 leading-relaxed">
-                Connect verified chatters with top agencies. Build your career with our secure, professional hub designed for the OnlyFans ecosystem.
+                Connect verified chatters with top agencies. Build your career with our secure, professional hub designed for the OnlyFans Ecosystem.
             </p>
             
             <!-- CTA Buttons -->
@@ -168,7 +168,7 @@ $seoData = [
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
             <h2 class="text-4xl font-bold text-gray-900 mb-6">Ready to Join?</h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Choose your role and start building your career in the OnlyFans ecosystem. Join thousands of professionals already earning through FanConnect Pro.</p>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Choose your role and start building your career in the OnlyFans Ecosystem. Join thousands of professionals already earning through OnlyFans Ecosystem.</p>
         </div>
         
         <!-- Featured User Types -->
@@ -182,7 +182,7 @@ $seoData = [
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Chatter</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">Individual professionals providing high-quality chatting services to OnlyFans models and agencies. Perfect for freelancers looking to earn $15-50/hour.</p>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Individual professionals providing high-quality chatting services to OnlyFans Ecosystem models and agencies. Perfect for freelancers looking to earn $15-50/hour.</p>
                     
                     <div class="mb-6 space-y-3">
                         <div class="flex items-center text-sm text-gray-700">
@@ -220,7 +220,7 @@ $seoData = [
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">OFM Agency</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">OnlyFans management agencies looking to hire skilled chatters for their models. Scale your operations with verified talent.</p>
+                    <p class="text-gray-600 mb-6 leading-relaxed">OnlyFans Ecosystem management agencies looking to hire skilled chatters for their models. Scale your operations with verified talent.</p>
                     
                     <div class="mb-6 space-y-3">
                         <div class="flex items-center text-sm text-gray-700">
@@ -410,7 +410,7 @@ $seoData = [
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 mb-4">Platform Resources</h2>
-            <p class="text-lg text-gray-600">Everything you need to succeed on FanConnect Pro</p>
+            <p class="text-lg text-gray-600">Everything you need to succeed on OnlyFans Ecosystem</p>
         </div>
         
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -499,7 +499,7 @@ $seoData = [
                     <span class="text-2xl font-bold text-blue-600">1</span>
                 </div>
                 <h3 class="text-xl font-semibold mb-2">Sign Up & Verify</h3>
-                <p class="text-gray-600">Create your account and complete verification for full access to FanConnect Pro.</p>
+                <p class="text-gray-600">Create your account and complete verification for full access to OnlyFans Ecosystem.</p>
             </div>
             <div class="text-center">
                 <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -522,9 +522,9 @@ $seoData = [
 <!-- CTA Section -->
 <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold mb-6">Scale Your OnlyFans Business</h2>
+        <h2 class="text-4xl font-bold mb-6">Scale Your OnlyFans Ecosystem Business</h2>
         <p class="text-xl mb-8 max-w-3xl mx-auto text-blue-100">
-            Connect with verified professionals, streamline your operations, and maximize your revenue potential through FanConnect Pro.
+            Connect with verified professionals, streamline your operations, and maximize your revenue potential through OnlyFans Ecosystem.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             @if(Auth::check())
@@ -539,7 +539,7 @@ $seoData = [
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    Join FanConnect Pro
+                    Join OnlyFans Ecosystem
                 </a>
                 <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

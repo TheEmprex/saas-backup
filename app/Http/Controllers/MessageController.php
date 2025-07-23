@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Models\JobPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MessageController extends Controller
 {
@@ -54,10 +56,19 @@ class MessageController extends Controller
         
         // Convert to collection and sort by last message time
         foreach ($conversationData as $data) {
-            $conversation = (object) $data;
-            $conversation->contact = User::with(['userProfile', 'userType'])->find($conversation->contact_id);
+            $contact = User::with(['userProfile', 'userType'])->find($data['contact_id']);
             
-            if ($conversation->contact) {
+            if ($contact) {
+                $conversation = (object) [
+                    'id' => $data['contact_id'], // Use contact_id as the conversation ID for routing
+                    'contact_id' => $data['contact_id'],
+                    'otherParticipant' => $contact,
+                    'latest_message' => $data['last_message'],
+                    'unread_count' => $data['unread_count'],
+                    'updated_at' => $data['last_message_time'],
+                    'last_message_time' => $data['last_message_time']
+                ];
+                
                 $conversations->push($conversation);
             }
         }
@@ -67,82 +78,94 @@ class MessageController extends Controller
         return view('theme::messages.index', compact('conversations'));
     }
 
-    public function show($contactId)
+    public function show(Request $request, $contactId)
     {
         $userId = Auth::id();
         $contact = User::with(['userProfile', 'userType'])->findOrFail($contactId);
 
-        // Fetch messages
-        $messages = Message::conversation($userId, $contactId)
-            ->with(['sender', 'recipient', 'jobPost'])
-            ->orderBy('created_at', 'asc')
-            ->paginate(50);
+        // Mark messages as read on initial load or as needed
+        if (!$request->wantsJson()) {
+            Message::where('sender_id', $contactId)
+                ->where('recipient_id', $userId)
+                ->where('is_read', false)
+                ->update(['is_read' => true, 'read_at' => now()]);
+        }
 
-        // Mark as read
-        Message::where('sender_id', $contactId)
-            ->where('recipient_id', $userId)
-            ->update(['is_read' => true, 'read_at' => now()]);
+        $query = Message::conversation($userId, $contactId)
+            ->with(['sender', 'jobPost']);
+
+        // Handle AJAX requests for messages
+        if ($request->wantsJson()) {
+            // Fetch new messages since the last known ID
+            if ($lastId = $request->get('last_id')) {
+                $messages = $query->where('id', '>', $lastId)->orderBy('created_at', 'asc')->get();
+                return response()->json(['messages' => $messages]);
+            }
+            
+            // Fetch older messages for infinite scroll
+            $messages = $query->orderBy('created_at', 'desc')->paginate(20);
+            $messages->setCollection($messages->getCollection()->reverse());
+            return response()->json(['messages' => $messages]);
+        }
+
+        // Initial page load: get the latest page of messages
+        $messages = $query->orderBy('created_at', 'desc')->paginate(20);
+        $messages->setCollection($messages->getCollection()->reverse());
 
         return view('theme::messages.show', compact('contact', 'messages'));
     }
-    
+
     public function store(Request $request, $user)
     {
         try {
             $validated = $request->validate([
-                'content' => 'required|string|max:2000',
-                'subject' => 'nullable|string|max:255',
+                'content' => 'required_without:attachments|nullable|string|max:2000',
+                'attachments' => 'required_without:content|nullable|array|max:5',
+                'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,zip|max:10240', // 10MB max per file
                 'job_post_id' => 'nullable|exists:job_posts,id',
-                'job_application_id' => 'nullable|exists:job_applications,id',
             ]);
-            
-            // Create message data
-            $messageData = [
-                'recipient_id' => $user,
-                'sender_id' => Auth::id(),
-                'message_content' => $validated['content'],
-                'message_type' => 'text',
-                'is_read' => false,
-                'job_post_id' => $validated['job_post_id'] ?? null,
-                'job_application_id' => $validated['job_application_id'] ?? null,
-            ];
-            
-            // Generate thread ID for conversation grouping
-            $threadId = 'thread_' . min($messageData['sender_id'], $messageData['recipient_id']) . '_' . max($messageData['sender_id'], $messageData['recipient_id']);
-            $messageData['thread_id'] = $threadId;
-            
-            // Check if users can message each other (basic permissions)
-            if (!$this->canMessage($messageData['sender_id'], $messageData['recipient_id'])) {
-                if ($request->ajax()) {
-                    return response()->json(['success' => false, 'error' => 'You cannot message this user.'], 403);
+
+            $attachments = [];
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $path = $file->store('message-attachments', 'public');
+                    $attachments[] = [
+                        'name' => $file->getClientOriginalName(),
+                        'path' => $path,
+                        'size' => $file->getSize(),
+                        'type' => $file->getMimeType(),
+                    ];
                 }
-                return redirect()->back()->with('error', 'You cannot message this user.');
             }
-            
-            $message = Message::create($messageData);
-            
+
+            $message = Message::create([
+                'sender_id' => Auth::id(),
+                'recipient_id' => $user,
+                'message_content' => $validated['content'] ?? '',
+                'attachments' => $attachments,
+                'message_type' => !empty($attachments) ? 'file' : 'text',
+                'thread_id' => 'thread_' . min(Auth::id(), $user) . '_' . max(Auth::id(), $user),
+                'job_post_id' => $validated['job_post_id'] ?? null,
+            ]);
+
             if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $message->load(['sender', 'recipient'])
-                ]);
+                // Eager load sender and append formatted attachments for the JSON response
+                $message->load('sender');
+                return response()->json(['success' => true, 'message' => $message]);
             }
-            
-            return redirect()->route('messages.web.show', $messageData['recipient_id'])
-                ->with('success', 'Message sent successfully!');
-                
+
+            return redirect()->route('messages.web.show', $user);
+
         } catch (\Exception $e) {
-            \Log::error('Message store error: ' . $e->getMessage());
-            
+            Log::error('Message store error: ' . $e->getMessage());
             if ($request->ajax()) {
                 return response()->json(['success' => false, 'error' => 'Failed to send message.'], 500);
             }
-            
-            return redirect()->back()->with('error', 'Failed to send message.');
+            return back()->with('error', 'Failed to send message.');
         }
     }
     
-    public function create($recipientId)
+    public function create(Request $request, $recipientId)
     {
         $recipient = User::with(['userProfile', 'userType'])->findOrFail($recipientId);
         
@@ -151,7 +174,17 @@ class MessageController extends Controller
             return redirect()->back()->with('error', 'You cannot message this user.');
         }
         
-        return view('theme::messages.create', compact('recipient'));
+        // Check if there's a job context
+        $job = null;
+        if ($request->has('job_id')) {
+            $job = JobPost::findOrFail($request->get('job_id'));
+            // Verify the recipient owns this job
+            if ($job->user_id != $recipientId) {
+                return redirect()->back()->with('error', 'Invalid job reference.');
+            }
+        }
+        
+        return view('theme::messages.create', compact('recipient', 'job'));
     }
     
     private function canMessage($senderId, $recipientId)
