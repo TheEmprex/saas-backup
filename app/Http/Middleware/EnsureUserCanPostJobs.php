@@ -23,12 +23,10 @@ class EnsureUserCanPostJobs
 
         // Check if user is authorized to post jobs (only agencies)
         if (!$user->isAgency() && !$user->isAdmin()) {
-            // Provide helpful feedback based on user type
-            if ($user->isChatter() || $user->isVA()) {
-                return redirect()->route('marketplace.jobs')->with('error', 'Only agencies can post jobs. As a ' . $user->userType->display_name . ', you can browse and apply to jobs instead.');
-            } else {
-                return redirect()->route('marketplace.jobs')->with('error', 'Only agencies are authorized to post jobs.');
-            }
+            // Redirect to a nice UI page explaining job posting restrictions
+            return redirect()->route('marketplace.job-posting.restricted')
+                ->with('user_type', $user->userType?->display_name ?? 'User')
+                ->with('can_apply', $user->isChatter() || $user->isVA());
         }
 
         return $next($request);

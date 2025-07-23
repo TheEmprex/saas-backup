@@ -228,4 +228,15 @@ class MessageController extends Controller
         
         return response()->json(['unread_count' => $count]);
     }
+    
+    public function getUserStatus(User $user)
+    {
+        // Check if user is online (last seen within last 10 minutes)
+        $isOnline = $user->last_seen_at && $user->last_seen_at->diffInMinutes() < 10;
+        
+        return response()->json([
+            'online' => $isOnline,
+            'last_seen' => $user->last_seen_at ? $user->last_seen_at->diffForHumans() : 'Never'
+        ]);
+    }
 }

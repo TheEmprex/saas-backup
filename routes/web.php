@@ -57,6 +57,7 @@ Route::get('/marketplace/jobs', [MarketplaceController::class, 'jobs'])->name('m
 Route::get('/marketplace/profiles', [MarketplaceController::class, 'profiles'])->name('marketplace.profiles');
 Route::get('/marketplace/chatters', [MarketplaceController::class, 'chatters'])->name('marketplace.chatters');
 Route::get('/marketplace/agencies', [MarketplaceController::class, 'agencies'])->name('marketplace.agencies');
+Route::get('/marketplace/job-posting-restricted', [MarketplaceController::class, 'jobPostingRestricted'])->name('marketplace.job-posting.restricted');
 
 // Marketplace job creation routes (must be before parameterized routes)
 Route::get('/marketplace/jobs/create', [JobController::class, 'create'])->name('marketplace.jobs.create')->middleware(['auth', 'can.post.jobs']);

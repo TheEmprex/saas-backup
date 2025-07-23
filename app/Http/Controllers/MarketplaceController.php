@@ -891,9 +891,15 @@ class MarketplaceController extends Controller
         // Profile is considered complete if all required fields are filled
         $isComplete = $completedRequired === $totalRequired;
         
-        return [
-            'is_complete' => $isComplete,
-            'percentage' => $percentage
-        ];
+        return ['is_complete' => $isComplete, 'percentage' => $percentage];
+    }
+    
+    public function jobPostingRestricted()
+    {
+        $user = Auth::user();
+        $userType = session('user_type', $user->userType?->display_name ?? 'User');
+        $canApply = session('can_apply', false);
+        
+        return view('theme::marketplace.job-posting-restricted', compact('user', 'userType', 'canApply'));
     }
 }
