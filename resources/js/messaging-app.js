@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import MessagingApp from './Components/MessagingApp.vue'
-import './messaging-echo.js'
 
 // Create Vue app
 const app = createApp(MessagingApp)

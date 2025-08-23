@@ -320,32 +320,17 @@ class MessagingApp {
         this.updateOnlineStatus(true);
     }
     
-    // Initialize Laravel Echo for real-time features
+// Initialize Laravel Echo for real-time features
     initializeEcho() {
         if (window.Echo) {
             this.echo = window.Echo;
-            
-            // Join presence channel for online users
-            this.presenceChannel = this.echo.join('messaging.presence')
-                .here((users) => {
-                    this.onlineUsers = new Set(users.map(u => u.id));
-                    this.updateUIWithOnlineStatus();
-                })
-                .joining((user) => {
-                    this.onlineUsers.add(user.id);
-                    this.updateUIWithOnlineStatus();
-                })
-                .leaving((user) => {
-                    this.onlineUsers.delete(user.id);
-                    this.updateUIWithOnlineStatus();
-                });
-                
-            // Listen for new messages
-            this.echo.private(`messages.${this.currentUserId}`)
-                .listen('MessageSent', (e) => {
+
+            // Listen for new messages and read receipts on user channel
+            this.echo.private(`user.${this.currentUserId}`)
+                .listen('.message.sent', (e) => {
                     this.handleNewMessage(e.message);
                 })
-                .listen('MessageRead', (e) => {
+                .listen('.message.read', (e) => {
                     this.handleMessageRead(e);
                 });
         }
@@ -355,7 +340,7 @@ class MessagingApp {
     async loadConversations() {
         this.loading = true;
         try {
-            const response = await this.apiCall('/messages/conversations');
+const response = await this.apiCall('/api/conversations');
             this.conversations = response.conversations || [];
             this.renderConversations();
         } catch (error) {
@@ -371,7 +356,7 @@ class MessagingApp {
         
         this.loading = true;
         try {
-            const response = await this.apiCall(`/messages/conversations/${conversationId}/messages`);
+const response = await this.apiCall(`/api/conversations/${conversationId}/messages`);
             this.messages = response.messages || [];
             this.renderMessages();
             this.scrollToBottom();
@@ -414,7 +399,7 @@ class MessagingApp {
                 formData.append('file', file);
             });
             
-            const response = await this.apiCall('/messages/send', 'POST', formData, false);
+const response = await this.apiCall(`/api/conversations/${this.selectedConversation ? this.selectedConversation.id : ''}/messages`, 'POST', formData, false);
             
             if (response.success) {
                 // Clear input
@@ -488,13 +473,18 @@ class MessagingApp {
         this.setupConversationRealTime(conversation.id);
     }
     
-    // Setup real-time for specific conversation
+// Setup real-time for specific conversation
     setupConversationRealTime(conversationId) {
         if (this.echo) {
-            // Listen for typing indicators
+            // Listen for typing indicators and new messages
             this.echo.private(`conversation.${conversationId}`)
                 .listenForWhisper('typing', (e) => {
                     this.handleTypingIndicator(e);
+                })
+                .listen('.message.sent', (e) => {
+                    if (e.message?.conversation_id === conversationId) {
+                        this.handleNewMessage(e.message);
+                    }
                 });
         }
     }

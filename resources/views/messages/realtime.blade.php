@@ -501,15 +501,15 @@ function realTimeMessagingApp() {
             }
         },
         
-        // Load conversations from your API
+// Load conversations from your API
         async loadConversations() {
             try {
                 console.log('📡 Loading conversations from API...');
-                const response = await fetch('/api/marketplace/v1/conversations', {
+                const response = await fetch('/api/conversations', {
                     headers: {
-                        'Authorization': 'Bearer ' + this.getApiToken(),
                         'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     }
                 });
                 
@@ -518,7 +518,7 @@ function realTimeMessagingApp() {
                 if (response.ok) {
                     const data = await response.json();
                     console.log('📋 Raw API data:', data);
-                    this.conversations = (data.data || data || []).map(conv => this.formatConversation(conv));
+                    this.conversations = (data.conversations || []).map(conv => this.formatConversation(conv));
                     console.log('📋 Loaded conversations:', this.conversations.length, this.conversations);
                 } else {
                     const errorText = await response.text();
@@ -531,20 +531,19 @@ function realTimeMessagingApp() {
             }
         },
         
-        // Load messages for a conversation
+// Load messages for a conversation
         async loadMessages(conversationId) {
             this.loadingMessages = true;
             try {
-                const response = await fetch(`/api/marketplace/v1/conversations/${conversationId}/messages`, {
+                const response = await fetch(`/api/conversations/${conversationId}/messages`, {
                     headers: {
-                        'Authorization': 'Bearer ' + this.getApiToken(),
                         'Accept': 'application/json'
                     }
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    this.messages = (data.data || data || []).map(msg => this.formatMessage(msg));
+                    this.messages = (data.messages || []).map(msg => this.formatMessage(msg));
                     this.$nextTick(() => this.scrollToBottom());
                 } else {
                     throw new Error(`API Error: ${response.status}`);
@@ -557,7 +556,7 @@ function realTimeMessagingApp() {
             }
         },
         
-        // Send a message
+// Send a message
         async sendMessage() {
             if (!this.newMessage.trim() || this.sendingMessage || !this.selectedConversation) {
                 return;
@@ -568,23 +567,23 @@ function realTimeMessagingApp() {
             this.sendingMessage = true;
             
             try {
-                const response = await fetch(`/api/marketplace/v1/conversations/${this.selectedConversation.id}/messages`, {
+                const response = await fetch(`/api/conversations/${this.selectedConversation.id}/messages`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + this.getApiToken(),
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     },
                     body: JSON.stringify({
+                        conversation_id: this.selectedConversation.id,
                         content: content,
-                        type: 'text'
+                        message_type: 'text'
                     })
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const newMessage = this.formatMessage(data.data || data);
+                    const newMessage = this.formatMessage((data.message) || data);
                     newMessage.is_mine = true;
                     this.messages.push(newMessage);
                     this.$nextTick(() => this.scrollToBottom());
@@ -612,9 +611,8 @@ function realTimeMessagingApp() {
             }
             
             try {
-                const response = await fetch(`/api/marketplace/v1/users/search?q=${encodeURIComponent(this.userSearchQuery)}`, {
+const response = await fetch(`/api/users/search?q=${encodeURIComponent(this.userSearchQuery)}`, {
                     headers: {
-                        'Authorization': 'Bearer ' + this.getApiToken(),
                         'Accept': 'application/json'
                     }
                 });
@@ -634,16 +632,14 @@ function realTimeMessagingApp() {
         // Start a new conversation
         async startConversation(user) {
             try {
-                const response = await fetch('/api/marketplace/v1/conversations', {
+const response = await fetch('/api/conversations', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + this.getApiToken(),
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     },
                     body: JSON.stringify({
-                        type: 'private',
                         participant_ids: [user.id]
                     })
                 });
@@ -680,19 +676,19 @@ function realTimeMessagingApp() {
             this.subscribeToConversation(conversation.id);
         },
         
-        // Initialize WebSocket connection
+// Initialize WebSocket connection
         async initializeWebSocket() {
             try {
                 // Try to use Laravel Echo if available
                 if (typeof Echo !== 'undefined' || window.Echo) {
                     const echo = window.Echo || Echo;
                     
-                    // Listen for new messages
+                    // Listen for new messages and read receipts on user channel
                     echo.private(`user.${this.currentUserId}`)
-                        .listen('MessageSent', (e) => {
+                        .listen('.message.sent', (e) => {
                             this.handleNewMessage(e);
                         })
-                        .listen('MessageRead', (e) => {
+                        .listen('.message.read', (e) => {
                             this.handleMessageRead(e);
                         });
                     
@@ -716,15 +712,18 @@ function realTimeMessagingApp() {
             }, 5000); // Poll every 5 seconds
         },
         
-        // Subscribe to conversation updates
+// Subscribe to conversation updates
         subscribeToConversation(conversationId) {
             try {
                 if (window.Echo) {
                     window.Echo.private(`conversation.${conversationId}`)
-                        .listen('MessageSent', (e) => {
-                            if (e.message.user_id !== this.currentUserId) {
+                        .listen('.message.sent', (e) => {
+                            if (e.message.sender_id !== this.currentUserId) {
                                 this.handleNewMessage(e);
                             }
+                        })
+                        .listen('.user.typing', (e) => {
+                            // Optionally reflect typing indicators in header/sidebar
                         });
                 }
             } catch (error) {
@@ -746,7 +745,7 @@ function realTimeMessagingApp() {
             if (conversation) {
                 conversation.last_message = { content: message.content };
                 conversation.last_activity = message.created_at;
-                if (message.user_id !== this.currentUserId) {
+if (message.sender_id !== this.currentUserId) {
                     conversation.unread_count = (conversation.unread_count || 0) + 1;
                 }
             }
@@ -771,28 +770,28 @@ function realTimeMessagingApp() {
         },
         
         // Utility functions
-        formatConversation(conv) {
+formatConversation(conv) {
             return {
                 id: conv.id,
-                title: this.getConversationTitle(conv),
-                avatar: this.getConversationAvatar(conv),
-                last_message: conv.latest_message?.[0] || conv.last_message || { content: 'No messages yet' },
-                last_activity: conv.last_activity_at || conv.updated_at || new Date().toISOString(),
+                title: conv.title || this.getConversationTitle(conv),
+                avatar: conv.avatar || this.getConversationAvatar(conv),
+                last_message: conv.last_message || { content: 'No messages yet' },
+                last_activity: conv.last_activity || conv.updated_at || new Date().toISOString(),
                 unread_count: conv.unread_count || 0,
-                is_online: this.getOnlineStatus(conv),
+                is_online: typeof conv.is_online === 'boolean' ? conv.is_online : this.getOnlineStatus(conv),
                 participants: conv.participants || []
             };
         },
         
-        formatMessage(msg) {
+formatMessage(msg) {
             return {
                 id: msg.id,
                 content: msg.content,
                 conversation_id: msg.conversation_id,
-                user_id: msg.user_id,
-                is_mine: msg.user_id === this.currentUserId,
+                sender_id: msg.sender_id,
+                is_mine: msg.sender_id === this.currentUserId,
                 created_at: msg.created_at,
-                sender: msg.user || msg.sender || { name: 'Unknown', avatar: '/images/default-avatar.png' },
+                sender: msg.sender || { name: msg.sender_name || 'Unknown', avatar: msg.sender_avatar || '/images/default-avatar.png' },
                 is_read: msg.is_read || false
             };
         },
@@ -814,7 +813,10 @@ function realTimeMessagingApp() {
             return '/images/group-avatar.png';
         },
         
-        getOnlineStatus(conv) {
+getOnlineStatus(conv) {
+            if (typeof conv.is_online === 'boolean') {
+                return conv.is_online;
+            }
             if (conv.participants) {
                 return conv.participants.some(p => p.id !== this.currentUserId && p.is_online);
             }

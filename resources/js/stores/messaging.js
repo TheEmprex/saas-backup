@@ -101,7 +101,7 @@ export const useMessagingStore = defineStore('messaging', {
       return await this.fetchMessages(conversationId, currentPage)
     },
 
-    // Send a message
+// Send a message
     async sendMessage(conversationId, messageData) {
       this.loading.sending = true
       
@@ -111,10 +111,10 @@ export const useMessagingStore = defineStore('messaging', {
         conversation_id: conversationId,
         sender_id: this.currentUser.id,
         content: messageData.content,
-        type: messageData.type || 'text',
+        message_type: messageData.message_type || 'text',
         created_at: new Date().toISOString(),
         sender: this.currentUser,
-        attachments: messageData.attachments || [],
+        attachments: [],
         sending: true
       }
 
@@ -125,12 +125,23 @@ export const useMessagingStore = defineStore('messaging', {
       this.messages[conversationId].push(optimisticMessage)
 
       try {
-        const response = await axios.post(`/api/conversations/${conversationId}/messages`, {
-          content: messageData.content,
-          type: messageData.type || 'text',
-          attachments: messageData.attachments || [],
-          reply_to_id: messageData.reply_to_id
-        })
+        // Build form data to support file uploads
+        const formData = new FormData()
+        formData.append('conversation_id', conversationId)
+        formData.append('content', messageData.content || '')
+        formData.append('message_type', messageData.message_type || 'text')
+        if (messageData.file) {
+          formData.append('file', messageData.file)
+        }
+        if (messageData.reply_to_id) {
+          formData.append('reply_to_id', messageData.reply_to_id)
+        }
+
+        const response = await axios.post(
+          `/api/conversations/${conversationId}/messages`,
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        )
 
         // Replace optimistic message with server response
         const messageIndex = this.messages[conversationId].findIndex(
@@ -150,7 +161,7 @@ export const useMessagingStore = defineStore('messaging', {
         return response.data.message
       } catch (error) {
         // Remove optimistic message on error
-        this.messages[conversationId] = this.messages[conversationId].filter(
+        this.messages[conversationId] = (this.messages[conversationId] || []).filter(
           m => m.id !== optimisticMessage.id
         )
         console.error('Failed to send message:', error)

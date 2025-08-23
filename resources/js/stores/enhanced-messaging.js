@@ -203,8 +203,8 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
       return this.apiCall(async () => {
         this.loading.conversations = true
         
-        const response = await axios.get('/api/conversations')
-        const conversations = response.data.data?.conversations || []
+const response = await axios.get('/api/conversations')
+        const conversations = (response.data.data?.conversations) || (response.data.conversations) || []
         
         // Store conversations in Map for better performance
         conversations.forEach(conv => {
@@ -233,7 +233,8 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
           params: { page, per_page: 50 }
         })
         
-        const { messages, pagination } = response.data.data
+const apiData = response.data.data || response.data
+        const { messages, pagination } = apiData
         
         // Store pagination info
         this.pagination.set(conversationId, pagination)
@@ -308,7 +309,7 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
             }
           )
           
-          const serverMessage = response.data.data
+const serverMessage = response.data.message || response.data.data || response.data
           
           // Replace optimistic message with server response
           this.replaceMessage(conversationId, optimisticMessage.id, serverMessage)
@@ -392,21 +393,14 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
     },
 
     // Real-time methods
-    initializeRealTime() {
+initializeRealTime() {
       if (window.Echo) {
-        // Listen for new messages
         window.Echo.private(`user.${window.authUser?.id}`)
-          .listen('MessageSent', (event) => {
+          .listen('.message.sent', (event) => {
             this.handleNewMessage(event.message)
           })
-          .listen('MessageRead', (event) => {
-            this.handleMessageRead(event.message)
-          })
-          .listen('UserOnlineStatusChanged', (event) => {
-            this.handleUserOnlineStatus(event.user, event.isOnline)
-          })
-          .listen('UserTyping', (event) => {
-            this.handleTypingStatus(event.conversationId, event.user, event.isTyping)
+          .listen('.message.read', (event) => {
+            this.handleMessageRead(event)
           })
       }
     },
@@ -433,12 +427,13 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
       }
     },
     
-    handleMessageRead(message) {
-      // Update message read status
-      const cachedMessage = this.messageCache.get(message.id)
+handleMessageRead(event) {
+      // Update message read status from payload
+      const cachedMessage = this.messageCache.get(event.message_id)
       if (cachedMessage) {
-        cachedMessage.is_read = true
-        this.messageCache.set(message.id, cachedMessage)
+        cachedMessage.is_read = !!event.is_read
+        cachedMessage.read_by = event.read_by
+        this.messageCache.set(event.message_id, cachedMessage)
       }
     },
     
@@ -470,8 +465,8 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
     // Utility methods
     async fetchOnlineUsers() {
       return this.apiCall(async () => {
-        const response = await axios.get('/api/users/online')
-        const users = response.data.data?.online_users || []
+const response = await axios.get('/api/users/online')
+        const users = response.data.online_users || []
         
         users.forEach(user => {
           this.onlineUsers.add(user.id)

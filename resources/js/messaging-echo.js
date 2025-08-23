@@ -1,34 +1,8 @@
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
+// Deprecated standalone Echo initializer. Using shared Echo configured in resources/js/echo.js.
+// This file now only exposes a no-op to avoid duplicate initializations.
 
-Pusher.logToConsole = true;
-
-window.Echo = new Echo({
-    broadcaster: "pusher",
-    key: "your-pusher-app-key",
-    cluster: "mt1",
-    forceTLS: true,
-});
-
-// Function to connect and listen for messages
-function connectToMessaging(userId) {
-    // Subscribe to private user messages
-    window.Echo.private(`messages.user.${userId}`)
-        .listen("MessageSent", (e) => {
-            console.log("Message received: ", e.message);
-            // TODO: Handle new message received
-        })
-        .listenForWhisper("typing", (e) => {
-            console.log("User typing: ", e);
-            // TODO: Show typing indicator
-        });
-
-    // Subscribe to online status
-    window.Echo.channel("user-status")
-        .listen("UserOnlineStatusChanged", (e) => {
-            console.log("User status changed: ", e);
-            // TODO: Update user status
-        });
+function connectToMessaging() {
+    console.warn('connectToMessaging is deprecated. Use the shared Echo instance and subscribe directly.')
 }
 
 window.connectToMessaging = connectToMessaging;
