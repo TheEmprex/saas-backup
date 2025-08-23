@@ -98,7 +98,7 @@
     <!-- Loading State -->
     <div x-show="loading" x-transition class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
         <div class="text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p class="text-gray-700 font-medium">Connecting to real-time messaging...</p>
         </div>
     </div>
@@ -108,7 +108,7 @@
         <!-- Sidebar -->
         <div class="w-80 bg-white shadow-xl flex flex-col h-full border-r border-gray-200">
             <!-- Header -->
-            <div class="flex-shrink-0 bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
+            <div class="flex-shrink-0 bg-gradient-to-r from-primary-600 to-primary-700 p-4 text-white">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
@@ -118,14 +118,14 @@
                         </div>
                         <div>
                             <h1 class="text-xl font-bold">Real-time Messages</h1>
-                            <p class="text-blue-200 text-sm flex items-center">
+                            <p class="text-primary-200 text-sm flex items-center">
                                 <span class="w-2 h-2 bg-green-400 rounded-full mr-2" x-show="connectionStatus === 'connected'"></span>
                                 <span x-text="`${conversations.length} conversations`"></span>
                             </p>
                         </div>
                     </div>
                     <button @click="showUserSearch = !showUserSearch" 
-                            class="p-2 rounded-full hover:bg-blue-600 transition-colors">
+                            class="p-2 rounded-full hover:bg-primary-600 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                         </svg>
@@ -138,8 +138,8 @@
                            x-model="searchQuery" 
                            @input="searchConversations"
                            placeholder="Search conversations..."
-                           class="w-full bg-blue-500 bg-opacity-30 text-white placeholder-blue-200 rounded-lg px-4 py-2 focus:outline-none focus:bg-white focus:text-gray-900 focus:placeholder-gray-500 transition-all">
-                    <svg class="absolute right-3 top-2.5 w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           class="w-full bg-primary-500 bg-opacity-30 text-white placeholder-primary-200 rounded-lg px-4 py-2 focus:outline-none focus:bg-white focus:text-gray-900 focus:placeholder-gray-500 transition-all">
+                    <svg class="absolute right-3 top-2.5 w-4 h-4 text-primary-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
@@ -180,7 +180,7 @@
                     <template x-for="conversation in filteredConversations" :key="conversation.id">
                         <div @click="selectConversation(conversation)" 
                              :class="{
-                                 'bg-blue-50 border-r-3 border-blue-500 shadow-sm': selectedConversation?.id === conversation.id,
+                                 'bg-primary-50 border-r-3 border-primary-500 shadow-sm': selectedConversation?.id === conversation.id,
                                  'new-message-indicator': conversation.hasNewMessage
                              }"
                              class="conversation-item flex items-center p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-all mb-1 group">
@@ -211,7 +211,7 @@
                                 <div class="mt-1">
                                     <!-- Typing indicator -->
                                     <div x-show="typingUsers[conversation.id]?.length > 0" 
-                                         class="flex items-center text-xs text-blue-600">
+                                         class="flex items-center text-xs text-primary-600">
                                         <div class="typing-dots mr-2">
                                             <span></span>
                                             <span></span>
@@ -235,7 +235,7 @@
                         </svg>
                         <h3 class="mt-2 text-sm font-medium text-gray-900">No conversations</h3>
                         <p class="mt-1 text-sm text-gray-500">Start a new conversation to get started.</p>
-                        <button @click="showUserSearch = true" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <button @click="showUserSearch = true" class="mt-3 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
                             Start Conversation
                         </button>
                     </div>
@@ -248,8 +248,8 @@
             <!-- No Conversation Selected -->
             <div x-show="!selectedConversation" class="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
                 <div class="text-center">
-                    <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-12 h-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-4.126-.98L3 21l1.98-5.126A8.955 8.955 0 013 12c0-4.418 3.582-8 8-8s8 3.582 8 8z"/>
                         </svg>
                     </div>
@@ -259,7 +259,7 @@
                         <span class="w-2 h-2 bg-green-500 rounded-full mr-2" x-show="connectionStatus === 'connected'"></span>
                         <span class="text-sm text-gray-600" x-text="connectionStatusText"></span>
                     </div>
-                    <button @click="showUserSearch = true" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <button @click="showUserSearch = true" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
                         Start New Conversation
                     </button>
                 </div>
@@ -283,7 +283,7 @@
                             <div class="flex items-center">
                                 <!-- Real-time typing indicator -->
                                 <div x-show="typingUsers[selectedConversation?.id]?.length > 0" 
-                                     class="flex items-center text-sm text-blue-600">
+                                     class="flex items-center text-sm text-primary-600">
                                     <div class="typing-dots mr-2">
                                         <span></span>
                                         <span></span>
@@ -306,13 +306,13 @@
                     <!-- Action Buttons -->
                     <div class="flex items-center space-x-2">
                         <button @click="initiateCall('audio')" 
-                                class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors rounded-full">
+                                class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors rounded-full">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                             </svg>
                         </button>
                         <button @click="initiateCall('video')" 
-                                class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors rounded-full">
+                                class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors rounded-full">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                             </svg>
@@ -324,7 +324,7 @@
             <!-- Messages Area with Real-time Updates -->
             <div x-show="selectedConversation" class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-4 bg-gray-50" x-ref="messagesContainer">
                 <div x-show="loadingMessages" class="flex justify-center py-4">
-                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
                 </div>
 
                 <template x-for="message in messages" :key="message.id">
@@ -333,7 +333,7 @@
                          x-data="{ isNew: message.isNew || false }"
                          x-init="if (isNew) { setTimeout(() => isNew = false, 2000) }">
                         <div :class="{
-                                 'bg-blue-600 text-white ml-4': message.is_mine,
+'bg-primary-600 text-white ml-4': message.is_mine,
                                  'bg-white text-gray-900 mr-4': !message.is_mine,
                                  'ring-2 ring-green-300': isNew
                              }" 
@@ -353,7 +353,7 @@
                                 <div x-show="message.is_mine" class="flex items-center space-x-1">
                                     <div class="message-status">
                                         <template x-if="message.is_read">
-                                            <svg class="w-4 h-4 text-blue-300" fill="currentColor" viewBox="0 0 20 20" title="Read">
+                                            <svg class="w-4 h-4 text-primary-300" fill="currentColor" viewBox="0 0 20 20" title="Read">
                                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                             </svg>
                                         </template>
@@ -378,7 +378,7 @@
                         <input type="file" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" 
                                x-ref="fileInput" @change="handleFileSelect" class="hidden">
                         <button @click="$refs.fileInput.click()" 
-                                class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors rounded-full">
+                                class="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors rounded-full">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                             </svg>
@@ -394,14 +394,14 @@
                                   :disabled="sendingMessage || connectionStatus !== 'connected'"
                                   :placeholder="connectionStatus === 'connected' ? 'Type a message...' : 'Connecting...'" 
                                   rows="1"
-                                  class="w-full resize-none rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed max-h-32 scrollbar-hide"
+                                  class="w-full resize-none rounded-2xl border border-gray-300 px-4 py-3 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed max-h-32 scrollbar-hide"
                                   x-ref="messageInput"></textarea>
                     </div>
 
                     <!-- Send button with connection status -->
                     <button @click="sendMessage" 
                             :disabled="(!newMessage.trim() && selectedFiles.length === 0) || sendingMessage || connectionStatus !== 'connected'"
-                            class="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg">
+                            class="p-3 bg-primary-600 text-white rounded-full hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg">
                         <svg x-show="!sendingMessage" class="w-5 h-5 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
                         </svg>
