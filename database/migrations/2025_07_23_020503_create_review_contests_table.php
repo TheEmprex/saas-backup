@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('contested_by')->constrained('users')->onDelete('cascade');
             $table->text('reason');
             $table->text('evidence')->nullable();
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'cancelled'])->default('pending');
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->text('admin_notes')->nullable();
             $table->timestamp('resolved_at')->nullable();

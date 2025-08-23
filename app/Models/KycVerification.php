@@ -32,12 +32,14 @@ class KycVerification extends Model
         'submitted_at',
         'reviewed_at',
         'reviewed_by',
+        'verified_at',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
+        'verified_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

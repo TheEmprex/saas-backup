@@ -32,6 +32,19 @@ storage/app/livewire-tmp
 resources/themes/.gitignore
 /resources/plugins/*
 !/resources/plugins/installed.json
+
+# Security and logs
+.env.production
+server.log
+cookies.txt
+
+# Local virtualenvs and test artifacts
+venv/
+*.backup
+*.bak
+test-*.php
+test-*.html
+routes/*.backup*
 /storage/app/public/livewire-tmp
 /storage/app/public/*
 !/storage/app/public/demo

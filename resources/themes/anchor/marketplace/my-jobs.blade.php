@@ -42,7 +42,7 @@
                     </div>
                     <div class="ml-4">
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Applications</h3>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $jobs->sum('applications_count') }}</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $jobs->sum('current_applications') }}</p>
                     </div>
                 </div>
             </div>
@@ -61,109 +61,169 @@
         </div>
 
         <!-- Jobs List -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Your Jobs</h2>
-                    <a href="{{ route('marketplace.jobs.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                        <x-phosphor-plus class="w-4 h-4 inline mr-1" />
-                        Post New Job
-                    </a>
-                </div>
+        <div class="space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Your Job Postings</h2>
+                <a href="{{ route('marketplace.jobs.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                    <x-phosphor-plus class="w-4 h-4 mr-2" />
+                    Post New Job
+                </a>
             </div>
 
             @if($jobs->count() > 0)
-                <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Jobs Grid -->
+                <div class="grid gap-6">
                     @foreach($jobs as $job)
-                        <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                            <a href="{{ route('marketplace.jobs.show', $job) }}" class="hover:text-blue-600">
-                                                {{ $job->title }}
-                                            </a>
-                                        </h3>
-                                        
-                                        @if($job->status === 'active')
-                                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">
-                                                Active
-                                            </span>
-                                        @elseif($job->status === 'paused')
-                                            <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full">
-                                                Paused
-                                            </span>
-                                        @elseif($job->status === 'closed')
-                                            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 rounded-full">
-                                                Closed
-                                            </span>
-                                        @endif
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow">
+                            <div class="p-6">
+                                <!-- Job Header -->
+                                <div class="flex items-start justify-between mb-4">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                                <a href="{{ route('marketplace.jobs.show', $job) }}" class="hover:text-blue-600 transition-colors">
+                                                    {{ $job->title ?: 'Untitled Job' }}
+                                                </a>
+                                            </h3>
+                                            
+                                            <!-- Status Badge -->
+                                            @if($job->status === 'active')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                    ✅ Active
+                                                </span>
+                                            @elseif($job->status === 'paused')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                                    ⏸️ Paused
+                                                </span>
+                                            @elseif($job->status === 'closed')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+                                                    🔒 Closed
+                                                </span>
+                                            @endif
 
-                                        @if($job->is_featured)
-                                            <span class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded-full">
-                                                Featured
-                                            </span>
-                                        @endif
+                                            @if($job->is_featured)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                                    ⭐ Featured
+                                                </span>
+                                            @endif
 
-                                        @if($job->is_urgent)
-                                            <span class="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full">
-                                                Urgent
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    <div class="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400 mb-3">
-                                        <div class="flex items-center">
-                                            <x-phosphor-map-pin class="w-4 h-4 mr-1" />
-                                            {{ ucfirst(str_replace('_', ' ', $job->market)) }}
-                                        </div>
-                                        <div class="flex items-center">
-                                            <x-phosphor-clock class="w-4 h-4 mr-1" />
-                                            {{ $job->created_at->diffForHumans() }}
-                                        </div>
-                                        <div class="flex items-center">
-                                            <x-phosphor-calendar class="w-4 h-4 mr-1" />
-                                            Expires {{ $job->expires_at->diffForHumans() }}
-                                        </div>
-                                    </div>
-
-                                    <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-2 mb-3">
-                                        {{ Str::limit($job->description, 150) }}
-                                    </p>
-
-                                    <div class="flex items-center gap-6 text-sm">
-                                        <div class="flex items-center text-green-600 dark:text-green-400">
-                                            <x-phosphor-currency-dollar class="w-4 h-4 mr-1" />
-                                            @if($job->rate_type === 'hourly')
-                                                ${{ number_format($job->hourly_rate, 2) }}/hour
-                                            @else
-                                                ${{ number_format($job->fixed_rate, 2) }} fixed
+                                            @if($job->is_urgent)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                    🚨 Urgent
+                                                </span>
                                             @endif
                                         </div>
-                                        <div class="flex items-center text-blue-600 dark:text-blue-400">
-                                            <x-phosphor-file-text class="w-4 h-4 mr-1" />
-                                            {{ $job->applications->count() }} applications
-                                        </div>
-                                        <div class="flex items-center text-gray-500 dark:text-gray-400">
-                                            <x-phosphor-chart-bar class="w-4 h-4 mr-1" />
-                                            {{ ucfirst($job->experience_level) }}
-                                        </div>
+                                        
+                                        <!-- Job Description -->
+                                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                                            {{ $job->description ? Str::limit($job->description, 120) : 'No description provided' }}
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-2 ml-4">
-                                    <a href="{{ route('marketplace.jobs.show', $job) }}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                                        View
-                                    </a>
-                                    @if($job->applications->count() > 0)
-                                        <a href="{{ route('marketplace.jobs.applications', $job) }}" class="text-green-600 hover:text-green-700 text-sm font-medium">
-                                            Applications ({{ $job->applications->count() }})
-                                        </a>
-                                    @endif
-                                    <a href="{{ route('marketplace.jobs.edit', $job) }}" class="text-gray-600 hover:text-gray-700 text-sm font-medium">
-                                        Edit
-                                    </a>
-                                </div>
+                <!-- Job Details Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Market -->
+                    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg h-20">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-1">Market</div>
+                        <div class="text-sm font-semibold text-gray-900 dark:text-white text-center">
+                            {{ ucfirst($job->market) }}
+                        </div>
+                    </div>
+                    
+                    <!-- Posted Date -->
+                    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg h-20">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-1">Posted</div>
+                        <div class="text-sm font-semibold text-gray-900 dark:text-white text-center">
+                            {{ $job->created_at->diffForHumans() }}
+                        </div>
+                    </div>
+                    
+                    <!-- Rate -->
+                    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg h-20">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-1">Rate</div>
+                        <div class="text-sm font-semibold text-green-600 dark:text-green-400 text-center">
+                            @if($job->rate_type === 'hourly' && $job->hourly_rate)
+                                ${{ number_format($job->hourly_rate, 2) }}/hr
+                            @elseif($job->rate_type === 'fixed' && $job->fixed_rate)
+                                ${{ number_format($job->fixed_rate, 2) }}
+                            @elseif($job->rate_type === 'commission' && $job->commission_percentage)
+                                {{ $job->commission_percentage }}%
+                            @else
+                                ${{ number_format($job->hourly_rate ?: $job->fixed_rate ?: 0, 2) }}
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <!-- Applications -->
+                    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg h-20">
+                        <div class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium mb-1">Applications</div>
+                        <div class="text-sm font-semibold text-blue-600 dark:text-blue-400 text-center">
+                            {{ $job->current_applications ?? 0 }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6 text-sm">
+                    <div class="flex items-center text-gray-600 dark:text-gray-300">
+                        <x-phosphor-eye class="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span>{{ $job->views ?? 0 }} views</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 dark:text-gray-300">
+                        <x-phosphor-calendar class="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span>Expires {{ $job->expires_at->diffForHumans() }}</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <a href="{{ route('marketplace.jobs.show', $job) }}" 
+                       class="inline-flex items-center justify-center px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium rounded-md transition-colors min-w-[80px]">
+                        <x-phosphor-eye class="w-3 h-3 mr-1 flex-shrink-0" />
+                        <span>View</span>
+                    </a>
+                    
+                    @if(($job->current_applications ?? 0) > 0)
+                        <a href="{{ route('marketplace.jobs.applications', $job) }}" 
+                           class="inline-flex items-center justify-center px-3 py-2 bg-green-50 hover:bg-green-100 text-green-600 text-xs font-medium rounded-md transition-colors min-w-[80px]">
+                            <x-phosphor-file-text class="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Apps ({{ $job->current_applications ?? 0 }})</span>
+                        </a>
+                    @endif
+                    
+                    <a href="{{ route('marketplace.jobs.edit', $job) }}" 
+                       class="inline-flex items-center justify-center px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-medium rounded-md transition-colors min-w-[80px]">
+                        <x-phosphor-pencil class="w-3 h-3 mr-1 flex-shrink-0" />
+                        <span>Edit</span>
+                    </a>
+                    
+                    @if(!$job->is_featured)
+                        <button class="inline-flex items-center justify-center px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-600 text-xs font-medium rounded-md transition-colors min-w-[100px]">
+                            <x-phosphor-star class="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Feature +$10</span>
+                        </button>
+                    @endif
+                    
+                    <form method="POST" action="{{ route('marketplace.jobs.delete', $job) }}" class="inline-block" 
+                          onsubmit="return confirm('Are you sure you want to delete this job?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" 
+                                class="inline-flex items-center justify-center px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-medium rounded-md transition-colors min-w-[80px]">
+                            <x-phosphor-trash class="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Delete</span>
+                        </button>
+                    </form>
+                    
+                    @if(!$job->is_urgent)
+                        <button class="inline-flex items-center justify-center px-3 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 text-xs font-medium rounded-md transition-colors min-w-[120px]">
+                            <x-phosphor-warning class="w-3 h-3 mr-1 flex-shrink-0" />
+                            <span>Make Urgent (+$5)</span>
+                        </button>
+                    @endif
+                </div>
                             </div>
                         </div>
                     @endforeach

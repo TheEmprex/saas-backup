@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('conversations', function (Blueprint $table) {
+            $table->id();
+            $table->string('type')->default('private'); // private, group, agency_group
+            $table->string('title')->nullable(); // For group conversations
+            $table->text('description')->nullable();
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->boolean('is_archived')->default(false);
+            $table->timestamp('last_activity_at')->nullable();
+            $table->json('metadata')->nullable(); // For additional data
+            $table->timestamps();
+            
+            // Indexes for performance
+            $table->index(['created_by']);
+            $table->index(['last_activity_at']);
+            $table->index(['is_archived']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('conversations');
+    }
+};

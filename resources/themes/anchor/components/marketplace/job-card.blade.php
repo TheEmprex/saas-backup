@@ -60,6 +60,34 @@
                 </svg>
                 {{ ucfirst(str_replace('_', ' ', $job->contract_type)) }}
             </span>
+            
+            @if($job->required_timezone || $job->timezone_flexible)
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    @if($job->timezone_flexible)
+                        🌐 Flexible
+                    @else
+                        @php
+                            $timezoneLabels = [
+                                'UTC' => 'UTC',
+                                'America/New_York' => 'EST',
+                                'America/Chicago' => 'CST',
+                                'America/Denver' => 'MST',
+                                'America/Los_Angeles' => 'PST',
+                                'Europe/London' => 'GMT',
+                                'Europe/Paris' => 'CET',
+                                'Europe/Berlin' => 'CET',
+                                'Asia/Tokyo' => 'JST',
+                                'Asia/Shanghai' => 'CST',
+                                'Australia/Sydney' => 'AEST'
+                            ];
+                        @endphp
+                        {{ $timezoneLabels[$job->required_timezone] ?? $job->required_timezone }}
+                    @endif
+                </span>
+            @endif
         </div>
 
         <!-- Rate and applications info -->
@@ -105,7 +133,7 @@
                 </a>
                 @auth
                     @if(auth()->user()->id !== $job->user_id)
-                        <a href="{{ route('marketplace.messages.create', $job->user_id) }}" class="px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50 text-indigo-700 dark:text-indigo-300 rounded-lg font-medium transition-all duration-200 flex items-center justify-center border border-indigo-200 dark:border-indigo-700">
+                        <a href="{{ route('messages.create', $job->user_id) }}" class="px-4 py-3 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50 text-indigo-700 dark:text-indigo-300 rounded-lg font-medium transition-all duration-200 flex items-center justify-center border border-indigo-200 dark:border-indigo-700">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
@@ -122,7 +150,7 @@
                 </a>
                 @auth
                     @if(auth()->user()->id !== $job->user_id)
-                        <a href="{{ route('marketplace.messages.create', $job->user_id) }}" class="px-4 py-3 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                        <a href="{{ route('messages.create', $job->user_id) }}" class="px-4 py-3 bg-orange-50 hover:bg-orange-100 dark:bg-orange-900/30 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
@@ -139,7 +167,7 @@
                 </a>
                 @auth
                     @if(auth()->user()->id !== $job->user_id)
-                        <a href="{{ route('marketplace.messages.create', $job->user_id) }}" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center justify-center">
+                        <a href="{{ route('messages.create', $job->user_id) }}" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors flex items-center justify-center">
                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>

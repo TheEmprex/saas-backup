@@ -45,6 +45,34 @@ class JobPostController extends Controller
             $query->where('contract_type', $request->contract_type);
         }
 
+        // Timezone filtering - find jobs with compatible working hours
+        if ($request->has('timezone')) {
+            $userTimezone = $request->timezone;
+            $query->where(function ($q) use ($userTimezone) {
+                $q->where('timezone_preference', $userTimezone)
+                  ->orWhereNull('timezone_preference')
+                  ->orWhere('timezone_preference', '');
+            });
+        }
+
+        // Working hours filtering - find jobs that match user's availability
+        if ($request->has('available_hours')) {
+            $availableHours = $request->available_hours; // Expected format: [{'day': 'monday', 'start': '09:00', 'end': '17:00'}]
+            if (is_array($availableHours) && !empty($availableHours)) {
+                $query->where(function ($q) use ($availableHours) {
+                    foreach ($availableHours as $hours) {
+                        if (isset($hours['day'], $hours['start'], $hours['end'])) {
+                            // This would need more complex logic to match JSON working_hours field
+                            // For now, we'll include jobs that don't specify working hours
+                            $q->orWhereNull('working_hours')
+                              ->orWhere('working_hours', '')
+                              ->orWhere('working_hours', 'LIKE', '%' . $hours['day'] . '%');
+                        }
+                    }
+                });
+            }
+        }
+
         // Salary range filters
         if ($request->has('min_rate') && $request->rate_type === 'hourly') {
             $query->where('hourly_rate', '>=', $request->min_rate);

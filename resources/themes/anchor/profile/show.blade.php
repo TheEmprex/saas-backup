@@ -216,7 +216,7 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- Professional Information -->
-                @if(auth()->user()->userProfile)
+                @if(!auth()->user()->isAgency() && auth()->user()->userProfile)
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Professional Information</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -299,8 +299,110 @@
                 </div>
                 @endif
 
+                @if(auth()->user()->isAgency() && auth()->user()->userProfile)
+                <!-- Agency Information -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Agency Information</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @if(auth()->user()->userProfile->monthly_revenue)
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Monthly Revenue</dt>
+                            <dd class="text-sm text-gray-900 dark:text-white flex items-center">
+                                <svg class="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                                </svg>
+                                ${{ ucfirst(str_replace('-', '-$', auth()->user()->userProfile->monthly_revenue)) }}
+                            </dd>
+                        </div>
+                        @endif
+                        
+                        @if(auth()->user()->userProfile->average_ltv && in_array(strtolower(auth()->user()->userType->name ?? ''), ['chatting_agency', 'ofm_agency']))
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Average LTV per Traffic</dt>
+                            <dd class="text-sm text-gray-900 dark:text-white flex items-center">
+                                <svg class="w-4 h-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                ${{ number_format(auth()->user()->userProfile->average_ltv, 2) }}
+                            </dd>
+                        </div>
+                        @endif
+                    </div>
+                    
+                    @if(auth()->user()->userProfile->traffic_types)
+                    <div class="mt-4">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Traffic Types</dt>
+                        <div class="flex flex-wrap gap-2">
+                            @php
+                                $trafficTypes = auth()->user()->userProfile->traffic_types;
+                                if(is_string($trafficTypes)) {
+                                    $trafficTypes = json_decode($trafficTypes, true) ?? [];
+                                }
+                            @endphp
+                            @foreach($trafficTypes as $trafficType)
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                                    {{ $trafficType }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                </div>
+                @endif
+
+                @if(!auth()->user()->isAgency() && (auth()->user()->isVa() || auth()->user()->isChatter()) && auth()->user()->userProfile)
+                <!-- Work Hours & Availability -->
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Work Hours & Availability</h2>
+                    
+                    @if(auth()->user()->userProfile->timezone)
+                    <div class="mb-4">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Timezone</dt>
+                        <dd class="text-sm text-gray-900 dark:text-white flex items-center">
+                            <svg class="w-4 h-4 text-indigo-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ auth()->user()->userProfile->timezone }}
+                        </dd>
+                    </div>
+                    @endif
+                    
+                    @if(auth()->user()->userProfile->work_hours)
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Available Hours</dt>
+                        <div class="space-y-2">
+                            @php
+                                $workHours = auth()->user()->userProfile->work_hours;
+                                if(is_string($workHours)) {
+                                    $workHours = json_decode($workHours, true) ?? [];
+                                }
+                                $dayLabels = [
+                                    'monday' => 'Monday',
+                                    'tuesday' => 'Tuesday', 
+                                    'wednesday' => 'Wednesday',
+                                    'thursday' => 'Thursday',
+                                    'friday' => 'Friday',
+                                    'saturday' => 'Saturday',
+                                    'sunday' => 'Sunday'
+                                ];
+                            @endphp
+                            @foreach($workHours as $day => $hours)
+                                @if(isset($hours['enabled']) && $hours['enabled'])
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-gray-700 dark:text-gray-300">{{ $dayLabels[$day] ?? ucfirst($day) }}</span>
+                                    <span class="text-gray-900 dark:text-white">{{ $hours['start'] ?? '09:00' }} - {{ $hours['end'] ?? '17:00' }}</span>
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Times shown in {{ auth()->user()->userProfile->timezone ?? 'UTC' }}</p>
+                    </div>
+                    @endif
+                </div>
+                @endif
+
                 <!-- Skills -->
-                @if(auth()->user()->userProfile && auth()->user()->userProfile->skills)
+                @if(!auth()->user()->isAgency() && auth()->user()->userProfile && auth()->user()->userProfile->skills)
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Skills</h2>
                     <div class="flex flex-wrap gap-2">
@@ -320,7 +422,7 @@
                 @endif
 
                 <!-- Services -->
-                @if(auth()->user()->userProfile && auth()->user()->userProfile->services)
+                @if(!auth()->user()->isAgency() && auth()->user()->userProfile && auth()->user()->userProfile->services)
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Services</h2>
                     <div class="flex flex-wrap gap-2">
@@ -496,7 +598,8 @@
             <div class="space-y-6">
                 <!-- Verification Status -->
                 @php
-                    $needsKyc = !auth()->user()->isKycVerified();
+                    // Agencies don't need KYC verification, only individuals do
+                    $needsKyc = !auth()->user()->isAgency() && !auth()->user()->isKycVerified();
                     $needsTyping = auth()->user()->isChatter() && (!auth()->user()->userProfile?->typing_speed_wpm || !auth()->user()->userProfile?->typing_test_taken_at);
                     $needsEarnings = auth()->user()->isAgency() && !auth()->user()->isEarningsVerified();
                     $hasAnyIncompleteVerification = $needsKyc || $needsTyping || $needsEarnings;
@@ -674,7 +777,7 @@
                 </div>
 
                 <!-- Languages -->
-                @if(auth()->user()->userProfile && auth()->user()->userProfile->languages)
+                @if(!auth()->user()->isAgency() && auth()->user()->userProfile && auth()->user()->userProfile->languages)
                 <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Languages</h2>
                     <div class="flex flex-wrap gap-2">

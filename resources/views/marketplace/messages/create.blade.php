@@ -13,7 +13,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <a href="{{ route('marketplace.messages') }}" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 group">
+                    <a href="{{ route('messages.index') }}" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 group">
                         <svg class="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('marketplace.messages.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+            <form action="{{ route('messages.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
                 @csrf
                 
                 @if(isset($job) && $job)
@@ -55,7 +55,7 @@
                                 </div>
                                 <div>
                                     <div class="font-semibold text-gray-900">{{ $user->name }}</div>
-                                    <div class="text-sm text-gray-600">{{ $user->userType->display_name }}</div>
+                                    <div class="text-sm text-gray-600">{{ $user->userType?->display_name ?? 'User' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -64,7 +64,7 @@
                             <option value="">Select a user...</option>
                             @foreach($users as $availableUser)
                                 <option value="{{ $availableUser->id }}">
-                                    {{ $availableUser->name }} ({{ $availableUser->userType->display_name }})
+                                    {{ $availableUser->name }} ({{ $availableUser->userType?->display_name ?? 'User' }})
                                 </option>
                             @endforeach
                         </select>
@@ -132,7 +132,7 @@
                 
                 <!-- Action Buttons -->
                 <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                    <a href="{{ route('marketplace.messages') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                    <a href="{{ route('messages.index') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                         Cancel
                     </a>
                     <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center">

@@ -6,7 +6,7 @@
 @if(isset($seo->title))
     <title>{{ $seo->title }}</title>
 @else
-    <title>{{ setting('site.title', 'Laravel Wave') . ' - ' . setting('site.description', 'The Software as a Service Starter Kit built with Laravel') }}</title>
+    <title>OnlyVerified - Premium Talent Platform</title>
 @endif
 
 <meta charset="utf-8">
@@ -14,6 +14,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="url" content="{{ url('/') }}">
+@auth
+<meta name="user-id" content="{{ auth()->id() }}">
+@endauth
 
 <x-favicon></x-favicon>
 

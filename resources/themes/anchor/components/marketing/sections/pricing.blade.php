@@ -1,8 +1,8 @@
 <section>
     <x-marketing.elements.heading
         level="h2"
-        title="Chart Your Course"
-        description="Set sail and discover the riches of our value-packed plans, meticulously designed to offer you the very best features for less on your SaaS expedition. " 
+        title="Choose Your Plan"
+        description="Select the perfect plan for your needs. From individual professionals to large agencies, we have pricing that scales with your business." 
     />
 
     <div x-data="{ on: false, billing: '{{ get_default_billing_cycle() }}',

@@ -22,9 +22,9 @@ class RequireKycVerification
 
         $user = Auth::user();
 
-        // Check verification based on user type
-        if ($user->userType && $user->userType->name === 'chatter') {
-            // Chatters require KYC verification
+        // Check verification based on user type's KYC requirement
+        if ($user->userType && $user->userType->requires_kyc) {
+            // Users with KYC-required types need verification
             if (!$user->hasKycSubmitted()) {
                 if ($request->expectsJson()) {
                     return response()->json([

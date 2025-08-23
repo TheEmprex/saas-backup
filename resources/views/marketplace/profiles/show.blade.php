@@ -407,6 +407,151 @@
                     </div>
                 </div>
                 
+                <!-- Chatter Certification Badge -->
+                @include('chatter-tests.profile-badge', ['user' => $user])
+                
+                <!-- Availability Section -->
+                <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-700 p-8">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Availability</h2>
+                        @if($user->timezone)
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300">
+                                🌍 {{ $user->timezone }}
+                            </span>
+                        @endif
+                    </div>
+                    
+                    @if($user->availabilitySchedule && $user->availabilitySchedule->count() > 0)
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                            @php
+                                $viewerTimezone = auth()->check() && auth()->user()->timezone ? auth()->user()->timezone : 'UTC';
+                                $days = ['monday' => 'Mon', 'tuesday' => 'Tue', 'wednesday' => 'Wed', 'thursday' => 'Thu', 'friday' => 'Fri', 'saturday' => 'Sat', 'sunday' => 'Sun'];
+                            @endphp
+                            
+                            @foreach($days as $day => $shortDay)
+                                @php
+                                    $schedule = $user->availabilitySchedule->where('day_of_week', $day)->first();
+                                    $convertedSchedule = $schedule ? $schedule->getAvailabilityInTimezone($viewerTimezone) : null;
+                                @endphp
+                                
+                                <div class="flex items-center justify-between p-3 {{ $schedule && $schedule->is_available ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700' }} rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 {{ $schedule && $schedule->is_available ? 'bg-green-500' : 'bg-gray-400' }} rounded-lg flex items-center justify-center">
+                                            <span class="text-white text-xs font-bold">{{ $shortDay }}</span>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900 dark:text-white">{{ ucfirst($day) }}</div>
+                                            @if($schedule && $schedule->is_available && $convertedSchedule)
+                                                <div class="text-sm {{ $schedule->is_available ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400' }}">
+                                                    {{ $convertedSchedule['start_time_converted'] }} - {{ $convertedSchedule['end_time_converted'] }}
+                                                    @if($viewerTimezone !== $user->timezone)
+                                                        <span class="text-xs">({{ $viewerTimezone }})</span>
+                                                    @endif
+                                                </div>
+                                                @if($schedule->break_times && count($schedule->break_times) > 0)
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                        Breaks: 
+                                                        @foreach($schedule->break_times as $break)
+                                                            {{ $break['start'] }}-{{ $break['end'] }}{{ !$loop->last ? ', ' : '' }}
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">Not available</div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    @if($schedule && $schedule->is_available)
+                                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                                    @else
+                                        <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                        
+                        @if($user->hourly_rate)
+                            <div class="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="font-semibold text-green-800 dark:text-green-300">Hourly Rate</div>
+                                            <div class="text-sm text-green-600 dark:text-green-400">Professional services</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                        ${{ $user->hourly_rate }}/hr
+                                        @if($user->preferred_currency && $user->preferred_currency !== 'USD')
+                                            <span class="text-sm font-normal">({{ $user->preferred_currency }})</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        
+                        @if(auth()->check() && auth()->user()->timezone && auth()->user()->timezone !== ($user->timezone ?? 'UTC'))
+                            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <div class="flex items-center space-x-2 text-sm text-blue-700 dark:text-blue-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Times shown in your timezone ({{ auth()->user()->timezone }}). User's timezone: {{ $user->timezone ?? 'UTC' }}</span>
+                                </div>
+                            </div>
+                        @endif
+                    @else
+                        <!-- No availability data -->
+                        <div class="text-center py-12">
+                            <div class="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">No availability schedule set</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-4">This professional hasn't configured their availability schedule yet.</p>
+                            
+                            @if($user->hourly_rate)
+                                <div class="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-800 max-w-md mx-auto">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-green-800 dark:text-green-300">Hourly Rate</div>
+                                                <div class="text-sm text-green-600 dark:text-green-400">Professional services</div>
+                                            </div>
+                                        </div>
+                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400">
+                                            ${{ $user->hourly_rate }}/hr
+                                            @if($user->preferred_currency && $user->preferred_currency !== 'USD')
+                                                <span class="text-sm font-normal">({{ $user->preferred_currency }})</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <div class="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                                Contact this professional directly to discuss availability
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                
                 <!-- Verification Status -->
                 <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-sm border border-gray-200 dark:border-zinc-700 p-8">
                     <div class="flex items-center space-x-3 mb-6">

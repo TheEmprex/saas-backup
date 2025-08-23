@@ -32,7 +32,7 @@
         </div>
 
         <!-- Quick Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <!-- Total Users -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div class="flex items-center">
@@ -84,6 +84,24 @@
                 </div>
                 <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
                     {{ $stats['kyc_pending'] }} KYC, {{ $stats['earnings_pending'] }} Earnings
+                </div>
+            </div>
+
+            <!-- Review Contests -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-2 bg-orange-500 rounded-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $stats['contests_pending'] ?? 0 }}</p>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Review Contests</p>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                    {{ ($stats['contests_total'] ?? 0) }} total submitted
                 </div>
             </div>
 
@@ -189,6 +207,26 @@
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Messages</h3>
                         <p class="text-gray-600 dark:text-gray-400 text-sm">Monitor platform communications</p>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Contest Management -->
+            <a href="{{ route('admin.contests.index') }}" class="block bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                        <svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Review Contests</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">Manage review contest submissions</p>
+                        @if(isset($stats['contests_pending']) && $stats['contests_pending'] > 0)
+                            <span class="inline-block bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full mt-1">
+                                {{ $stats['contests_pending'] }} pending
+                            </span>
+                        @endif
                     </div>
                 </div>
             </a>

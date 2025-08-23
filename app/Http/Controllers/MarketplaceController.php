@@ -91,8 +91,11 @@ class MarketplaceController extends Controller
         // Simplified messages - just an empty collection for now
         $recentMessages = collect();
         
+        // Alias for compatibility with the blade template
+        $myApplications = $recentApplications;
+        
         return view('marketplace.dashboard', compact(
-            'user', 'stats', 'subscriptionStats', 'recentJobs', 'recentApplications', 'recentMessages', 'featuredJobs', 'recentContracts'
+            'user', 'stats', 'subscriptionStats', 'recentJobs', 'recentApplications', 'myApplications', 'recentMessages', 'featuredJobs', 'recentContracts'
         ));
     }
 
@@ -175,6 +178,11 @@ class MarketplaceController extends Controller
             });
         }
         
+        // Timezone filter - show only jobs with exact timezone match when filtering
+        if ($request->filled('timezone')) {
+            $query->where('required_timezone', $request->timezone);
+        }
+
         // Order by featured first, then by creation date
         $jobs = $query->orderBy('is_featured', 'desc')
                       ->orderBy('is_urgent', 'desc')
@@ -206,15 +214,30 @@ class MarketplaceController extends Controller
     {
         $query = UserProfile::with(['user', 'user.userType', 'user.contractReviewsReceived', 'user.kycVerification'])
             ->where('is_active', true)
-            ->where('is_verified', true)
+            ->whereHas('user', function($userQuery) {
+                // Email verification is required for all
+                $userQuery->whereNotNull('email_verified_at');
+
+                // KYC verification logic: only required for user types that need it
+                $userQuery->where(function($q) {
+                    $q->where(function($q2) {
+                        // Users whose type requires KYC must have it approved
+                        $q2->whereHas('userType', function($typeQuery) {
+                               $typeQuery->where('requires_kyc', true);
+                           })
+                           ->whereHas('kycVerification', function($kycQuery) {
+                               $kycQuery->where('status', 'approved');
+                           });
+                    })->orWhere(function($q3) {
+                        // Users whose type doesn't require KYC are exempt
+                        $q3->whereHas('userType', function($typeQuery) {
+                               $typeQuery->where('requires_kyc', false);
+                           });
+                    });
+                });
+            })
             ->whereHas('user.userType', function($q) {
                 $q->whereNotIn('name', ['ofm_agency', 'chatting_agency', 'agency']);
-            })
-            ->whereHas('user', function($q) {
-                // Only show profiles of users who have completed KYC verification
-                $q->whereHas('kycVerification', function($kycQuery) {
-                    $kycQuery->where('status', 'approved');
-                });
             });
         
         // Apply filters
@@ -238,6 +261,17 @@ class MarketplaceController extends Controller
                   ->orWhere('skills', 'like', "%{$search}%")
                   ->orWhere('services', 'like', "%{$search}%")
                   ->orWhere('title', 'like', "%{$search}%");
+            });
+        }
+        
+        // Timezone filter
+        if ($request->filled('timezone')) {
+            $query->where(function($q) use ($request) {
+                $q->where('timezone', $request->timezone)
+                  ->orWhere('availability_timezone', $request->timezone)
+                  ->orWhereHas('user', function($userQuery) use ($request) {
+                      $userQuery->where('timezone', $request->timezone);
+                  });
             });
         }
         
@@ -494,73 +528,87 @@ class MarketplaceController extends Controller
 
     public function messages(Request $request)
     {
-        $userId = Auth::id();
-        $selectedConversation = null;
-        $messages = collect();
-        
-        // Get conversations - using Message model since we don't have Conversation model
-        $conversations = collect();
-        
-        $conversationData = Message::select(
-            DB::raw('CASE 
-                WHEN sender_id = ' . $userId . ' THEN recipient_id 
-                ELSE sender_id 
-            END as contact_id'),
-            DB::raw('MAX(created_at) as last_message_time'),
-            DB::raw('COUNT(CASE WHEN recipient_id = ' . $userId . ' AND is_read = false THEN 1 END) as unread_count')
-        )
-        ->where(function($query) use ($userId) {
-            $query->where('sender_id', $userId)->orWhere('recipient_id', $userId);
-        })
-        ->groupBy('contact_id')
-        ->orderBy('last_message_time', 'desc')
-        ->get();
-        
-        foreach ($conversationData as $data) {
-            $contact = User::with('userType')->find($data->contact_id);
-            if ($contact) {
-                $latestMessage = Message::where(function($query) use ($userId, $data) {
-                    $query->where('sender_id', $userId)->where('recipient_id', $data->contact_id);
-                })->orWhere(function($query) use ($userId, $data) {
-                    $query->where('sender_id', $data->contact_id)->where('recipient_id', $userId);
-                })->latest()->first();
+        try {
+            $userId = Auth::id();
+            $user = Auth::user();
+            
+            // Initialize empty collections as fallback
+            $conversations = collect();
+            $folders = collect();
+            $selectedConversation = null;
+            $messages = collect();
+            
+            // Try to get conversation data, but handle any errors gracefully
+            try {
+                // Get unique conversation partners using a safer query
+                $conversationUserIds = collect();
                 
-                $conversation = (object) [
-                    'id' => $data->contact_id,
-                    'otherParticipant' => $contact,
-                    'updated_at' => $data->last_message_time,
-                    'unread_count' => $data->unread_count,
-                    'latest_message' => $latestMessage
-                ];
+                // Get users who sent messages to current user
+                $senders = Message::where('recipient_id', $userId)
+                    ->distinct()
+                    ->pluck('sender_id')
+                    ->filter();
+                    
+                // Get users who received messages from current user
+                $recipients = Message::where('sender_id', $userId)
+                    ->distinct()
+                    ->pluck('recipient_id')
+                    ->filter();
+                    
+                $conversationUserIds = $senders->merge($recipients)->unique()->reject(function($id) use ($userId) {
+                    return $id == $userId;
+                });
                 
-                $conversations->push($conversation);
+                // Build conversation objects
+                foreach ($conversationUserIds as $contactId) {
+                    $contact = User::with('userType')->find($contactId);
+                    if ($contact) {
+                        $conversations->push((object) [
+                            'id' => $contactId,
+                            'otherParticipant' => $contact,
+                            'updated_at' => now(),
+                            'unread_count' => 0,
+                            'lastMessage' => null
+                        ]);
+                    }
+                }
+                
+                // Handle conversation selection
+                if ($request->has('conversation')) {
+                    $selectedConversation = $conversations->where('id', $request->conversation)->first();
+                    if ($selectedConversation) {
+                        $messages = Message::where(function($query) use ($userId, $selectedConversation) {
+                            $query->where('sender_id', $userId)->where('recipient_id', $selectedConversation->id);
+                        })->orWhere(function($query) use ($userId, $selectedConversation) {
+                            $query->where('sender_id', $selectedConversation->id)->where('recipient_id', $userId);
+                        })->orderBy('created_at', 'asc')->get();
+                    }
+                }
+                
+            } catch (\Exception $e) {
+                \Log::error('Messages loading error: ' . $e->getMessage());
+                // Keep empty collections as fallback
             }
+            
+            // Return the new Vue 3 messaging interface
+            return view('messages.index', compact('conversations', 'selectedConversation', 'messages', 'folders'));
+            
+        } catch (\Exception $e) {
+            \Log::error('Messages route error: ' . $e->getMessage());
+            
+            // Return safe fallback view with empty data
+            $conversations = collect();
+            $folders = collect();
+            $selectedConversation = null;
+            $messages = collect();
+            
+            return view('messages.index', compact('conversations', 'selectedConversation', 'messages', 'folders'));
         }
-        
-        // If showing specific conversation
-        if ($request->has('conversation')) {
-            $selectedConversation = $conversations->where('id', $request->conversation)->first();
-            if ($selectedConversation) {
-                $messages = Message::where(function($query) use ($userId, $selectedConversation) {
-                    $query->where('sender_id', $userId)->where('recipient_id', $selectedConversation->id);
-                })->orWhere(function($query) use ($userId, $selectedConversation) {
-                    $query->where('sender_id', $selectedConversation->id)->where('recipient_id', $userId);
-                })->with(['sender', 'recipient'])->orderBy('created_at', 'asc')->get();
-                
-                // Mark messages as read
-                Message::where('sender_id', $selectedConversation->id)
-                    ->where('recipient_id', $userId)
-                    ->where('is_read', false)
-                    ->update(['is_read' => true, 'read_at' => now()]);
-            }
-        }
-        
-        return view('theme::messages.index', compact('conversations', 'selectedConversation', 'messages'));
     }
     
     public function showConversation($conversationId)
     {
-        return redirect()->route('marketplace.messages', ['conversation' => $conversationId]);
+        return redirect()->route('messages.index', ['conversation' => $conversationId]);
     }
     
     public function storeMessage(Request $request)
@@ -605,7 +653,7 @@ class MarketplaceController extends Controller
                 ->with('success', "Message sent successfully to {$recipientName}!");
         }
         
-        return redirect()->route('marketplace.messages', ['conversation' => $request->conversation_id])
+        return redirect()->route('messages.index', ['conversation' => $request->conversation_id])
             ->with('success', 'Message sent successfully!');
     }
     
@@ -626,7 +674,7 @@ class MarketplaceController extends Controller
             }
         }
             
-        return view('marketplace.messages.create', compact('users', 'user', 'job'));
+        return view('messages.create', compact('users', 'user', 'job'));
     }
 
     public function profile()

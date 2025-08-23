@@ -32,7 +32,8 @@ class SubscriptionController extends Controller
             return view('subscription.plans', compact('plans', 'currentStats', 'user'));
         }
         
-        $userType = $user->userType->name;
+        // Default to 'agency' if userType is null
+        $userType = $user->userType ? $user->userType->name : 'agency';
         $plans = $this->subscriptionService->getAvailablePlans($userType);
         $currentStats = $this->subscriptionService->getSubscriptionStats($user);
         
@@ -156,14 +157,43 @@ class SubscriptionController extends Controller
     }
     
     /**
-     * Handle payment processing (placeholder).
+     * Handle payment processing with Stripe integration.
      */
     public function payment(SubscriptionPlan $plan)
     {
         $user = Auth::user();
         
-        // This would integrate with Stripe, PayPal, etc.
-        return view('subscription.payment', compact('plan', 'user'));
+        try {
+            $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+            
+            // Create Stripe checkout session
+            $session = $stripe->checkout->sessions->create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'usd',
+                        'product_data' => [
+                            'name' => $plan->name . ' Subscription',
+                            'description' => $plan->description,
+                        ],
+                        'unit_amount' => $plan->price * 100, // Convert to cents
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('subscription.payment.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('subscription.payment.cancel'),
+                'metadata' => [
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                ],
+            ]);
+            
+            return redirect($session->url);
+            
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Unable to create payment session. Please try again.');
+        }
     }
     
     /**
@@ -176,28 +206,39 @@ class SubscriptionController extends Controller
     }
     
     /**
-     * Handle successful payment callback.
+     * Handle successful payment callback from Stripe.
      */
     public function paymentSuccess(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|exists:subscription_plans,id',
-            'payment_method' => 'required|string',
-            'transaction_id' => 'required|string',
+            'session_id' => 'required|string', // Stripe checkout session ID
         ]);
         
         $user = Auth::user();
-        $plan = SubscriptionPlan::findOrFail($request->plan_id);
         
-        // Verify payment with payment processor here
-        // For demo purposes, we'll assume payment is verified
-        
-        // Only assign the subscription AFTER successful payment verification
-        $expiresAt = now()->addMonth();
-        $this->subscriptionService->assignPlan($user, $plan, $expiresAt);
-        
-        return redirect()->route('subscription.dashboard')
-            ->with('success', 'Payment successful! Your ' . $plan->name . ' subscription is now active.');
+        try {
+            $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+            $session = $stripe->checkout->sessions->retrieve($request->session_id);
+            
+            if ($session->payment_status === 'paid') {
+                $planId = $session->metadata->plan_id;
+                $plan = SubscriptionPlan::findOrFail($planId);
+                $expiresAt = now()->addMonth(); // Subscription expires after 1 month
+                
+                // Assign the paid plan with expiration date
+                $this->subscriptionService->assignPlan($user, $plan, $expiresAt);
+                
+                return redirect()->route('subscription.dashboard')
+                    ->with('success', 'Payment successful! Your ' . $plan->name . ' subscription is now active.');
+            } else {
+                return redirect()->route('subscription.plans')
+                    ->with('error', 'Payment was not completed. Please try again.');
+            }
+            
+        } catch (\Exception $e) {
+            return redirect()->route('subscription.plans')
+                ->with('error', 'Unable to verify payment. Please contact support if you were charged.');
+        }
     }
     
     /**

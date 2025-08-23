@@ -78,12 +78,23 @@ class UserProfileController extends Controller
             'typing_speed_wpm' => 'nullable|integer|min:10|max:200',
             'languages' => 'nullable|array',
             'skills' => 'nullable|array',
+            'services' => 'nullable|array',
             'availability' => 'nullable|string|max:500',
             'hourly_rate' => 'nullable|numeric|min:0',
             'preferred_rate_type' => 'nullable|in:hourly,fixed,commission',
             'portfolio_url' => 'nullable|url|max:500',
             'linkedin_url' => 'nullable|url|max:500',
+            'portfolio_links' => 'nullable|array',
+            'is_available' => 'nullable|boolean',
+            'response_time' => 'nullable|in:within_an_hour,within_a_few_hours,within_a_day,within_a_few_days',
             'avatar' => 'nullable|image|max:2048',
+            // Agency-specific fields
+            'monthly_revenue' => 'nullable|in:0-5k,5-10k,10-25k,25-50k,50-100k,100-250k,250k-1m,1m+',
+            'traffic_types' => 'nullable|array',
+            'average_ltv' => 'nullable|numeric|min:0',
+            // VA/Chatter work hours
+            'timezone' => 'nullable|string|max:50',
+            'work_hours' => 'nullable|array',
         ]);
         
         // Update user basic info
@@ -112,14 +123,31 @@ class UserProfileController extends Controller
             'phone' => $validated['phone'] ?? null,
             'experience_years' => $validated['experience_years'] ?? null,
             'typing_speed_wpm' => $validated['typing_speed_wpm'] ?? null,
-            'languages' => isset($validated['languages']) && $validated['languages'] ? json_encode($validated['languages']) : null,
-            'skills' => isset($validated['skills']) && $validated['skills'] ? json_encode($validated['skills']) : null,
+            'languages' => isset($validated['languages']) && $validated['languages'] ? $validated['languages'] : null,
+            'skills' => isset($validated['skills']) && $validated['skills'] ? $validated['skills'] : null,
+            'services' => isset($validated['services']) && $validated['services'] ? $validated['services'] : null,
             'availability' => $validated['availability'] ?? null,
             'hourly_rate' => $validated['hourly_rate'] ?? null,
             'preferred_rate_type' => $validated['preferred_rate_type'] ?? null,
             'portfolio_url' => $validated['portfolio_url'] ?? null,
             'linkedin_url' => $validated['linkedin_url'] ?? null,
+            'portfolio_links' => isset($validated['portfolio_links']) && $validated['portfolio_links'] ? $validated['portfolio_links'] : null,
+            'is_available' => $validated['is_available'] ?? true,
+            'response_time' => $validated['response_time'] ?? null,
         ];
+        
+        // Add agency-specific fields
+        if ($user->isAgency()) {
+            $profileData['monthly_revenue'] = $validated['monthly_revenue'] ?? null;
+            $profileData['traffic_types'] = isset($validated['traffic_types']) && $validated['traffic_types'] ? $validated['traffic_types'] : null;
+            $profileData['average_ltv'] = $validated['average_ltv'] ?? null;
+        }
+        
+        // Add VA/Chatter work hours
+        if (!$user->isAgency() && ($user->isVa() || $user->isChatter())) {
+            $profileData['timezone'] = $validated['timezone'] ?? null;
+            $profileData['work_hours'] = isset($validated['work_hours']) && $validated['work_hours'] ? $validated['work_hours'] : null;
+        }
         
         $user->userProfile()->updateOrCreate(
             ['user_id' => $user->id],

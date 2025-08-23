@@ -5,8 +5,8 @@
 
 <x-layouts.marketing
     :seo="[
-        'title'         => setting('site.title', 'Laravel Wave'),
-        'description'   => setting('site.description', 'Software as a Service Starter Kit'),
+        'title'         => 'OnlyVerified - Verified Talent Marketplace',
+        'description'   => 'Connect with verified OnlyFans chatters, virtual assistants, and agencies. The premium marketplace for adult content professionals.',
         'image'         => url('/og_image.png'),
         'type'          => 'website'
     ]"

@@ -1,14 +1,84 @@
-<x-layouts.app>
+<x-theme::layouts.app>
 
-<div class="min-h-screen bg-gray-50 dark:bg-zinc-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="mb-10">
-            <div class="text-center">
-                <h1 class="text-5xl font-black text-gray-900 dark:text-white mb-4">
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Messages</span>
-                </h1>
-                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Manage your conversations and stay connected with the OnlyFans ecosystem community</p>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Coming Soon Section -->
+        <div class="text-center py-32">
+            <div class="mb-8">
+                <div class="mx-auto w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-5xl font-bold text-gray-900 dark:text-white mb-6">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Messages Coming Soon!</span>
+            </h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+                We're working hard to bring you an amazing messaging experience that will revolutionize how you connect with agencies and chatters.
+            </p>
+            <p class="text-lg text-gray-500 dark:text-gray-400 mb-12">Stay tuned for updates!</p>
+            
+            <!-- Action Buttons -->
+            <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+                <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-8 py-4 border border-transparent text-base font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 112 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 112-2z" />
+                    </svg>
+                    Browse Jobs
+                </a>
+                <a href="{{ route('marketplace.profiles') }}" class="inline-flex items-center px-8 py-4 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                    Browse Profiles
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</x-theme::layouts.app>
+
+        <!-- Statistics Bar -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center border border-gray-100 dark:border-zinc-700">
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ ($conversations ?? collect())->count() }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Active Chats</div>
+            </div>
+            <div class="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center border border-gray-100 dark:border-zinc-700">
+                <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ ($conversations ?? collect())->where('unread_count', '>', 0)->count() }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Unread</div>
+            </div>
+            <div class="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center border border-gray-100 dark:border-zinc-700">
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ ($folders ?? collect())->count() }}</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Folders</div>
+            </div>
+            <div class="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center border border-gray-100 dark:border-zinc-700">
+                <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">0</div>
+                <div class="text-sm text-gray-600 dark:text-gray-400">Archived</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+                <div class="flex flex-wrap gap-4 items-center">
+                    <div class="flex-1 min-w-64">
+                        <input type="text" id="search-conversations" placeholder="Search conversations..." class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    <select class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Folders</option>
+                        @foreach($folders as $folder)
+                            <option value="{{ $folder->id }}">{{ $folder->name }}</option>
+                        @endforeach
+                    </select>
+                    <select class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Status</option>
+                        <option value="unread">Unread</option>
+                        <option value="read">Read</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -33,15 +103,16 @@
                        class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <div class="flex items-center space-x-3">
                             <div class="relative">
-                                @if($conversation->otherParticipant->avatar)
+@php $participant = $conversation->otherParticipant(auth()->id()); @endphp
+                                @if($participant->avatar)
                                     <div class="w-10 h-10 rounded-full overflow-hidden">
-                                        <img src="{{ Storage::url($conversation->otherParticipant->avatar) }}" 
-                                             alt="{{ $conversation->otherParticipant->name }}" 
+<img src="{{ Storage::url($participant->avatar) }}" 
+                                             alt="{{ $participant->name }}" 
                                              class="w-full h-full object-cover">
                                     </div>
                                 @else
                                     <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                                        {{ substr($conversation->otherParticipant->name ?? 'N/A', 0, 1) }}
+{{ substr($participant->name ?? 'N/A', 0, 1) }}
                                     </div>
                                 @endif
                                 @if($conversation->unread_count > 0)
@@ -53,7 +124,7 @@
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center justify-between">
                                     <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                        {{ $conversation->otherParticipant->name ?? 'Unknown User' }}
+{{ $participant->name ?? 'Unknown User' }}
                                     </p>
                                     <p class="text-xs text-gray-400 dark:text-gray-500">
                                         {{ \Carbon\Carbon::parse($conversation->updated_at)->diffForHumans() }}
@@ -61,7 +132,7 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <p class="text-sm text-gray-500 dark:text-gray-400 truncate">
-                                        {{ $conversation->otherParticipant->userType->display_name ?? 'User' }}
+{{ $participant->userType->display_name ?? 'User' }}
                                     </p>
                                     @if($conversation->unread_count > 0)
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
@@ -100,7 +171,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to Messages</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-8 max-w-md mx-auto">Select a conversation from the left to start messaging, or browse jobs to connect with new people in the OnlyFans management community.</p>
                     <div class="space-y-3">
-                        <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 112 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 112-2z"></path>
                             </svg>
@@ -125,7 +196,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Auto-refresh conversations every 30 seconds
     setInterval(function() {
-        fetch('{{ route("messages.web.index") }}', {
+        fetch('{{ route("messages.index") }}', {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
@@ -141,4 +212,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</x-layouts.app>
+</x-theme::layouts.app>

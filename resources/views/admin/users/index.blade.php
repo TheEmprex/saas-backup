@@ -39,9 +39,11 @@
                     </label>
                     <select name="user_type" id="user_type" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
                         <option value="">All Types</option>
-                        <option value="chatter" {{ request('user_type') === 'chatter' ? 'selected' : '' }}>Chatter</option>
-                        <option value="ofm_agency" {{ request('user_type') === 'ofm_agency' ? 'selected' : '' }}>OFM Agency</option>
-                        <option value="chatting_agency" {{ request('user_type') === 'chatting_agency' ? 'selected' : '' }}>Chatting Agency</option>
+                        @foreach(\App\Models\UserType::all() as $userType)
+                            <option value="{{ $userType->name }}" {{ request('user_type') === $userType->name ? 'selected' : '' }}>
+                                {{ $userType->display_name }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -150,7 +152,7 @@
                                     <div class="text-sm text-gray-900 dark:text-white">
                                         @if($user->userType)
                                             <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                                                {{ ucfirst(str_replace('_', ' ', $user->userType->name)) }}
+                                                {{ $user->userType->display_name }}
                                             </span>
                                         @else
                                             <span class="text-gray-500">No Type</span>

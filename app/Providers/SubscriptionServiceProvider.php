@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
 use App\Models\User;
 use App\Services\SubscriptionService;
+use App\View\Composers\SubscriptionComposer;
 
 class SubscriptionServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,18 @@ class SubscriptionServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register the subscription view composer for authenticated layouts
+        View::composer([
+            'layouts.app',
+            'layouts.dashboard', 
+            'dashboard.*',
+            'job-posts.*',
+            'messages.*',
+            'profile.*',
+            'subscription.*',
+            'components.*'
+        ], SubscriptionComposer::class);
+        
         // Assign free plan to new users
         User::created(function (User $user) {
             $subscriptionService = app(SubscriptionService::class);

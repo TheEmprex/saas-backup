@@ -13,10 +13,11 @@ class SubscriptionPlanSeeder extends Seeder
      */
     public function run(): void
     {
-        // Agency subscription plans
-        SubscriptionPlan::create([
-            'name' => 'Agency Free',
-            'description' => 'Basic plan for agencies to get started',
+        // Update existing plans or create if not present
+        SubscriptionPlan::updateOrCreate([
+            'name' => 'Free'
+        ], [
+            'description' => 'Perfect for getting started',
             'price' => 0.00,
             'job_post_limit' => 3,
             'chat_application_limit' => 10,
@@ -27,10 +28,11 @@ class SubscriptionPlanSeeder extends Seeder
             'featured_status' => false,
         ]);
 
-        SubscriptionPlan::create([
-            'name' => 'Agency Pro',
-            'description' => 'Professional plan for growing agencies',
-            'price' => 39.00,
+        SubscriptionPlan::updateOrCreate([
+            'name' => 'Basic'
+        ], [
+            'description' => 'Great for small teams and growing businesses',
+            'price' => 59.00,
             'job_post_limit' => 15,
             'chat_application_limit' => 50,
             'unlimited_chats' => false,
@@ -40,9 +42,10 @@ class SubscriptionPlanSeeder extends Seeder
             'featured_status' => false,
         ]);
 
-        SubscriptionPlan::create([
-            'name' => 'Agency Premium',
-            'description' => 'Premium plan for established agencies',
+        SubscriptionPlan::updateOrCreate([
+            'name' => 'Pro'
+        ], [
+            'description' => 'Everything you need to scale your business',
             'price' => 99.00,
             'job_post_limit' => null, // Unlimited
             'chat_application_limit' => null, // Unlimited
@@ -53,31 +56,18 @@ class SubscriptionPlanSeeder extends Seeder
             'featured_status' => true,
         ]);
 
-        // Chatter subscription plans
-        SubscriptionPlan::create([
-            'name' => 'Chatter Free',
-            'description' => 'Free plan for chatters',
-            'price' => 0.00,
-            'job_post_limit' => 0,
-            'chat_application_limit' => null, // Unlimited applications
-            'unlimited_chats' => false,
-            'advanced_filters' => false,
-            'analytics' => false,
-            'priority_listings' => false,
-            'featured_status' => false,
-        ]);
-
-        SubscriptionPlan::create([
-            'name' => 'Chatter Pro',
-            'description' => 'Professional plan for chatters (future)',
-            'price' => 19.00,
-            'job_post_limit' => 0,
-            'chat_application_limit' => null, // Unlimited applications
+        SubscriptionPlan::updateOrCreate([
+            'name' => 'Enterprise'
+        ], [
+            'description' => 'For large organizations with custom needs',
+            'price' => 199.00,
+            'job_post_limit' => null, // Unlimited
+            'chat_application_limit' => null, // Unlimited
             'unlimited_chats' => true,
             'advanced_filters' => true,
             'analytics' => true,
             'priority_listings' => true,
-            'featured_status' => false,
+            'featured_status' => true,
         ]);
     }
 }

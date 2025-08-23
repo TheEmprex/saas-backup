@@ -1,162 +1,247 @@
 <x-layouts.marketing>
-    <div class="min-h-screen bg-gray-50 py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Hero Section -->
+    <div class="relative min-h-screen bg-gradient-to-br from-slate-50 via-gray-100 to-slate-50">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%239C92AC\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"7\" cy=\"7\" r=\"1\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-50"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <!-- Header -->
-            <div class="text-center">
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">Choose Your Plan</h1>
-                <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
-                    Select the perfect plan for your needs. Upgrade, downgrade, or cancel anytime.
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/30 backdrop-blur-sm mb-6">
+                    <span class="text-purple-700 text-sm font-medium">💎 Premium OnlyVerified Plans</span>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                    Choose Your Perfect Plan
+                </h1>
+                <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
+                    Unlock the full potential of OnlyVerified with plans designed for every creator and agency. 
+                    Start free, scale unlimited.
                 </p>
+                <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        No Setup Fees
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        Cancel Anytime
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
+                        30-Day Money Back
+                    </div>
+                </div>
             </div>
 
             <!-- Plans Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                @foreach ($plans as $plan)
-                    <div class="bg-white rounded-lg shadow-lg overflow-hidden {{ $currentStats['plan_name'] === $plan['name'] ? 'ring-2 ring-blue-500' : '' }}">
-                        <!-- Plan Header -->
-                        <div class="px-6 py-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                            <h3 class="text-2xl font-bold mb-2">{{ $plan['name'] }}</h3>
-                            <p class="text-blue-100 mb-4">{{ $plan['description'] }}</p>
-                            <div class="flex items-baseline">
-                                <span class="text-4xl font-bold">${{ number_format($plan['price'], 0) }}</span>
-                                <span class="text-blue-100 ml-2">/month</span>
+            @php
+                // Use the actual plans from the database, but ensure unique plans
+                $uniquePlans = collect($plans)->unique('name')->values();
+                
+                // Add highlight property for the "Pro" plan to make it stand out
+                $planList = $uniquePlans->map(function ($plan) {
+                    $planArray = is_array($plan) ? $plan : $plan->toArray();
+                    $planArray['highlight'] = ($planArray['name'] === 'Pro'); // Highlight the Pro plan
+                    return $planArray;
+                });
+            @endphp
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                @foreach ($planList as $plan)
+                    <div class="relative group">
+                        @if($plan['highlight'])
+                            <!-- Popular Badge -->
+                            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                                <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
+                                    🔥 Most Popular
+                                </div>
                             </div>
-                        </div>
-
-                        <!-- Features -->
-                        <div class="px-6 py-6">
-                            <ul class="space-y-3">
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">
-                                        Job Posts: {{ $plan['job_post_limit'] ?? 'Unlimited' }}
-                                    </span>
-                                </li>
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">
-                                        Applications: {{ $plan['chat_application_limit'] ?? 'Unlimited' }}
-                                    </span>
-                                </li>
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 {{ $plan['unlimited_chats'] ? 'text-green-500' : 'text-gray-300' }} mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">Unlimited Chats</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 {{ $plan['advanced_filters'] ? 'text-green-500' : 'text-gray-300' }} mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">Advanced Filters</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 {{ $plan['analytics'] ? 'text-green-500' : 'text-gray-300' }} mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">Analytics Dashboard</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 {{ $plan['priority_listings'] ? 'text-green-500' : 'text-gray-300' }} mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">Priority Listings</span>
-                                </li>
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 {{ $plan['featured_status'] ? 'text-green-500' : 'text-gray-300' }} mr-3" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span class="text-gray-700">Featured Status</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="px-6 py-6 bg-gray-50">
-                            @if ($currentStats['plan_name'] === $plan['name'])
-                                <div class="text-center">
-                                    <span class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100">
-                                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Current Plan
-                                    </span>
+                        @endif
+                        
+                        <div class="relative h-full bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200 overflow-hidden hover:bg-white/90 transition-all duration-300 group-hover:scale-105 {{ $plan['highlight'] ? 'ring-2 ring-purple-500 shadow-2xl shadow-purple-500/25' : 'shadow-xl' }}">
+                            <!-- Plan Header -->
+                            <div class="px-8 py-8 text-center">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ $plan['name'] }}</h3>
+                                <p class="text-gray-600 mb-6 text-sm">{{ $plan['description'] }}</p>
+                                <div class="mb-6">
+                                    <div class="flex items-baseline justify-center">
+                                        <span class="text-5xl font-bold text-gray-900">${{ number_format($plan['price'], 0) }}</span>
+                                        <span class="text-gray-600 ml-2">/month</span>
+                                    </div>
                                 </div>
-                            @elseif($user && $currentStats['has_subscription'])
-                                <!-- User has subscription, show upgrade/downgrade options -->
-                                <div class="space-y-3">
-                                    <button onclick="showPlanPreview({{ $plan['id'] }}, '{{ $plan['name'] }}', {{ $plan['price'] }})" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-4 rounded-md font-medium hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                        </svg>
-                                        Change to This Plan
-                                    </button>
-                                </div>
-                            @else
-                                <!-- New subscription -->
-                                <div class="space-y-3">
-                                    @if ($plan['price'] > 0)
-                                        <!-- Traditional Payment -->
-                                        <form method="POST" action="{{ route('subscription.subscribe') }}">
-                                            @csrf
-                                            <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
-                                            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-md font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center">
-                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                                </svg>
-                                                Pay with Card
-                                            </button>
-                                        </form>
-                                        
-                                        <!-- Crypto Payment -->
-                                        <form method="POST" action="{{ route('subscription.payment', ['plan' => $plan['id']]) }}">
-                                            @csrf
-                                            <input type="hidden" name="payment_method" value="crypto">
-                                            <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white py-3 px-4 rounded-md font-medium hover:from-orange-600 hover:to-yellow-600 transition-all duration-200 flex items-center justify-center">
-                                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8.070 8.340 8.433 7.418zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.364.243 0 .697-.155.103-.346.196-.567.267z"></path>
-                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 5a1 1 0 012 0v.092a4.535 4.535 0 011.676.662C13.398 6.28 14 7.36 14 8.5c0 1.441-.793 2.307-1.676 2.746A4.535 4.535 0 0111 11.908V12a1 1 0 11-2 0v-.092a4.535 4.535 0 01-1.676-.662C6.602 10.72 6 9.64 6 8.5c0-1.441.793-2.307 1.676-2.746A4.535 4.535 0 019 5.092V5z" clip-rule="evenodd"></path>
-                                                </svg>
-                                                Pay with Crypto
-                                            </button>
-                                        </form>
+                            </div>
+
+                            <!-- Features -->
+                            <div class="px-8 pb-8">
+                                <ul class="space-y-4">
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-800">
+                                            <strong class="text-blue-600">{{ $plan['job_post_limit'] ?? 'Unlimited' }}</strong> Job Posts
+                                        </span>
+                                    </li>
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-800">
+                                            <strong class="text-blue-600">{{ $plan['chat_application_limit'] ?? 'Unlimited' }}</strong> Applications
+                                        </span>
+                                    </li>
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full {{ $plan['unlimited_chats'] ? 'bg-green-500/20' : 'bg-gray-500/20' }} flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 {{ $plan['unlimited_chats'] ? 'text-green-500' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="{{ $plan['unlimited_chats'] ? 'text-gray-800' : 'text-gray-500' }}">Unlimited Chats</span>
+                                    </li>
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full {{ $plan['advanced_filters'] ? 'bg-green-500/20' : 'bg-gray-500/20' }} flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 {{ $plan['advanced_filters'] ? 'text-green-500' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="{{ $plan['advanced_filters'] ? 'text-gray-800' : 'text-gray-500' }}">Advanced Filters</span>
+                                    </li>
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full {{ $plan['analytics'] ? 'bg-green-500/20' : 'bg-gray-500/20' }} flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 {{ $plan['analytics'] ? 'text-green-500' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="{{ $plan['analytics'] ? 'text-gray-800' : 'text-gray-500' }}">Analytics Dashboard</span>
+                                    </li>
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full {{ $plan['priority_listings'] ? 'bg-green-500/20' : 'bg-gray-500/20' }} flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 {{ $plan['priority_listings'] ? 'text-green-500' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="{{ $plan['priority_listings'] ? 'text-gray-800' : 'text-gray-500' }}">Priority Listings</span>
+                                    </li>
+                                    <li class="flex items-center text-sm">
+                                        <div class="w-5 h-5 rounded-full {{ $plan['featured_status'] ? 'bg-green-500/20' : 'bg-gray-500/20' }} flex items-center justify-center mr-3 flex-shrink-0">
+                                            <svg class="w-3 h-3 {{ $plan['featured_status'] ? 'text-green-500' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="{{ $plan['featured_status'] ? 'text-gray-800' : 'text-gray-500' }}">Featured Status</span>
+                                    </li>
+                                </ul>
+                                
+                                <!-- Action Button -->
+                                <div class="mt-8">
+                                    @if (isset($currentStats) && $currentStats['plan_name'] === $plan['name'])
+                                        <div class="w-full py-3 px-4 text-center border border-purple-500 rounded-xl text-purple-700 font-medium bg-purple-100">
+                                            ✨ Current Plan
+                                        </div>
+                                    @elseif($user && isset($currentStats) && $currentStats['has_subscription'])
+                                        <button onclick="showPlanPreview({{ $plan['id'] }}, '{{ $plan['name'] }}', {{ $plan['price'] }})" class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                                            Change Plan
+                                        </button>
                                     @else
-                                        <!-- Free Plan -->
-                                        <form method="POST" action="{{ route('subscription.subscribe') }}">
-                                            @csrf
-                                            <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
-                                            <button type="submit" class="w-full bg-green-500 text-white py-3 px-4 rounded-md font-medium hover:bg-green-600 transition-colors duration-200">
-                                                Get Started Free
-                                            </button>
-                                        </form>
+                                        @if ($plan['price'] > 0)
+                                            <div class="space-y-3">
+                                                <form method="POST" action="{{ route('subscription.subscribe') }}">
+                                                    @csrf
+                                                    <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
+                                                    <button type="submit" class="w-full py-3 px-4 {{ $plan['highlight'] ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/25' : 'bg-gradient-to-r from-blue-500 to-purple-500' }} text-white rounded-xl font-semibold hover:scale-105 transform transition-all duration-200">
+                                                        💳 Pay with Card
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="{{ route('subscription.payment', ['plan' => $plan['id']]) }}">
+                                                    @csrf
+                                                    <input type="hidden" name="payment_method" value="crypto">
+                                                    <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-yellow-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-yellow-600 transform hover:scale-105 transition-all duration-200">
+                                                        ₿ Pay with Crypto
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <form method="POST" action="{{ route('subscription.subscribe') }}">
+                                                @csrf
+                                                <input type="hidden" name="plan_id" value="{{ $plan['id'] }}">
+                                                <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transform hover:scale-105 transition-all duration-200">
+                                                    🚀 Get Started Free
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
                                 </div>
-                            @endif
+                            </div>
                         </div>
                     </div>
                 @endforeach
             </div>
 
             <!-- FAQ Section -->
-            <div class="mt-16 text-center">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8">Frequently Asked Questions</h2>
-                <div class="max-w-3xl mx-auto">
-                    <div class="space-y-6">
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold mb-2">Can I change my plan anytime?</h3>
-                            <p class="text-gray-600">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+            <div class="mt-20 text-center">
+                <div class="inline-flex items-center px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/30 backdrop-blur-sm mb-6">
+                    <span class="text-purple-700 text-sm font-medium">💡 Common Questions</span>
+                </div>
+                <h2 class="text-4xl font-bold text-gray-900 mb-12">Frequently Asked Questions</h2>
+                <div class="max-w-4xl mx-auto">
+                    <div class="grid gap-6 md:grid-cols-2">
+                        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200 p-8 text-left hover:bg-white/90 transition-all duration-300 shadow-lg">
+                            <div class="flex items-center mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900">Plan Changes</h3>
+                            </div>
+                            <p class="text-gray-700 leading-relaxed">Can I change my plan anytime? Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately with prorated billing.</p>
                         </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold mb-2">What cryptocurrencies do you accept?</h3>
-                            <p class="text-gray-600">We accept Bitcoin (BTC), Ethereum (ETH), USDT, and USDC for all subscription payments.</p>
+                        
+                        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200 p-8 text-left hover:bg-white/90 transition-all duration-300 shadow-lg">
+                            <div class="flex items-center mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8.070 8.340 8.433 7.418zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.364.243 0 .697-.155.103-.346.196-.567.267z"></path>
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 5a1 1 0 012 0v.092a4.535 4.535 0 011.676.662C13.398 6.28 14 7.36 14 8.5c0 1.441-.793 2.307-1.676 2.746A4.535 4.535 0 0111 11.908V12a1 1 0 11-2 0v-.092a4.535 4.535 0 01-1.676-.662C6.602 10.72 6 9.64 6 8.5c0-1.441.793-2.307 1.676-2.746A4.535 4.535 0 019 5.092V5z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900">Crypto Payments</h3>
+                            </div>
+                            <p class="text-gray-700 leading-relaxed">What cryptocurrencies do you accept? We accept Bitcoin (BTC), Ethereum (ETH), USDT, and USDC for secure, private subscription payments.</p>
                         </div>
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h3 class="text-lg font-semibold mb-2">Is there a refund policy?</h3>
-                            <p class="text-gray-600">Yes, we offer a 30-day money-back guarantee for all paid plans. Contact support for assistance.</p>
+                        
+                        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200 p-8 text-left hover:bg-white/90 transition-all duration-300 shadow-lg">
+                            <div class="flex items-center mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900">Money-Back Guarantee</h3>
+                            </div>
+                            <p class="text-gray-700 leading-relaxed">Is there a refund policy? Yes, we offer a 30-day money-back guarantee for all paid plans. No questions asked, full refund.</p>
+                        </div>
+                        
+                        <div class="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200 p-8 text-left hover:bg-white/90 transition-all duration-300 shadow-lg">
+                            <div class="flex items-center mb-4">
+                                <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-900">24/7 Support</h3>
+                            </div>
+                            <p class="text-gray-700 leading-relaxed">Need help? Our premium support team is available 24/7 via chat, email, and priority channels for all subscribers.</p>
                         </div>
                     </div>
                 </div>

@@ -46,8 +46,9 @@
                 </div>
             </div>
         </div>
+
+        <a href="{{ route('training.index') }}" class="inline-flex items-center px-1 pt-1 text-sm leading-5 border-b-2 border-transparent transition duration-150 ease-in-out hover:text-zinc-900">Training</a>
         <a href="#" class="inline-flex items-center px-1 pt-1 text-sm leading-5 border-b-2 border-transparent transition duration-150 ease-in-out hover:text-zinc-900">Support</a>
-    </div>
 
     <div class="flex sm:ml-6 sm:items-center">
 

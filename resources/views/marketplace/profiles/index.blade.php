@@ -69,7 +69,53 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary">Search</button>
+                                <select name="timezone" class="form-select">
+                                    <option value="">Any Timezone</option>
+                                    @if(auth()->check() && auth()->user()->timezone)
+                                        <option value="{{ auth()->user()->timezone }}" {{ request('timezone') == auth()->user()->timezone ? 'selected' : '' }}>My Timezone</option>
+                                    @endif
+                                    @php
+                                        $commonTimezones = \App\Models\UserAvailabilitySchedule::getCommonTimezones();
+                                    @endphp
+                                    @foreach($commonTimezones as $tz => $label)
+                                        <option value="{{ $tz }}" {{ request('timezone') == $tz ? 'selected' : '' }}>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-2">
+                                <select name="availability" class="form-select">
+                                    <option value="">Any Availability</option>
+                                    <option value="available" {{ request('availability') == 'available' ? 'selected' : '' }}>Available Now</option>
+                                    <option value="busy" {{ request('availability') == 'busy' ? 'selected' : '' }}>Currently Busy</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select name="day_filter" class="form-select">
+                                    <option value="">Any Day</option>
+                                    <option value="monday" {{ request('day_filter') == 'monday' ? 'selected' : '' }}>Monday</option>
+                                    <option value="tuesday" {{ request('day_filter') == 'tuesday' ? 'selected' : '' }}>Tuesday</option>
+                                    <option value="wednesday" {{ request('day_filter') == 'wednesday' ? 'selected' : '' }}>Wednesday</option>
+                                    <option value="thursday" {{ request('day_filter') == 'thursday' ? 'selected' : '' }}>Thursday</option>
+                                    <option value="friday" {{ request('day_filter') == 'friday' ? 'selected' : '' }}>Friday</option>
+                                    <option value="saturday" {{ request('day_filter') == 'saturday' ? 'selected' : '' }}>Saturday</option>
+                                    <option value="sunday" {{ request('day_filter') == 'sunday' ? 'selected' : '' }}>Sunday</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex gap-2">
+                                    <input type="time" name="start_time" class="form-control" value="{{ request('start_time') }}" placeholder="Start time">
+                                    <input type="time" name="end_time" class="form-control" value="{{ request('end_time') }}" placeholder="End time">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Search</button>
+                            </div>
+                            <div class="col-md-2">
+                                <a href="{{ route('marketplace.timezone-availability') }}" class="btn btn-info w-100">
+                                    <i class="ti ti-world me-1"></i>Advanced Search
+                                </a>
                             </div>
                         </div>
                     </form>

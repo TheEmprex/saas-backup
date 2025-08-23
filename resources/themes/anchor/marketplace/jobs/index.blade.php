@@ -109,7 +109,7 @@ $seoData = [
                             We couldn't find any jobs matching your criteria. Try adjusting your search filters or check back later for new opportunities.
                         </p>
                         <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                            <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                            <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                 </svg>
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Auto-submit filters on change
-    const autoSubmitFields = ['sort', 'per_page', 'market', 'experience_level', 'contract_type', 'rate_type'];
+    const autoSubmitFields = ['sort', 'per_page', 'market', 'experience_level', 'contract_type', 'rate_type', 'timezone'];
     autoSubmitFields.forEach(fieldName => {
         const field = document.querySelector(`[name="${fieldName}"]`);
         if (field) {

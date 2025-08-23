@@ -11,7 +11,7 @@
                         <h1 class="h2 mb-2">Post a New Job</h1>
                         <p class="text-muted">Find the perfect talent for your project</p>
                     </div>
-                    <a href="{{ route('marketplace.jobs') }}" class="btn btn-secondary">
+                    <a href="{{ route('marketplace.jobs.index') }}" class="btn btn-secondary">
                         Back to Jobs
                     </a>
                 </div>
@@ -221,7 +221,7 @@
                                 <div class="mb-3">
                                     <label for="expected_hours_per_week" class="form-label">Expected Hours per Week <span class="text-danger">*</span></label>
                                     <input type="number" name="expected_hours_per_week" id="expected_hours_per_week" value="{{ old('expected_hours_per_week') }}" 
-                                           min="1" max="80"
+                                           min="1" max="160"
                                            class="form-control @error('expected_hours_per_week') is-invalid @enderror" 
                                            required>
                                     @error('expected_hours_per_week')
@@ -240,6 +240,91 @@
                                     @error('duration_months')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timezone and Shift Requirements Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Timezone & Shift Requirements</h5>
+                                <small class="text-muted">Specify when you need your talent to be available</small>
+                            </div>
+                            <div class="card-body">
+                                <!-- Timezone Flexibility -->
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="timezone_flexible" id="timezone_flexible" 
+                                               class="form-check-input" value="1"
+                                               {{ old('timezone_flexible') ? 'checked' : '' }}>
+                                        <label for="timezone_flexible" class="form-check-label">
+                                            <strong>Timezone Flexible</strong> - Can work from any timezone
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">Check this if timezone doesn't matter for your project</small>
+                                </div>
+
+                                <div id="timezone-requirements" style="{{ old('timezone_flexible') ? 'display: none;' : '' }}">
+                                    <!-- Required Timezone -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="required_timezone" class="form-label">Required Timezone</label>
+                                            <select name="required_timezone" id="required_timezone" class="form-select @error('required_timezone') is-invalid @enderror">
+                                                <option value="">Select Timezone (Optional)</option>
+                                                @php
+                                                    $timezones = \App\Models\UserAvailability::getCommonTimezones();
+                                                @endphp
+                                                @foreach($timezones as $tz => $label)
+                                                    <option value="{{ $tz }}" {{ old('required_timezone') == $tz ? 'selected' : '' }}>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('required_timezone')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Shift Hours -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="shift_start_time" class="form-label">Shift Start Time</label>
+                                            <input type="time" name="shift_start_time" id="shift_start_time" value="{{ old('shift_start_time') }}" 
+                                                   class="form-control @error('shift_start_time') is-invalid @enderror">
+                                            @error('shift_start_time')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <label for="shift_end_time" class="form-label">Shift End Time</label>
+                                            <input type="time" name="shift_end_time" id="shift_end_time" value="{{ old('shift_end_time') }}" 
+                                                   class="form-control @error('shift_end_time') is-invalid @enderror">
+                                            @error('shift_end_time')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Required Days -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Required Working Days</label>
+                                        <div class="row">
+                                            @php
+                                                $days = \App\Models\UserAvailability::getDaysOfWeek();
+                                            @endphp
+                                            @foreach($days as $key => $label)
+                                                <div class="col-md-3 col-6">
+                                                    <div class="form-check">
+                                                        <input type="checkbox" name="required_days[]" value="{{ $key }}" 
+                                                               id="day_{{ $key }}" class="form-check-input"
+                                                               {{ in_array($key, old('required_days', [])) ? 'checked' : '' }}>
+                                                        <label for="day_{{ $key }}" class="form-check-label">{{ $label }}</label>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <small class="text-muted">Select the days when talent needs to be available</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -345,3 +430,30 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const timezoneFlexibleCheckbox = document.getElementById('timezone_flexible');
+    const timezoneRequirementsDiv = document.getElementById('timezone-requirements');
+    
+    timezoneFlexibleCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            timezoneRequirementsDiv.style.display = 'none';
+            // Clear timezone requirements when flexible is checked
+            document.getElementById('required_timezone').value = '';
+            document.getElementById('shift_start_time').value = '';
+            document.getElementById('shift_end_time').value = '';
+            
+            // Uncheck all required days
+            const dayCheckboxes = document.querySelectorAll('input[name="required_days[]"]');
+            dayCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        } else {
+            timezoneRequirementsDiv.style.display = 'block';
+        }
+    });
+});
+</script>
+@endpush

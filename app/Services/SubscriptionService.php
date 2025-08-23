@@ -14,9 +14,8 @@ class SubscriptionService
      */
     public function assignFreePlan(User $user): UserSubscription
     {
-        $planName = $user->isAgency() ? 'Agency Free' : 'Chatter Free';
-        
-        $plan = SubscriptionPlan::where('name', $planName)->firstOrFail();
+        // Use the existing "Free" plan for all user types
+        $plan = SubscriptionPlan::where('name', 'Free')->firstOrFail();
         
         return $this->assignPlan($user, $plan);
     }
@@ -53,18 +52,13 @@ class SubscriptionService
     
     /**
      * Get available subscription plans for a user type.
+     * All plans are now available to all user types.
      */
-    public function getAvailablePlans(string $userType): array
+    public function getAvailablePlans(string $userType = null): array
     {
-        if (in_array($userType, ['ofm_agency', 'chatting_agency', 'agency'])) {
-            return SubscriptionPlan::where('name', 'like', 'Agency%')->get()->toArray();
-        }
-        
-        if ($userType === 'chatter') {
-            return SubscriptionPlan::where('name', 'like', 'Chatter%')->get()->toArray();
-        }
-        
-        return [];
+        // Return all plans regardless of user type
+        // This makes the pricing page work and allows flexibility
+        return SubscriptionPlan::orderBy('price')->get()->toArray();
     }
     
     /**

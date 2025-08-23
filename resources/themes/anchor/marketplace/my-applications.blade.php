@@ -157,7 +157,7 @@
                                         </button>
                                     @endif
                                     @if($application->jobPost->user_id !== auth()->id())
-                                        <a href="{{ route('marketplace.messages.create', $application->jobPost->user) }}?job_id={{ $application->jobPost->id }}" class="text-green-600 hover:text-green-700 text-sm font-medium">
+                                        <a href="{{ route('messages.create', $application->jobPost->user) }}?job_id={{ $application->jobPost->id }}" class="text-green-600 hover:text-green-700 text-sm font-medium">
                                             Message
                                         </a>
                                     @endif

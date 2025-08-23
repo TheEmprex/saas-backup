@@ -95,7 +95,7 @@ $seoData = [
                 </div>
 
                 <!-- Filters Row -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-4">
                     <!-- User Type -->
                     <div class="lg:col-span-2">
                         <label for="user_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -162,6 +162,28 @@ $seoData = [
                         </select>
                     </div>
 
+                    <!-- Timezone Filter -->
+                    <div>
+                        <label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            Timezone
+                        </label>
+                        <select name="timezone" id="timezone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
+                            <option value="">Any Timezone</option>
+                            <option value="UTC" {{ request('timezone') == 'UTC' ? 'selected' : '' }}>UTC</option>
+                            <option value="America/New_York" {{ request('timezone') == 'America/New_York' ? 'selected' : '' }}>Eastern Time (EST/EDT)</option>
+                            <option value="America/Chicago" {{ request('timezone') == 'America/Chicago' ? 'selected' : '' }}>Central Time (CST/CDT)</option>
+                            <option value="America/Denver" {{ request('timezone') == 'America/Denver' ? 'selected' : '' }}>Mountain Time (MST/MDT)</option>
+                            <option value="America/Los_Angeles" {{ request('timezone') == 'America/Los_Angeles' ? 'selected' : '' }}>Pacific Time (PST/PDT)</option>
+                            <option value="Europe/London" {{ request('timezone') == 'Europe/London' ? 'selected' : '' }}>GMT (London)</option>
+                            <option value="Europe/Paris" {{ request('timezone') == 'Europe/Paris' ? 'selected' : '' }}>CET (Paris/Berlin)</option>
+                            <option value="Asia/Tokyo" {{ request('timezone') == 'Asia/Tokyo' ? 'selected' : '' }}>JST (Tokyo)</option>
+                            <option value="Australia/Sydney" {{ request('timezone') == 'Australia/Sydney' ? 'selected' : '' }}>AEST (Sydney)</option>
+                        </select>
+                    </div>
+
                     <!-- Per Page -->
                     <div>
                         <label for="per_page" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -182,7 +204,7 @@ $seoData = [
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div class="flex flex-wrap gap-2">
-                        @if(request()->hasAny(['search', 'user_type', 'min_rating', 'availability', 'sort']))
+                        @if(request()->hasAny(['search', 'user_type', 'min_rating', 'availability', 'sort', 'timezone']))
                             <!-- Active Filters -->
                             <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
                                 <span class="mr-2">Active filters:</span>
@@ -217,12 +239,53 @@ $seoData = [
                                         </button>
                                     </span>
                                 @endif
+                                @if(request('timezone'))
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 mr-2">
+                                        Timezone: 
+                                        @switch(request('timezone'))
+                                            @case('UTC')
+                                                UTC
+                                                @break
+                                            @case('America/New_York')
+                                                Eastern Time
+                                                @break
+                                            @case('America/Chicago')
+                                                Central Time
+                                                @break
+                                            @case('America/Denver')
+                                                Mountain Time
+                                                @break
+                                            @case('America/Los_Angeles')
+                                                Pacific Time
+                                                @break
+                                            @case('Europe/London')
+                                                GMT
+                                                @break
+                                            @case('Europe/Paris')
+                                                CET
+                                                @break
+                                            @case('Asia/Tokyo')
+                                                JST
+                                                @break
+                                            @case('Australia/Sydney')
+                                                AEST
+                                                @break
+                                            @default
+                                                {{ request('timezone') }}
+                                        @endswitch
+                                        <button type="button" onclick="removeFilter('timezone')" class="ml-1 text-teal-600 hover:text-teal-800">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                @endif
                             </div>
                         @endif
                     </div>
                     
                     <div class="flex space-x-3">
-                        @if(request()->hasAny(['search', 'user_type', 'min_rating', 'availability', 'sort']))
+                        @if(request()->hasAny(['search', 'user_type', 'min_rating', 'availability', 'sort', 'timezone']))
                             <a href="{{ route('marketplace.profiles') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -340,6 +403,27 @@ $seoData = [
                                 <div class="text-sm font-semibold text-gray-900 dark:text-white">{{ $profile->experience_years }} years</div>
                             </div>
                         @endif
+                        @if($profile->user->timezone || $profile->timezone)
+                            @php
+                                $timezone = $profile->user->timezone ?? $profile->timezone;
+                                $timezoneDisplay = match($timezone) {
+                                    'UTC' => 'UTC',
+                                    'America/New_York' => 'EST/EDT',
+                                    'America/Chicago' => 'CST/CDT', 
+                                    'America/Denver' => 'MST/MDT',
+                                    'America/Los_Angeles' => 'PST/PDT',
+                                    'Europe/London' => 'GMT',
+                                    'Europe/Paris' => 'CET',
+                                    'Asia/Tokyo' => 'JST',
+                                    'Australia/Sydney' => 'AEST',
+                                    default => $timezone
+                                };
+                            @endphp
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Timezone</div>
+                                <div class="text-sm font-semibold text-indigo-600 dark:text-indigo-400">{{ $timezoneDisplay }}</div>
+                            </div>
+                        @endif
                         @if($profile->typing_speed_wpm)
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-center">
                                 <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Typing Speed</div>
@@ -367,6 +451,27 @@ $seoData = [
                             </div>
                         </div>
                     @endif
+                    <!-- WPM and Training Modules -->
+                    @if($profile->user->isChatter() || $profile->user->isVA())
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                                @if($profile->user->isChatter())
+                                    <span>
+                                        <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19.36 10.36a1 1 0 00-1.42 0l-5.63 5.64-2.82-2.83a1 1 0 00-1.42 1.42l3.54 3.54a1 1 0 001.42 0l6.36-6.36a1 1 0 000-1.41z"/>
+                                        </svg>
+                                        WPM: {{ $profile->user->userTestResults()->typingTests()->passed()->latest()->first()->wpm ?? 'N/A' }}
+                                    </span>
+                                @endif
+                                <span>
+                                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Modules: {{ $profile->user->trainingProgress()->completed()->count() }}/{{ App\Models\TrainingModule::where('is_active', true)->count() }}
+                                </span>
+                            </div>
+                        </div>
+                    @endif
                 </div>
                 
                 <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
@@ -391,7 +496,7 @@ $seoData = [
                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg transition-colors text-center text-sm font-medium">
                             View Profile
                         </a>
-                        <a href="{{ route('marketplace.messages.create', $profile->user) }}" 
+                        <a href="{{ route('messages.create', $profile->user) }}" 
                            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors text-center text-sm font-medium">
                             Message
                         </a>

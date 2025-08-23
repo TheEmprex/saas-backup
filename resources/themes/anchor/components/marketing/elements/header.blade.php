@@ -2,8 +2,8 @@
     x-data="{ 
         mobileMenuOpen: false, 
         scrolled: false, 
-        showOverlay: false, 
-        topOffset: '5',
+        showOverlay: false,
+        topOffset: '10',
         evaluateScrollPosition(){
             if(window.pageYOffset > this.topOffset){
                 this.scrolled = true;
@@ -26,8 +26,7 @@
             evaluateScrollPosition(); 
         })
     " 
-    :class="{ 'border-gray-200/60 bg-white/90 dark:bg-gray-900/90 dark:border-gray-700 border-b backdrop-blur-lg' : scrolled, 'border-transparent border-b bg-transparent translate-y-0' : !scrolled }" 
-    class="box-content sticky top-0 z-50 w-full h-24"
+    class="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm"
 >
     <div 
         x-show="showOverlay"
@@ -53,120 +52,144 @@
                 </div>
             </div>
 
-            <nav :class="{ 'hidden' : !mobileMenuOpen, 'block md:relative absolute top-0 left-0 md:w-auto w-screen md:h-auto h-screen pointer-events-none md:z-10 z-10' : mobileMenuOpen }" class="h-full md:flex">
-                <ul :class="{ 'hidden md:flex' : !mobileMenuOpen, 'flex flex-col absolute md:relative md:w-auto w-screen h-full md:h-full md:overflow-auto overflow-scroll md:pt-0 mt-24 md:pb-0 pb-48 bg-white dark:bg-gray-800 md:bg-transparent' : mobileMenuOpen }" id="menu" class="flex items-stretch justify-start flex-1 w-full h-full ml-0 border-t border-gray-100 dark:border-gray-700 pointer-events-auto md:items-center md:justify-center gap-x-8 md:w-auto md:border-t-0 md:flex-row">
-                    <li x-data="{ open: false }" @mouseenter="showOverlay=true" @mouseleave="showOverlay=false" class="z-30 flex flex-col items-start h-auto border-b border-gray-100 md:h-full md:border-b-0 group md:flex-row md:items-center">
-                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900 dark:hover:text-gray-100">
-                            <span class="">Platform</span>
-                            <svg :class="{ 'group-hover:-rotate-180' : !mobileMenuOpen, '-rotate-180' : mobileMenuOpen && open }" class="w-5 h-5 transition-all duration-300 ease-out" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" class=""></path></svg>
-                        </a>
-                        <div 
-                            :class="{ 'hidden md:block opacity-0 invisible md:absolute' : !open, 'md:invisible md:opacity-0 md:hidden md:absolute' : open }"
-                            class="top-0 left-0 w-screen space-y-3 transition-transform duration-300 ease-out bg-white border-t border-b border-gray-100 md:shadow-md md:-translate-y-2 md:mt-24 md:block md:group-hover:block md:group-hover:visible md:group-hover:opacity-100 md:group-hover:translate-y-0" x-cloak>
-                            <ul class="flex flex-col justify-between mx-auto max-w-7xl md:px-16 md:flex-row">
-                                <li class="w-full border-l border-gray-100 md:w-1/5">
-                                    <a href="#_" onclick="demoButtonClickMessage(event)" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                        <img src="/wave/img/icons/anchor.png" class="w-12 h-auto" alt="feature 1 icon" />
-                                        <span class="block my-2 text-xs font-bold uppercase text-slate-800">Feature One</span>
-                                        <span class="block text-xs font-medium leading-5 text-slate-500">Highlight your main feature here</span>
-                                    </a>
-                                </li>
-                                <li class="w-full border-l border-gray-100 md:w-1/5">
-                                    <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                        <img src="/wave/img/icons/turtle.png" class="w-12 h-auto" alt="feature 2 icon" />
-                                        <span class="block my-2 text-xs font-bold uppercase text-slate-800">Feature Two</span>
-                                        <span class="block text-xs font-medium leading-5 text-slate-500">Brief description of another feature</span>
-                                    </a>
-                                </li>
-                                <li class="w-full border-l border-gray-100 md:w-1/5">
-                                    <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                        <img src="/wave/img/icons/compass.png" class="w-12 h-auto" alt="feature 3 icon" />
-                                        <span class="block my-2 text-xs font-bold uppercase text-slate-800">Feature Three</span>
-                                        <span class="block text-xs font-medium leading-5 text-slate-500">Describe another one of your features here</span>
-                                    </a>
-                                </li>
-                                <li class="w-full border-l border-gray-100 md:w-1/5">
-                                    <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                        <img src="/wave/img/icons/lighthouse.png" class="w-12 h-auto" alt="feature 4 icon" />
-                                        <span class="block my-2 text-xs font-bold uppercase text-slate-800">Feature Four</span>
-                                        <span class="block text-xs font-medium leading-5 text-slate-500">Add a fourth feature or even a resource here</span>
-                                    </a>
-                                </li>
-                                <li class="w-full border-l border-r border-gray-100 md:w-1/5">
-                                    <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block h-full p-6 text-lg font-semibold hover:bg-gray-50 lg:p-7 lg:py-10">
-                                        <img src="/wave/img/icons/chest.png" class="w-12 h-auto" alt="feature 5 icon" />
-                                        <span class="block my-2 text-xs font-bold uppercase text-slate-800">Feature Five</span>
-                                        <span class="block text-xs font-medium leading-5 text-slate-500">Add another feature highlight or link to a page</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li x-data="{ open: false }" @mouseenter="showOverlay=true" @mouseleave="showOverlay=false" class="z-30 flex flex-col items-start h-auto border-b border-gray-100 md:h-full md:border-b-0 group md:flex-row md:items-center">
-                        <a href="#_" x-on:click="open=!open" class="flex items-center w-full h-16 gap-1 text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent px-7 md:h-full md:px-0 md:w-auto hover:text-gray-900 dark:hover:text-gray-100">
-                            <span class="">Resources</span>
-                            <svg :class="{ 'group-hover:-rotate-180' : !mobileMenuOpen, '-rotate-180' : mobileMenuOpen && open }" class="w-5 h-5 transition-all duration-300 ease-out" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" class=""></path></svg>
-                        </a>
-                        <div 
-                            :class="{ 'hidden md:block opacity-0 invisible md:absolute' : !open, 'md:invisible md:opacity-0 md:hidden md:absolute' : open }"
-                            class="top-0 left-0 w-screen space-y-3 transition-transform duration-300 ease-out bg-white border-t border-b border-gray-100 md:shadow-md md:-translate-y-2 md:mt-24 md:block md:group-hover:block md:group-hover:visible md:group-hover:opacity-100 md:group-hover:translate-y-0" x-cloak>
-                            <ul class="flex flex-col justify-between mx-auto max-w-7xl md:flex-row md:px-12">
-                                <div class="flex flex-col w-full border-l border-r divide-x md:flex-row divide-zinc-100 border-zinc-100">
-                                    <div class="w-auto divide-y divide-zinc-100">
-                                        <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block text-sm p-7 hover:bg-neutral-100 group">
-                                            <span class="block mb-1 font-medium text-black">Authentication</span>
-                                            <span class="block font-light leading-5 opacity-50">Configure the login, register, and forgot password for your app</span>
-                                        </a>
-                                        <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block text-sm p-7 hover:bg-neutral-100 group">
-                                            <span class="block mb-1 font-medium text-black">Roles and Permissions</span>
-                                            <span class="block leading-5 opacity-50">We utilize the bullet-proof Spatie Permissions package</span>
-                                        </a>
-                                    </div>
-                                    <div class="w-auto divide-y divide-zinc-100">
-                                        <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block text-sm p-7 hover:bg-neutral-100">
-                                            <span class="block mb-1 font-medium text-black">Posts and Pages</span>
-                                            <span class="block font-light leading-5 opacity-50">Easily write blog articles and create pages for your application</span>
-                                        </a>
-                                        <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block text-sm p-7 hover:bg-neutral-100">
-                                            <span class="block mb-1 font-medium text-black">Themes</span>
-                                            <span class="block leading-5 opacity-50">Kick-start your app with a pre-built theme or create your own</span>
-                                        </a>
-                                    </div>
-                                    <div class="w-auto divide-y divide-zinc-100">
-                                        <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block text-sm p-7 hover:bg-neutral-100">
-                                            <span class="block mb-1 font-medium text-black">Settings and More</span>
-                                            <span class="block leading-5 opacity-50">Easily create and update app settings. And so much more</span>
-                                        </a>
-                                        <a href="#_" onclick="event.preventDefault(); new FilamentNotification().title('Modify this button in your theme folder').icon('heroicon-o-pencil-square').iconColor('info').send()" class="block text-sm p-7 hover:bg-neutral-100">
-                                            <span class="block mb-1 font-medium text-black">Subscriptions</span>
-                                            <span class="block leading-5 opacity-50">Integration payments and let users subscribe to a plan</span>
-                                        </a>
-                                    </div>
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <!-- Platform Dropdown -->
+                <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                    <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">
+                        <span>Platform</span>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-200" 
+                         x-transition:enter-start="opacity-0 transform scale-95" 
+                         x-transition:enter-end="opacity-100 transform scale-100" 
+                         x-transition:leave="transition ease-in duration-150" 
+                         x-transition:leave-start="opacity-100 transform scale-100" 
+                         x-transition:leave-end="opacity-0 transform scale-95"
+                         class="absolute top-full left-0 mt-2 w-96 bg-white rounded-xl border border-gray-200 shadow-xl z-[9999]"
+                         style="min-width: 320px; max-width: 400px;">
+                        <div class="p-4 space-y-2">
+                            <a href="{{ route('marketplace.index') }}" class="flex items-start space-x-3 p-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                                    </svg>
                                 </div>
-                            </ul>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-semibold text-gray-900">Browse Talent</h3>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Find verified professionals</p>
+                                </div>
+                            </a>
+                            <a href="{{ route('marketplace.jobs.index') }}" class="flex items-start space-x-3 p-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-semibold text-gray-900">Job Board</h3>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Post or find opportunities</p>
+                                </div>
+                            </a>
+                            <a href="{{ route('messages.index') }}" class="flex items-start space-x-3 p-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-semibold text-gray-900">Messaging</h3>
+                                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Communicate securely</p>
+                                </div>
+                            </a>
                         </div>
-                    </li>
-                    <li class="flex-shrink-0 h-16 border-b border-gray-100 dark:border-gray-700 md:border-b-0 md:h-full">
-                        <a href="{{ route('pricing') }}" class="flex items-center h-full text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 md:px-0 px-7 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent hover:text-gray-900 dark:hover:text-gray-100">
-                            Pricing
-                        </a>
-                    </li>
-                    <li class="flex-shrink-0 h-16 border-b border-gray-100 dark:border-gray-700 md:border-b-0 md:h-full">
-                        <a href="{{ route('blog') }}" class="flex items-center h-full text-sm font-semibold text-gray-700 dark:text-gray-200 transition duration-300 md:px-0 px-7 hover:bg-gray-100 dark:hover:bg-gray-700 md:hover:bg-transparent hover:text-gray-900 dark:hover:text-gray-100">Blog</a>
-                    </li>
+                    </div>
+                </div>
 
-                    @guest
-                        <li class="relative z-30 flex flex-col items-center justify-center flex-shrink-0 w-full h-auto pt-3 space-y-3 text-sm md:hidden px-7">
-                            <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
-                            <x-button href="{{ route('register') }}" tag="a" class="w-full text-sm">Sign Up</x-button>
-                        </li>
-                    @else
-                        <li class="flex items-center justify-center w-full pt-3 md:hidden px-7">
-                            <x-button href="{{ route('dashboard') }}" tag="a" class="w-full text-sm">View Dashboard</x-button>
-                        </li>
-                    @endguest
+                <!-- Resources Dropdown -->
+                <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                    <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">
+                        <span>Resources</span>
+                        <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-200" 
+                         x-transition:enter-start="opacity-0 transform scale-95" 
+                         x-transition:enter-end="opacity-100 transform scale-100" 
+                         x-transition:leave="transition ease-in duration-150" 
+                         x-transition:leave-start="opacity-100 transform scale-100" 
+                         x-transition:leave-end="opacity-0 transform scale-95"
+                         class="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 py-3 z-[9999]"
+                         style="box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform-origin: top left;">
+                        <div class="grid grid-cols-1 gap-2">
+                            <a href="{{ route('terms-of-service') }}" class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg mx-2">
+                                <h3 class="text-sm font-medium text-gray-900">Terms of Service</h3>
+                                <p class="text-xs text-gray-500 mt-1">Our terms and conditions</p>
+                            </a>
+                            <a href="{{ route('privacy-policy') }}" class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg mx-2">
+                                <h3 class="text-sm font-medium text-gray-900">Privacy Policy</h3>
+                                <p class="text-xs text-gray-500 mt-1">How we protect your data</p>
+                            </a>
+                            <a href="{{ route('trust-safety') }}" class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg mx-2">
+                                <h3 class="text-sm font-medium text-gray-900">Trust & Safety</h3>
+                                <p class="text-xs text-gray-500 mt-1">Platform safety commitment</p>
+                            </a>
+                            <a href="{{ route('contact') }}" class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg mx-2">
+                                <h3 class="text-sm font-medium text-gray-900">Contact Support</h3>
+                                <p class="text-xs text-gray-500 mt-1">Get help from our team</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
-                </ul>
+                <!-- Simple Links -->
+                <a href="{{ route('pricing') }}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">Pricing</a>
+                <a href="{{ route('blog') }}" class="px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">Blog</a>
+            </nav>
+
+            <!-- Mobile Navigation -->
+            <nav :class="{ 'hidden': !mobileMenuOpen }" class="md:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+                <div class="px-4 py-6 space-y-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900 mb-3">Platform</h3>
+                        <div class="pl-4 space-y-3">
+                            <a href="{{ route('marketplace.index') }}" class="block text-sm text-gray-600 hover:text-indigo-600">Browse Talent</a>
+                            <a href="{{ route('marketplace.jobs.index') }}" class="block text-sm text-gray-600 hover:text-indigo-600">Job Board</a>
+                            <a href="{{ route('messages.index') }}" class="block text-sm text-gray-600 hover:text-indigo-600">Messaging</a>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-900 mb-3">Resources</h3>
+                        <div class="pl-4 space-y-3">
+                            <a href="{{ route('terms-of-service') }}" class="block text-sm text-gray-600 hover:text-indigo-600">Terms of Service</a>
+                            <a href="{{ route('privacy-policy') }}" class="block text-sm text-gray-600 hover:text-indigo-600">Privacy Policy</a>
+                            <a href="{{ route('contact') }}" class="block text-sm text-gray-600 hover:text-indigo-600">Contact Support</a>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-gray-200">
+                        <a href="{{ route('pricing') }}" class="block text-sm font-medium text-gray-900 mb-3">Pricing</a>
+                        <a href="{{ route('blog') }}" class="block text-sm font-medium text-gray-900 mb-4">Blog</a>
+                        
+                        @guest
+                            <div class="space-y-3 pt-4">
+                                <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
+                                <x-button href="{{ route('register') }}" tag="a" class="w-full text-sm">Sign Up</x-button>
+                            </div>
+                        @else
+                            <div class="pt-4">
+                                <x-button href="{{ route('dashboard') }}" tag="a" class="w-full text-sm">View Dashboard</x-button>
+                            </div>
+                        @endguest
+                    </div>
+                </div>
             </nav>
             
             @guest

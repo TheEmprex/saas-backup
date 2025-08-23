@@ -69,6 +69,9 @@ class CustomAuthController extends Controller
         // Fire the registered event to send verification email
         event(new Registered($user));
 
+        // Lock the user type after registration
+        $user->lockUserType();
+
         // Don't auto-login, redirect to verification notice
         return redirect()->route('verification.notice')
             ->with('success', 'Registration successful! Please check your email to verify your account.');

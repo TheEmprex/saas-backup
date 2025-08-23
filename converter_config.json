@@ -1,0 +1,11 @@
+{
+  "input_dir": "html_files",
+  "output_dir": "converted_pages",
+  "template_name_prefix": "page",
+  "template_type": "page",
+  "log_level": "INFO",
+  "create_backup": true,
+  "optimize_assets": true,
+  "convert_inline_css": false,
+  "add_hooks": true
+}

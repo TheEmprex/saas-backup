@@ -51,7 +51,7 @@
                                     Post New Job
                                 </a>
                             @endif
-                            <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
+                            <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
@@ -240,7 +240,7 @@
                                     </svg>
                                     Choose Your Plan
                                 </a>
-                                <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
+                                <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
@@ -328,7 +328,7 @@
                                 <h3 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">No Featured Jobs Yet</h3>
                                 <p class="text-gray-600 dark:text-gray-400 mb-6">Be the first to discover amazing opportunities!</p>
                                 <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                                    <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
+                                    <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-6 py-3 bg-white dark:bg-zinc-700 text-gray-900 dark:text-white rounded-xl font-semibold shadow-lg hover:shadow-xl border border-gray-200 dark:border-zinc-600 transform hover:scale-105 transition-all duration-200">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                         </svg>
@@ -472,7 +472,7 @@
                         </div>
                         <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                             <span>Status</span>
-                            <a href="{{ route('marketplace.messages') }}" class="text-purple-600 dark:text-purple-400 hover:underline">View All</a>
+                            <a href="{{ route('messages.index') }}" class="text-purple-600 dark:text-purple-400 hover:underline">View All</a>
                         </div>
                     </div>
                 </div>
@@ -538,19 +538,33 @@
 
             <!-- Recent Activity -->
             <div class="mb-8">
-                <div class="mb-4">
-                    <h2 class="text-lg font-semibold">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Activity</span></h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm">Your latest job posts and applications</p>
-                </div>
+                <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl shadow-sm p-8">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">Activity</span></h2>
+                        <p class="text-gray-600 dark:text-gray-400">Your latest job posts and applications</p>
+                    </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Recent Jobs -->
                 @if($user->isAgency())
-                    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow border border-gray-200 dark:border-zinc-700">
-                        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+                    <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
+                        <div class="p-6 border-b border-gray-200 dark:border-zinc-700">
                             <div class="flex justify-between items-center">
-                                <h3 class="text-lg font-semibold">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Job Posts</span></h3>
-                                <a href="{{ route('marketplace.jobs.create') }}" class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700 transition-colors">
-                                    <i class="fas fa-plus mr-1"></i>Post Job
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Job Posts</span></h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Your latest job listings</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('marketplace.jobs.create') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                    Post Job
                                 </a>
                             </div>
                         </div>
@@ -558,26 +572,106 @@
                             @if($recentJobs->count() > 0)
                                 <div class="space-y-4">
                                     @foreach($recentJobs as $job)
-                                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
-                                            <div>
-                                                <h4 class="font-medium text-gray-900 dark:text-gray-100">{{ $job->title }}</h4>
-                                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $job->market }} • {{ ucfirst($job->rate_type) }}</p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $job->applications->count() }} applications</p>
-                                            </div>
-                                            <div class="text-right">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    {{ ucfirst($job->status) }}
-                                                </span>
-                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">{{ $job->created_at->diffForHumans() }}</p>
+                                        <div class="group p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl hover:shadow-md transition-all duration-200">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center space-x-3 mb-2">
+                                                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <h4 class="font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ $job->title }}</h4>
+                                                    </div>
+                                                    <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span class="capitalize">{{ str_replace('_', ' ', $job->market) }}</span>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                                            </svg>
+                                                            <span class="capitalize">{{ str_replace('_', ' ', $job->rate_type) }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                                                        <div class="flex items-center">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                            </svg>
+                                                            <span class="font-medium text-blue-600 dark:text-blue-400">{{ $job->applications->count() }} applications</span>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span>{{ $job->created_at->diffForHumans() }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4 flex flex-col items-end space-y-2">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                                        @if($job->status === 'active') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                                                        @elseif($job->status === 'draft') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
+                                                        @else bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 @endif">
+                                                        @if($job->status === 'active')
+                                                            ✅ Active
+                                                        @elseif($job->status === 'draft')
+                                                            📝 Draft
+                                                        @else
+                                                            ⏸️ {{ ucfirst($job->status) }}
+                                                        @endif
+                                                    </span>
+                                                    <div class="flex space-x-1">
+                                                        <a href="{{ route('marketplace.jobs.show', $job) }}" class="inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-md hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                            </svg>
+                                                            View
+                                                        </a>
+                                                        @if($job->applications->count() > 0)
+                                                            <a href="{{ route('marketplace.jobs.applications', $job) }}" class="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
+                                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                                </svg>
+                                                                {{ $job->applications->count() }}
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
+                                
+                                <!-- Show More Jobs Link -->
+                                @if($recentJobs->count() >= 3)
+                                    <div class="mt-6 text-center">
+                                        <a href="{{ route('marketplace.jobs.my-jobs') }}" class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+                                            <span>View all your jobs</span>
+                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                @endif
                             @else
-                                <div class="text-center py-8">
-                                    <i class="fas fa-briefcase text-gray-400 text-3xl mb-4"></i>
-                                    <p class="text-gray-500 dark:text-gray-400">No jobs posted yet</p>
-                                    <a href="{{ route('marketplace.jobs.create') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                <div class="text-center py-12">
+                                    <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No jobs posted yet</h4>
+                                    <p class="text-gray-500 dark:text-gray-400 mb-4">Start by posting your first job to find the perfect talent</p>
+                                    <a href="{{ route('marketplace.jobs.create') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
                                         Post your first job
                                     </a>
                                 </div>
@@ -588,42 +682,137 @@
 
                 <!-- Recent Applications -->
                 @if($user->isChatter())
-                    <div class="bg-white dark:bg-zinc-800 rounded-lg shadow border border-gray-200 dark:border-zinc-700">
-                        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
+                    <div class="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
+                        <div class="p-6 border-b border-gray-200 dark:border-zinc-700">
                             <div class="flex justify-between items-center">
-                                <h3 class="text-lg font-semibold">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">Applications</span></h3>
-                                <a href="{{ route('marketplace.jobs') }}" class="bg-green-600 text-white px-3 py-1 rounded-md text-sm hover:bg-green-700 transition-colors">
-                                    <i class="fas fa-search mr-1"></i>Find Jobs
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-3">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Recent <span class="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">Applications</span></h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Your latest job applications</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Find Jobs
                                 </a>
                             </div>
                         </div>
                         <div class="p-6">
-                            @if($myApplications->count() > 0)
+                            @if(($recentApplications ?? collect())->count() > 0)
                                 <div class="space-y-4">
-                                    @foreach($myApplications as $application)
-                                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-900 rounded-lg">
-                                            <div>
-                                                <h4 class="font-medium text-gray-900 dark:text-gray-100">{{ $application->jobPost->title }}</h4>
-                                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ $application->jobPost->user->name }}</p>
-                                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Applied {{ $application->created_at->diffForHumans() }}</p>
-                                            </div>
-                                            <div class="text-right">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                                    @if($application->status == 'pending') bg-yellow-100 text-yellow-800
-                                                    @elseif($application->status == 'hired') bg-green-100 text-green-800
-                                                    @elseif($application->status == 'rejected') bg-red-100 text-red-800
-                                                    @else bg-gray-100 text-gray-800 @endif">
-                                                    {{ ucfirst($application->status) }}
-                                                </span>
+                                    @foreach($recentApplications ?? [] as $application)
+                                        <div class="group p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl hover:shadow-md transition-all duration-200">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex-1">
+                                                    <div class="flex items-center space-x-3 mb-2">
+                                                        <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <h4 class="font-bold text-gray-900 dark:text-gray-100 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">{{ $application->jobPost->title }}</h4>
+                                                    </div>
+                                                    <div class="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                                            </svg>
+                                                            <span>{{ $application->jobPost->user->name }}</span>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span class="capitalize">{{ str_replace('_', ' ', $application->jobPost->market) }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-500">
+                                                        <div class="flex items-center">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                            </svg>
+                                                            <span>Applied {{ $application->created_at->diffForHumans() }}</span>
+                                                        </div>
+                                                        @if($application->jobPost->rate_type && $application->proposed_rate)
+                                                            <div class="flex items-center">
+                                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                                                </svg>
+                                                                <span class="font-medium text-green-600 dark:text-green-400">
+                                                                    @if($application->jobPost->rate_type === 'hourly')
+                                                                        ${{ $application->proposed_rate }}/hr
+                                                                    @elseif($application->jobPost->rate_type === 'fixed')
+                                                                        ${{ $application->proposed_rate }}
+                                                                    @else
+                                                                        {{ $application->proposed_rate }}%
+                                                                    @endif
+                                                                </span>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="ml-4 flex flex-col items-end space-y-2">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                                        @if($application->status == 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
+                                                        @elseif($application->status == 'accepted' || $application->status == 'hired') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                                                        @elseif($application->status == 'rejected') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300
+                                                        @else bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300 @endif">
+                                                        @if($application->status == 'pending')
+                                                            ⏳ Pending
+                                                        @elseif($application->status == 'accepted')
+                                                            ✅ Accepted
+                                                        @elseif($application->status == 'hired')
+                                                            🎉 Hired
+                                                        @elseif($application->status == 'rejected')
+                                                            ❌ Rejected
+                                                        @else
+                                                            {{ ucfirst($application->status) }}
+                                                        @endif
+                                                    </span>
+                                                    <a href="{{ route('marketplace.jobs.show', $application->jobPost) }}" class="inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium rounded-md hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                        </svg>
+                                                        View Job
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     @endforeach
                                 </div>
+                                
+                                <!-- Show More Applications Link -->
+                                @if(($recentApplications ?? collect())->count() >= 3)
+                                    <div class="mt-6 text-center">
+                                        <a href="{{ route('marketplace.applications.index') }}" class="inline-flex items-center text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition-colors">
+                                            <span>View all your applications</span>
+                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                @endif
                             @else
-                                <div class="text-center py-8">
-                                    <i class="fas fa-file-alt text-gray-400 text-3xl mb-4"></i>
-                                    <p class="text-gray-500 dark:text-gray-400">No applications yet</p>
-                                    <a href="{{ route('marketplace.jobs') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                <div class="text-center py-12">
+                                    <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <svg class="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No applications yet</h4>
+                                    <p class="text-gray-500 dark:text-gray-400 mb-4">Start by applying to jobs that match your skills</p>
+                                    <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
                                         Browse available jobs
                                     </a>
                                 </div>
@@ -631,8 +820,9 @@
                         </div>
                     </div>
                 @endif
+                </div>
             </div>
-            </div>
+        </div>
 
             <!-- Quick Actions -->
             <div class="mb-8">
@@ -641,7 +831,7 @@
                     <p class="text-gray-600 dark:text-gray-400">Frequently used features and shortcuts</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <a href="{{ route('marketplace.jobs') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200">
+                    <a href="{{ route('marketplace.jobs.index') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -669,7 +859,7 @@
                         </div>
                     </a>
                     
-                    <a href="{{ route('marketplace.messages') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-200">
+                    <a href="{{ route('messages.index') }}" class="group bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-purple-300 dark:hover:border-purple-600 transition-all duration-200">
                         <div class="flex items-center space-x-4">
                             <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

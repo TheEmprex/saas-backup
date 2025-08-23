@@ -1,0 +1,28 @@
+{
+    "name": "OnlyVerified - Premium Talent Platform",
+    "short_name": "OnlyVerified",
+    "description": "Premium talent platform connecting verified professionals",
+    "icons": [
+        {
+            "src": "/onlyverified-favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/favicon.ico",
+            "sizes": "16x16 32x32 48x48",
+            "type": "image/x-icon"
+        }
+    ],
+    "theme_color": "#4F46E5",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/"
+}

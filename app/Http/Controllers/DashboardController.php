@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\JobPost;
 use App\Models\JobApplication;
-use App\Models\Message;
 use App\Models\Rating;
 use App\Models\UserProfile;
 use App\Models\KycVerification;
@@ -12,7 +11,6 @@ use App\Models\EarningsVerification;
 use App\Models\Contract;
 use App\Models\Earning;
 use App\Models\Analytics;
-use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -140,8 +138,8 @@ class DashboardController extends Controller
         }
         
         try {
-            if ($user->isChatter()) {
-                // Chatters need KYC verification
+            if ($user->userType && $user->userType->requires_kyc) {
+                // Users with KYC-required types need verification
                 $kycVerification = $user->kycVerification;
                 return [
                     'type' => 'kyc',
@@ -214,7 +212,7 @@ class DashboardController extends Controller
         
         // Add typing test requirement only for chatters
         try {
-            if ($user->userType && $user->isChatter()) {
+            if ($user->isChatter()) {
                 $totalFields++; // Add typing test to total fields
                 if ($user->userProfile && $user->userProfile->typing_speed_wpm) {
                     $completedFields++;
@@ -226,7 +224,7 @@ class DashboardController extends Controller
         
         // Check appropriate verification type
         try {
-            if ($user->userType && $user->isChatter() && $user->isKycVerified()) {
+            if ($user->userType && $user->userType->requires_kyc && $user->isKycVerified()) {
                 $completedFields++;
             } elseif ($user->userType && $user->isAgency() && $user->isEarningsVerified()) {
                 $completedFields++;
@@ -246,7 +244,7 @@ class DashboardController extends Controller
     {
         $totalApplications = JobApplication::where('user_id', $user->id)->count();
         $acceptedApplications = JobApplication::where('user_id', $user->id)->where('status', 'accepted')->count();
-        $unreadMessages = Message::where('recipient_id', $user->id)->where('is_read', false)->count();
+        $unreadMessages = 0; // Messaging feature disabled
         $averageRating = Rating::where('rated_id', $user->id)->avg('overall_rating') ?: 0;
         
         return [
@@ -285,24 +283,8 @@ class DashboardController extends Controller
             ]);
         }
         
-        // Recent messages
-        $recentMessages = Message::where('recipient_id', $user->id)
-            ->with(['sender'])
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
-            
-        foreach ($recentMessages as $message) {
-            $activities->push([
-                'type' => 'message',
-                'title' => 'Message from ' . $message->sender->name,
-                'description' => substr($message->message_content, 0, 50) . '...',
-                'created_at' => $message->created_at,
-                'url' => route('messages.web.show', $message->sender),
-                'icon' => 'message-circle',
-                'color' => 'blue'
-            ]);
-        }
+        // Recent messages - messaging feature disabled
+        // No recent messages to display
         
         // Recent job posts
         $recentJobs = JobPost::where('user_id', $user->id)
@@ -517,11 +499,8 @@ class DashboardController extends Controller
      */
     private function getResponseRate($user)
     {
-        // Calculate based on message responses
-        $totalMessages = Message::where('recipient_id', $user->id)->count();
-        $respondedMessages = Message::where('sender_id', $user->id)->count();
-        
-        return $totalMessages > 0 ? round(($respondedMessages / $totalMessages) * 100, 1) : 0;
+        // Messaging feature disabled - return default rate
+        return 95.0; // Default response rate
     }
     
     /**
@@ -709,9 +688,7 @@ class DashboardController extends Controller
             ->whereYear('created_at', now()->year)
             ->count();
         
-        $unreadMessages = Message::where('recipient_id', $user->id)
-            ->where('is_read', false)
-            ->count();
+        $unreadMessages = 0; // Messaging feature disabled
         
         $averageRating = Rating::where('rated_id', $user->id)
             ->avg('overall_rating') ?: 0;

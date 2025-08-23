@@ -25,6 +25,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \Filament\Http\Middleware\DisableBladeIconComponents::class,
         \App\Http\Middleware\UpdateUserOnlineStatus::class,
+        \App\Http\Middleware\SecurityHeadersMiddleware::class,
     ];
 
     /**
@@ -44,9 +45,10 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\ApiSecurityMiddleware::class,
         ],
     ];
 
@@ -75,5 +77,8 @@ class Kernel extends HttpKernel
         'prevent.duplicate.registration' => \App\Http\Middleware\PreventDuplicateRegistration::class,
         'enforce.kyc' => \App\Http\Middleware\EnforceKycVerification::class,
         'can.post.jobs' => \App\Http\Middleware\EnsureUserCanPostJobs::class,
+        'production.security' => \App\Http\Middleware\ProductionSecurity::class,
+        'rate.limit' => \App\Http\Middleware\AdvancedRateLimitMiddleware::class,
+        'impersonate' => \Lab404\Impersonate\Middleware\ProtectFromImpersonation::class,
     ];
 }

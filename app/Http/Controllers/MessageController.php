@@ -3,240 +3,172 @@
 namespace App\Http\Controllers;
 
 use App\Models\Message;
+use App\Models\Conversation;
 use App\Models\User;
-use App\Models\JobPost;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class MessageController extends Controller
 {
-    public function index()
+    /**
+     * Get all messages for a conversation
+     */
+    public function index($conversationId): JsonResponse
     {
-        $userId = Auth::id();
-        $conversations = collect();
+        $conversation = Conversation::findOrFail($conversationId);
         
-        // Get all messages for this user
-        $messages = Message::where('sender_id', $userId)
-            ->orWhere('recipient_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->get();
-        
-        if ($messages->isEmpty()) {
-            return view('theme::messages.index', compact('conversations'));
-        }
-        
-        // Group messages by conversation partner
-        $conversationData = [];
-        
-        foreach ($messages as $message) {
-            $contactId = ($message->sender_id === $userId) ? $message->recipient_id : $message->sender_id;
-            
-            if (!isset($conversationData[$contactId])) {
-                $conversationData[$contactId] = [
-                    'contact_id' => $contactId,
-                    'last_message_time' => $message->created_at,
-                    'unread_count' => 0,
-                    'last_message' => $message
-                ];
-            }
-            
-            // Update last message time if this message is newer
-            if ($message->created_at > $conversationData[$contactId]['last_message_time']) {
-                $conversationData[$contactId]['last_message_time'] = $message->created_at;
-                $conversationData[$contactId]['last_message'] = $message;
-            }
-            
-            // Count unread messages
-            if ($message->recipient_id === $userId && !$message->is_read) {
-                $conversationData[$contactId]['unread_count']++;
-            }
-        }
-        
-        // Convert to collection and sort by last message time
-        foreach ($conversationData as $data) {
-            $contact = User::with(['userProfile', 'userType'])->find($data['contact_id']);
-            
-            if ($contact) {
-                $conversation = (object) [
-                    'id' => $data['contact_id'], // Use contact_id as the conversation ID for routing
-                    'contact_id' => $data['contact_id'],
-                    'otherParticipant' => $contact,
-                    'latest_message' => $data['last_message'],
-                    'unread_count' => $data['unread_count'],
-                    'updated_at' => $data['last_message_time'],
-                    'last_message_time' => $data['last_message_time']
-                ];
-                
-                $conversations->push($conversation);
-            }
-        }
-        
-        $conversations = $conversations->sortByDesc('last_message_time')->values();
-        
-        return view('theme::messages.index', compact('conversations'));
-    }
-
-    public function show(Request $request, $contactId)
-    {
-        $userId = Auth::id();
-        $contact = User::with(['userProfile', 'userType'])->findOrFail($contactId);
-
-        // Mark messages as read on initial load or as needed
-        if (!$request->wantsJson()) {
-            Message::where('sender_id', $contactId)
-                ->where('recipient_id', $userId)
-                ->where('is_read', false)
-                ->update(['is_read' => true, 'read_at' => now()]);
-        }
-
-        $query = Message::conversation($userId, $contactId)
-            ->with(['sender', 'jobPost']);
-
-        // Handle AJAX requests for messages
-        if ($request->wantsJson()) {
-            // Fetch new messages since the last known ID
-            if ($lastId = $request->get('last_id')) {
-                $messages = $query->where('id', '>', $lastId)->orderBy('created_at', 'asc')->get();
-                return response()->json(['messages' => $messages]);
-            }
-            
-            // Fetch older messages for infinite scroll
-            $messages = $query->orderBy('created_at', 'desc')->paginate(20);
-            $messages->setCollection($messages->getCollection()->reverse());
-            return response()->json(['messages' => $messages]);
-        }
-
-        // Initial page load: get the latest page of messages
-        $messages = $query->orderBy('created_at', 'desc')->paginate(20);
-        $messages->setCollection($messages->getCollection()->reverse());
-
-        return view('theme::messages.show', compact('contact', 'messages'));
-    }
-
-    public function store(Request $request, $user)
-    {
-        try {
-            $validated = $request->validate([
-                'content' => 'required_without:attachments|nullable|string|max:2000',
-                'attachments' => 'required_without:content|nullable|array|max:5',
-                'attachments.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,zip|max:10240', // 10MB max per file
-                'job_post_id' => 'nullable|exists:job_posts,id',
-            ]);
-
-            $attachments = [];
-            if ($request->hasFile('attachments')) {
-                foreach ($request->file('attachments') as $file) {
-                    $path = $file->store('message-attachments', 'public');
-                    $attachments[] = [
-                        'name' => $file->getClientOriginalName(),
-                        'path' => $path,
-                        'size' => $file->getSize(),
-                        'type' => $file->getMimeType(),
-                    ];
-                }
-            }
-
-            $message = Message::create([
-                'sender_id' => Auth::id(),
-                'recipient_id' => $user,
-                'message_content' => $validated['content'] ?? '',
-                'attachments' => $attachments,
-                'message_type' => !empty($attachments) ? 'file' : 'text',
-                'thread_id' => 'thread_' . min(Auth::id(), $user) . '_' . max(Auth::id(), $user),
-                'job_post_id' => $validated['job_post_id'] ?? null,
-            ]);
-
-            if ($request->ajax()) {
-                // Eager load sender and append formatted attachments for the JSON response
-                $message->load('sender');
-                return response()->json(['success' => true, 'message' => $message]);
-            }
-
-            return redirect()->route('messages.web.show', $user);
-
-        } catch (\Exception $e) {
-            Log::error('Message store error: ' . $e->getMessage());
-            if ($request->ajax()) {
-                return response()->json(['success' => false, 'error' => 'Failed to send message.'], 500);
-            }
-            return back()->with('error', 'Failed to send message.');
-        }
-    }
-    
-    public function create(Request $request, $recipientId)
-    {
-        $recipient = User::with(['userProfile', 'userType'])->findOrFail($recipientId);
-        
-        // Check if user can message this recipient
-        if (!$this->canMessage(Auth::id(), $recipientId)) {
-            return redirect()->back()->with('error', 'You cannot message this user.');
-        }
-        
-        // Check if there's a job context
-        $job = null;
-        if ($request->has('job_id')) {
-            $job = JobPost::findOrFail($request->get('job_id'));
-            // Verify the recipient owns this job
-            if ($job->user_id != $recipientId) {
-                return redirect()->back()->with('error', 'Invalid job reference.');
-            }
-        }
-        
-        return view('theme::messages.create', compact('recipient', 'job'));
-    }
-    
-    private function canMessage($senderId, $recipientId)
-    {
-        // Basic permission check - users can message if:
-        // 1. They are different users (can't message yourself)
-        // 2. Both users exist in the system
-        // 3. Both users are active
-        
-        if ($senderId == $recipientId) {
-            return false;
-        }
-        
-        $sender = User::find($senderId);
-        $recipient = User::find($recipientId);
-        
-        if (!$sender || !$recipient) {
-            return false;
-        }
-        
-        // Allow messaging between all verified users
-        return true;
-    }
-    
-    public function markAsRead(Message $message)
-    {
-        if ($message->recipient_id !== Auth::id()) {
+        // Ensure user has access to this conversation
+        $userId = auth()->id();
+        if ($conversation->user1_id !== $userId && $conversation->user2_id !== $userId) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
         
-        $message->markAsRead();
-        
-        return response()->json(['success' => true]);
+        $messages = $conversation->messages()
+            ->with(['sender:id,name,email', 'replyTo:id,content,sender_id'])
+            ->orderBy('created_at')
+            ->get();
+
+        return response()->json($messages);
     }
-    
-    public function getUnreadCount()
+
+    /**
+     * Store a newly sent message
+     */
+    public function store(Request $request): JsonResponse
     {
-        $count = Message::where('recipient_id', Auth::id())
-            ->where('is_read', false)
-            ->count();
+        $data = $request->validate([
+            'conversation_id' => 'required|exists:conversations,id',
+            'content' => 'nullable|string',
+            'message_type' => 'required|string|in:text,image,video,audio,file,call',
+            'file_url' => 'nullable|string',
+            'file_name' => 'nullable|string',
+            'file_size' => 'nullable|integer',
+            'reply_to_id' => 'nullable|exists:messages,id'
+        ]);
+
+        $data['sender_id'] = auth()->id();
         
-        return response()->json(['unread_count' => $count]);
+        // Validate user has access to conversation
+        $conversation = Conversation::findOrFail($data['conversation_id']);
+        $userId = auth()->id();
+        if ($conversation->user1_id !== $userId && $conversation->user2_id !== $userId) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $message = Message::create($data);
+        $message->load('sender:id,name,email');
+
+        // Update conversation's last message
+        $conversation->update([
+            'last_message_id' => $message->id,
+            'updated_at' => now()
+        ]);
+
+        return response()->json($message, 201);
     }
-    
-    public function getUserStatus(User $user)
+
+    /**
+     * Update the specified message (for editing)
+     */
+    public function update(Request $request, $id): JsonResponse
     {
-        // Check if user is online (last seen within last 10 minutes)
-        $isOnline = $user->last_seen_at && $user->last_seen_at->diffInMinutes() < 10;
+        $message = Message::findOrFail($id);
+        
+        // Only sender can edit message
+        if ($message->sender_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $data = $request->validate([
+            'content' => 'required|string'
+        ]);
+
+        $data['edited_at'] = now();
+        $message->update($data);
+        $message->load('sender:id,name,email');
+
+        return response()->json($message);
+    }
+
+    /**
+     * Delete a specific message
+     */
+    public function destroy($id): JsonResponse
+    {
+        $message = Message::findOrFail($id);
+        
+        // Only sender can delete message
+        if ($message->sender_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        $message->delete();
+
+        return response()->json(['status' => 'Message deleted successfully']);
+    }
+
+    /**
+     * Mark message as read
+     */
+    public function markAsRead($id): JsonResponse
+    {
+        $message = Message::findOrFail($id);
+        $message->markAsReadBy(auth()->id());
+        
+        return response()->json(['status' => 'Message marked as read']);
+    }
+
+    /**
+     * Add reaction to message
+     */
+    public function addReaction(Request $request, $id): JsonResponse
+    {
+        $message = Message::findOrFail($id);
+        
+        $data = $request->validate([
+            'emoji' => 'required|string|max:10'
+        ]);
+        
+        $message->addReaction($data['emoji'], auth()->id());
+        $message->load('sender:id,name,email');
+        
+        return response()->json($message);
+    }
+
+    /**
+     * Upload file for message
+     */
+    public function uploadFile(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|max:10240', // 10MB max
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('messages', 'public');
         
         return response()->json([
-            'online' => $isOnline,
-            'last_seen' => $user->last_seen_at ? $user->last_seen_at->diffForHumans() : 'Never'
+            'file_url' => Storage::url($path),
+            'file_name' => $file->getClientOriginalName(),
+            'file_size' => $file->getSize(),
+            'message_type' => $this->getFileType($file->getMimeType())
         ]);
+    }
+
+    /**
+     * Get file type based on mime type
+     */
+    private function getFileType($mimeType): string
+    {
+        if (str_starts_with($mimeType, 'image/')) {
+            return 'image';
+        } elseif (str_starts_with($mimeType, 'video/')) {
+            return 'video';
+        } elseif (str_starts_with($mimeType, 'audio/')) {
+            return 'audio';
+        } else {
+            return 'file';
+        }
     }
 }

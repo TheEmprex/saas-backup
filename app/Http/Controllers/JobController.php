@@ -25,7 +25,7 @@ class JobController extends Controller
         
         // Check if user can post jobs (only agencies)
         if (!$user->isAgency()) {
-            abort(403, 'Only agencies are authorized to post jobs.');
+            return view('theme::marketplace.jobs.access-denied');
         }
         
         // Get subscription info
@@ -86,7 +86,7 @@ class JobController extends Controller
             'hourly_rate' => 'nullable|numeric|min:0',
             'fixed_rate' => 'nullable|numeric|min:0',
             'commission_percentage' => 'nullable|numeric|min:0|max:100',
-            'expected_hours_per_week' => 'required|integer|min:1|max:80',
+            'expected_hours_per_week' => 'required|integer|min:1|max:160',
             'duration_months' => 'required|integer|min:1|max:36',
             'min_typing_speed' => 'nullable|integer|min:20|max:150',
             'start_date' => 'nullable|date|after_or_equal:today',
@@ -95,6 +95,13 @@ class JobController extends Controller
             'max_applications' => 'required|integer|min:1|max:200',
             'is_featured' => 'boolean',
             'is_urgent' => 'boolean',
+            // Timezone and shift fields
+            'required_timezone' => 'nullable|string|max:50',
+            'shift_start_time' => 'nullable|date_format:H:i',
+            'shift_end_time' => 'nullable|date_format:H:i',
+            'required_days' => 'nullable|array',
+            'required_days.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'timezone_flexible' => 'boolean',
         ]);
 
         // Set default values
@@ -179,7 +186,7 @@ class JobController extends Controller
             'hourly_rate' => 'nullable|numeric|min:0',
             'fixed_rate' => 'nullable|numeric|min:0',
             'commission_percentage' => 'nullable|numeric|min:0|max:100',
-            'expected_hours_per_week' => 'required|integer|min:1|max:80',
+            'expected_hours_per_week' => 'required|integer|min:1|max:160',
             'duration_months' => 'required|integer|min:1|max:36',
             'min_typing_speed' => 'nullable|integer|min:20|max:150',
             'start_date' => 'nullable|date|after_or_equal:today',
@@ -188,6 +195,13 @@ class JobController extends Controller
             'max_applications' => 'required|integer|min:1|max:200',
             'is_featured' => 'boolean',
             'is_urgent' => 'boolean',
+            // Timezone and shift fields
+            'required_timezone' => 'nullable|string|max:50',
+            'shift_start_time' => 'nullable|date_format:H:i',
+            'shift_end_time' => 'nullable|date_format:H:i',
+            'required_days' => 'nullable|array',
+            'required_days.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'timezone_flexible' => 'boolean',
         ]);
 
         $validated['is_featured'] = $request->has('is_featured');
@@ -319,21 +333,15 @@ class JobController extends Controller
                     ->with('error', 'You have reached your job application limit for this month. Please upgrade your subscription.');
             }
 
-            // Check if typing test is required for chatter positions
-            $requiresTypingTest = $this->requiresTypingTest($job, $user);
-            
+            // Simplified validation rules - remove typing test requirement for now
             $validationRules = [
                 'cover_letter' => 'required|string|max:2000',
                 'proposed_rate' => 'required|numeric|min:0',
-                'available_hours' => 'required|integer|min:1|max:80',
+                'available_hours' => 'required|integer|min:1|max:160',
             ];
             
-            // Add typing test validation if required
-            if ($requiresTypingTest) {
-                $validationRules['typing_test_wpm'] = 'required|integer|min:' . ($job->min_typing_speed ?? 30);
-                $validationRules['typing_test_accuracy'] = 'required|integer|min:85|max:100';
-                $validationRules['typing_test_results'] = 'required|json';
-            }
+            // For now, don't require typing tests to simplify application process
+            $requiresTypingTest = false;
             
             $validated = $request->validate($validationRules);
 
@@ -483,7 +491,7 @@ class JobController extends Controller
         }
         
         // Regular form submission fallback
-        return redirect()->route('marketplace.jobs')
+        return redirect()->route('marketplace.jobs.index')
             ->with('success', 'Test job posted successfully!');
     }
 }

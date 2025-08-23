@@ -9,6 +9,8 @@ use App\Models\JobPost;
 use App\Models\JobApplication;
 use App\Models\Message;
 use App\Models\UserSubscription;
+use App\Models\SubscriptionPlan;
+use App\Models\UserType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -156,7 +158,8 @@ class AdminController extends Controller
         $verification->update([
             'status' => $request->status,
             'rejection_reason' => $request->status === 'rejected' ? $request->rejection_reason : null,
-            'verified_at' => $request->status === 'approved' ? now() : null,
+            'reviewed_at' => $request->status === 'approved' ? now() : null,
+            'reviewed_by' => auth()->id(),
         ]);
 
         return redirect()->route('admin.kyc.show', $verification)
@@ -344,13 +347,14 @@ class AdminController extends Controller
             'reason' => 'required|string|max:1000'
         ]);
         
-        if ($user->isAdmin()) {
-            return back()->withErrors(['error' => 'Cannot ban admin users.']);
-        }
-        
         $user->ban($request->reason);
         
-        return back()->with('success', 'User has been banned successfully.');
+        $message = 'User has been banned successfully.';
+        if ($user->isAdmin()) {
+            $message .= ' Note: This is an admin user - admin privileges may be maintained.';
+        }
+        
+        return back()->with('success', $message);
     }
 
     /**
@@ -392,15 +396,16 @@ class AdminController extends Controller
      */
     public function deleteUser(User $user)
     {
-        if ($user->isAdmin()) {
-            return back()->withErrors(['error' => 'Cannot delete admin users.']);
-        }
-        
         // Soft delete or hard delete based on your preference
         $user->delete();
         
+        $message = 'User has been deleted successfully.';
+        if ($user->isAdmin()) {
+            $message = 'Admin user has been deleted. Note: This may affect system administration.';
+        }
+        
         return redirect()->route('admin.users.index')
-            ->with('success', 'User has been deleted successfully.');
+            ->with('success', $message);
     }
 
     /**
@@ -408,17 +413,18 @@ class AdminController extends Controller
      */
     public function impersonateUser(User $user)
     {
-        if ($user->isAdmin()) {
-            return back()->withErrors(['error' => 'Cannot impersonate admin users.']);
-        }
-        
         // Store original admin user ID in session
         session(['impersonating_admin' => auth()->id()]);
         
         auth()->login($user);
         
+        $message = 'You are now impersonating ' . $user->name;
+        if ($user->isAdmin()) {
+            $message .= ' Warning: You are impersonating another admin user.';
+        }
+        
         return redirect()->route('dashboard')
-            ->with('success', 'You are now impersonating ' . $user->name);
+            ->with('success', $message);
     }
 
     /**
@@ -531,6 +537,307 @@ class AdminController extends Controller
         $message->delete();
         
         return back()->with('success', 'Message has been deleted successfully.');
+    }
+    
+    /**
+     * Manage user subscription - show form
+     */
+    public function editUserSubscription(User $user)
+    {
+        $user->load(['subscriptions.subscriptionPlan', 'userType']);
+        $subscriptionPlans = SubscriptionPlan::all();
+        $userTypes = UserType::where('active', true)->get();
+        
+        return view('admin.users.edit-subscription', compact('user', 'subscriptionPlans', 'userTypes'));
+    }
+    
+    /**
+     * Update user subscription
+     */
+    public function updateUserSubscription(Request $request, User $user)
+    {
+        $request->validate([
+            'subscription_plan_id' => 'nullable|exists:subscription_plans,id',
+            'action' => 'required|in:add,remove,extend',
+            'expires_at' => 'nullable|date|after:now',
+            'duration_months' => 'nullable|integer|min:1|max:120'
+        ]);
+        
+        DB::transaction(function () use ($request, $user) {
+            // Remove existing active subscriptions if action is 'add' or 'remove'
+            if (in_array($request->action, ['add', 'remove'])) {
+                $user->subscriptions()
+                    ->where('expires_at', '>', now())
+                    ->orWhereNull('expires_at')
+                    ->update(['expires_at' => now()]);
+            }
+            
+            if ($request->action === 'add' && $request->subscription_plan_id) {
+                $expiresAt = null;
+                
+                if ($request->duration_months) {
+                    $expiresAt = now()->addMonths($request->duration_months);
+                } elseif ($request->expires_at) {
+                    $expiresAt = $request->expires_at;
+                }
+                
+                UserSubscription::create([
+                    'user_id' => $user->id,
+                    'subscription_plan_id' => $request->subscription_plan_id,
+                    'started_at' => now(),
+                    'expires_at' => $expiresAt,
+                ]);
+                
+            } elseif ($request->action === 'extend' && $request->subscription_plan_id) {
+                $currentSubscription = $user->currentSubscription();
+                
+                if ($currentSubscription) {
+                    $newExpirationDate = $currentSubscription->expires_at 
+                        ? $currentSubscription->expires_at->addMonths($request->duration_months ?? 1)
+                        : now()->addMonths($request->duration_months ?? 1);
+                    
+                    $currentSubscription->update([
+                        'expires_at' => $newExpirationDate
+                    ]);
+                } else {
+                    // Create new subscription if none exists
+                    $expiresAt = $request->duration_months 
+                        ? now()->addMonths($request->duration_months)
+                        : ($request->expires_at ?? now()->addMonth());
+                    
+                    UserSubscription::create([
+                        'user_id' => $user->id,
+                        'subscription_plan_id' => $request->subscription_plan_id,
+                        'started_at' => now(),
+                        'expires_at' => $expiresAt,
+                    ]);
+                }
+            }
+        });
+        
+        $actionMessage = match($request->action) {
+            'add' => 'Subscription added successfully.',
+            'remove' => 'Subscription removed successfully.',
+            'extend' => 'Subscription extended successfully.',
+        };
+        
+        return redirect()->route('admin.users.show', $user)
+            ->with('success', $actionMessage);
+    }
+    
+    /**
+     * Update user type
+     */
+    public function updateUserType(Request $request, User $user)
+    {
+        $request->validate([
+            'user_type_id' => 'required|exists:user_types,id'
+        ]);
+        
+        $oldUserType = $user->userType;
+        $newUserType = UserType::find($request->user_type_id);
+        
+        // Update the user type
+        $user->update([
+            'user_type_id' => $request->user_type_id
+        ]);
+        
+        $message = "User type changed from {$oldUserType?->display_name} to {$newUserType->display_name} successfully.";
+        
+        // Add warning for admin users
+        if ($user->isAdmin()) {
+            $message .= ' Note: This is an admin user - admin privileges are maintained regardless of user type.';
+        }
+        
+        return back()->with('success', $message);
+    }
+    
+    /**
+     * Create/Update KYC verification directly for a user
+     */
+    public function createOrUpdateKycVerification(Request $request, User $user)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+            'rejection_reason' => 'nullable|string|max:1000'
+        ]);
+        
+        $kyc = $user->kycVerification;
+        
+        if ($kyc) {
+            // Update existing KYC
+            $kyc->update([
+                'status' => $request->status,
+                'rejection_reason' => $request->status === 'rejected' ? $request->rejection_reason : null,
+                'reviewed_at' => $request->status === 'approved' ? now() : null,
+                'reviewed_by' => auth()->id(),
+            ]);
+            $message = 'KYC verification status updated successfully.';
+        } else {
+            // Create new KYC record
+            KycVerification::create([
+                'user_id' => $user->id,
+                'status' => $request->status,
+                'rejection_reason' => $request->status === 'rejected' ? $request->rejection_reason : null,
+                'reviewed_at' => $request->status === 'approved' ? now() : null,
+                'reviewed_by' => auth()->id(),
+                'submitted_at' => now(),
+                // Default values for required fields
+                'first_name' => $user->name ?? 'Admin Created',
+                'last_name' => 'Admin',
+                'date_of_birth' => '1990-01-01',
+                'phone_number' => '+1-000-000-0000',
+                'address' => 'Admin managed verification',
+                'city' => 'Unknown',
+                'state' => 'Unknown',
+                'country' => 'Unknown',
+                'postal_code' => '00000',
+                'id_document_type' => 'admin_override',
+                'id_document_number' => 'ADMIN-' . $user->id,
+                'id_document_front_path' => null,
+                'id_document_back_path' => null,
+                'selfie_path' => null,
+                'proof_of_address_path' => null,
+            ]);
+            $message = 'KYC verification created successfully.';
+        }
+        
+        return back()->with('success', $message);
+    }
+    
+    /**
+     * Create/Update Earnings verification directly for a user
+     */
+    public function createOrUpdateEarningsVerification(Request $request, User $user)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,approved,rejected',
+            'rejection_reason' => 'nullable|string|max:1000'
+        ]);
+        
+        $earnings = $user->earningsVerification;
+        
+        if ($earnings) {
+            // Update existing earnings verification
+            $earnings->update([
+                'status' => $request->status,
+                'rejection_reason' => $request->status === 'rejected' ? $request->rejection_reason : null,
+                'verified_at' => $request->status === 'approved' ? now() : null,
+            ]);
+            $message = 'Earnings verification status updated successfully.';
+        } else {
+            // Create new earnings verification record
+            EarningsVerification::create([
+                'user_id' => $user->id,
+                'status' => $request->status,
+                'rejection_reason' => $request->status === 'rejected' ? $request->rejection_reason : null,
+                'verified_at' => $request->status === 'approved' ? now() : null,
+                // Default values for required fields
+                'platform_name' => 'Admin Override',
+                'platform_username' => 'admin_' . $user->id,
+                'monthly_earnings' => 0.00,
+                'earnings_screenshot_path' => null,
+                'profile_screenshot_path' => null,
+                'additional_notes' => 'Admin managed verification',
+            ]);
+            $message = 'Earnings verification created successfully.';
+        }
+        
+        return back()->with('success', $message);
+    }
+    
+    /**
+     * Remove KYC verification for a user
+     */
+    public function removeKycVerification(User $user)
+    {
+        $kyc = $user->kycVerification;
+        
+        if ($kyc) {
+            $kyc->delete();
+            return back()->with('success', 'KYC verification removed successfully.');
+        }
+        
+        return back()->with('error', 'No KYC verification found for this user.');
+    }
+    
+    /**
+     * Remove Earnings verification for a user
+     */
+    public function removeEarningsVerification(User $user)
+    {
+        $earnings = $user->earningsVerification;
+        
+        if ($earnings) {
+            $earnings->delete();
+            return back()->with('success', 'Earnings verification removed successfully.');
+        }
+        
+        return back()->with('error', 'No earnings verification found for this user.');
+    }
+    
+    /**
+     * Quick subscription actions (AJAX)
+     */
+    public function quickSubscriptionAction(Request $request, User $user)
+    {
+        $request->validate([
+            'action' => 'required|in:remove_current,add_free,add_premium',
+            'plan_id' => 'nullable|exists:subscription_plans,id'
+        ]);
+        
+        DB::transaction(function () use ($request, $user) {
+            switch ($request->action) {
+                case 'remove_current':
+                    $user->subscriptions()
+                        ->where('expires_at', '>', now())
+                        ->orWhereNull('expires_at')
+                        ->update(['expires_at' => now()]);
+                    break;
+                    
+                case 'add_free':
+                    // Remove existing subscriptions
+                    $user->subscriptions()
+                        ->where('expires_at', '>', now())
+                        ->orWhereNull('expires_at')
+                        ->update(['expires_at' => now()]);
+                        
+                    // Add free plan (assuming plan ID 1 is free)
+                    $freePlan = SubscriptionPlan::where('price', 0)->first();
+                    if ($freePlan) {
+                        UserSubscription::create([
+                            'user_id' => $user->id,
+                            'subscription_plan_id' => $freePlan->id,
+                            'started_at' => now(),
+                            'expires_at' => null, // Permanent free plan
+                        ]);
+                    }
+                    break;
+                    
+                case 'add_premium':
+                    if ($request->plan_id) {
+                        // Remove existing subscriptions
+                        $user->subscriptions()
+                            ->where('expires_at', '>', now())
+                            ->orWhereNull('expires_at')
+                            ->update(['expires_at' => now()]);
+                            
+                        UserSubscription::create([
+                            'user_id' => $user->id,
+                            'subscription_plan_id' => $request->plan_id,
+                            'started_at' => now(),
+                            'expires_at' => now()->addMonth(), // 1 month default
+                        ]);
+                    }
+                    break;
+            }
+        });
+        
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Action completed successfully.']);
+        }
+        
+        return back()->with('success', 'Subscription updated successfully.');
     }
 
     /**

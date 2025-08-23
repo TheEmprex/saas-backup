@@ -1,0 +1,48 @@
+{
+  "name": "Folder",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Folder name"
+    },
+    "color": {
+      "type": "string",
+      "enum": [
+        "blue",
+        "green",
+        "purple",
+        "orange",
+        "red",
+        "gray"
+      ],
+      "default": "blue",
+      "description": "Folder color theme"
+    },
+    "icon": {
+      "type": "string",
+      "enum": [
+        "folder",
+        "briefcase",
+        "users",
+        "star",
+        "heart",
+        "archive"
+      ],
+      "default": "folder",
+      "description": "Folder icon"
+    },
+    "parent_folder_id": {
+      "type": "string",
+      "description": "ID of parent folder for nested folders"
+    },
+    "order_index": {
+      "type": "number",
+      "default": 0,
+      "description": "Sort order for folders"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

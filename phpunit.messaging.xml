@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         executionOrder="random"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnEmptyTestSuite="true"
+         beStrictAboutOutputDuringTests="true"
+         verbose="true"
+         timeoutForSmallTests="1"
+         timeoutForMediumTests="10"
+         timeoutForLargeTests="60">
+    <testsuites>
+        <testsuite name="Enhanced Messaging System Tests">
+            <directory>tests/Feature/Api/V1</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Console</directory>
+            <directory>app/Exceptions</directory>
+            <file>app/Http/Middleware/Authenticate.php</file>
+            <file>app/Http/Middleware/RedirectIfAuthenticated.php</file>
+        </exclude>
+    </source>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+Ktvkfl+Fuz4Qp/A75G2RTiWVA/ZoKwTrjaWBgRE="/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="BROADCAST_DRIVER" value="log"/>
+        <env name="LOG_CHANNEL" value="single"/>
+        <env name="LOG_LEVEL" value="debug"/>
+    </php>
+
+    <logging>
+        <junit outputFile="tests/results/messaging-junit.xml"/>
+        <testdoxHtml outputFile="tests/results/messaging-testdox.html"/>
+        <testdoxText outputFile="tests/results/messaging-testdox.txt"/>
+    </logging>
+
+    <coverage>
+        <report>
+            <html outputDirectory="tests/coverage/messaging-html"/>
+            <clover outputFile="tests/coverage/messaging-clover.xml"/>
+            <text outputFile="tests/coverage/messaging-text.txt"/>
+        </report>
+    </coverage>
+
+    <groups>
+        <exclude>
+            <group>integration</group>
+            <group>slow</group>
+        </exclude>
+    </groups>
+</phpunit>

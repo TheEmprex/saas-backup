@@ -71,7 +71,7 @@
                     @if($user->id !== auth()->id())
                         <div class="flex space-x-3 mt-4 lg:mt-0">
                             @auth
-                                <a href="{{ route('marketplace.messages.create', $user) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+                                <a href="{{ route('messages.create', $user) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                     </svg>
@@ -385,6 +385,34 @@
                     
                     <!-- Member Since -->
                     <div class="border-t border-gray-200 dark:border-zinc-700 pt-6">
+                        @if($user->isChatter() || $user->isVA())
+                            <!-- Training and Performance Metrics -->
+                            <div class="mb-6">
+                                <h4 class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Training & Performance</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    @if($user->isChatter())
+                                        <!-- WPM -->
+                                        <div class="text-center">
+                                            <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Typing Speed</div>
+                                            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                                                {{ $user->userTestResults()->typingTests()->passed()->latest()->first()->wpm ?? 'N/A' }}
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">WPM</div>
+                                        </div>
+                                    @endif
+                                    
+                                    <!-- Training Modules -->
+                                    <div class="text-center">
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">Training Progress</div>
+                                        <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
+                                            {{ $user->trainingProgress()->completed()->count() }}/{{ App\Models\TrainingModule::where('is_active', true)->count() }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">modules completed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center space-x-2">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

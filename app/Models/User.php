@@ -22,6 +22,10 @@ use App\Models\ChatterMicrotransaction;
 use App\Models\FeaturedJobPost;
 use App\Models\ContractReview;
 use App\Models\UserMonthlyStat;
+use App\Models\MessageFolder;
+use App\Models\Conversation;
+use App\Models\UserOnlineStatus;
+use App\Models\TypingIndicator;
 use App\Traits\ReviewHelper;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,6 +37,59 @@ class User extends WaveUser implements MustVerifyEmail
     use ReviewHelper;
     public $guard_name = 'web';
 
+    // Add messaging-related relationships
+
+    /**
+     * Get the user's online status
+     */
+    public function onlineStatus()
+    {
+        return $this->hasOne(UserOnlineStatus::class);
+    }
+
+    /**
+     * Get conversations where user is participant 1
+     */
+    public function conversationsAsUser1()
+    {
+        return $this->hasMany(Conversation::class, 'user1_id');
+    }
+
+    /**
+     * Get conversations where user is participant 2
+     */
+    public function conversationsAsUser2()
+    {
+        return $this->hasMany(Conversation::class, 'user2_id');
+    }
+
+    /**
+     * Get all conversations for this user
+     */
+    public function allConversations()
+    {
+        return Conversation::where(function ($query) {
+            $query->where('user1_id', $this->id)
+                  ->orWhere('user2_id', $this->id);
+        });
+    }
+
+    /**
+     * Get messages sent by this user
+     */
+    public function messagesSent()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    /**
+     * Get typing indicators for this user
+     */
+    public function typingIndicators()
+    {
+        return $this->hasMany(TypingIndicator::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -41,6 +98,7 @@ class User extends WaveUser implements MustVerifyEmail
     protected $fillable = [
         'name',
         'email',
+        'email_verified_at',
         'username',
         'avatar',
         'password',
@@ -49,11 +107,19 @@ class User extends WaveUser implements MustVerifyEmail
         'verified',
         'trial_ends_at',
         'user_type_id',
+        'user_type_locked',
+        'user_type_locked_at',
         'last_seen_at',
         'kyc_status',
         'is_banned',
         'banned_at',
         'ban_reason',
+        'phone_number',
+        'timezone',
+        'availability_hours',
+        'available_for_work',
+        'hourly_rate',
+        'preferred_currency',
     ];
 
     /**
@@ -72,6 +138,11 @@ class User extends WaveUser implements MustVerifyEmail
         'trial_ends_at' => 'datetime',
         'banned_at' => 'datetime',
         'is_banned' => 'boolean',
+        'user_type_locked' => 'boolean',
+        'user_type_locked_at' => 'datetime',
+        'availability_hours' => 'array',
+        'available_for_work' => 'boolean',
+        'hourly_rate' => 'decimal:2',
     ];
 
     /**
@@ -122,6 +193,22 @@ class User extends WaveUser implements MustVerifyEmail
     public function ratingsGiven()
     {
         return $this->hasMany(Rating::class, 'rater_id');
+    }
+
+    /**
+     * Get the user's training progress records.
+     */
+    public function trainingProgress()
+    {
+        return $this->hasMany(UserTrainingProgress::class);
+    }
+
+    /**
+     * Get the user's test results.
+     */
+    public function userTestResults()
+    {
+        return $this->hasMany(UserTestResult::class);
     }
 
     public function kycVerification(): HasOne
@@ -193,10 +280,12 @@ class User extends WaveUser implements MustVerifyEmail
 
     public function requiresVerification(): bool
     {
-        if ($this->isChatter()) {
+        // Check if user type requires KYC
+        if ($this->userType && $this->userType->requires_kyc) {
             return !$this->isKycVerified();
         }
         
+        // Check for earnings verification for agencies
         if ($this->isAgency()) {
             return !$this->isEarningsVerified();
         }
@@ -220,7 +309,7 @@ class User extends WaveUser implements MustVerifyEmail
     /**
      * Ban the user.
      */
-    public function ban(string $reason = null): void
+    public function ban(?string $reason = null): void
     {
         $this->update([
             'is_banned' => true,
@@ -255,6 +344,30 @@ class User extends WaveUser implements MustVerifyEmail
     public function receivedMessages()
     {
         return $this->hasMany(Message::class, 'recipient_id');
+    }
+
+    /**
+     * Get the user's message folders.
+     */
+    public function messageFolders()
+    {
+        return $this->hasMany(MessageFolder::class);
+    }
+
+    /**
+     * Get the user's conversations.
+     */
+    public function conversations()
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
+    /**
+     * Get the user's default message folder.
+     */
+    public function defaultMessageFolder()
+    {
+        return $this->messageFolders()->where('is_default', true)->first();
     }
 
     /**
@@ -431,6 +544,42 @@ class User extends WaveUser implements MustVerifyEmail
         return $this->hasMany(UserMonthlyStat::class);
     }
 
+
+    /**
+     * Get the user's availability schedule.
+     */
+    public function availability()
+    {
+        return $this->hasMany(UserAvailability::class);
+    }
+
+    /**
+     * Get the user's detailed availability schedule.
+     */
+    public function availabilitySchedule()
+    {
+        return $this->hasMany(UserAvailabilitySchedule::class);
+    }
+
+    /**
+     * Get the user's availability for specific days.
+     */
+    public function getAvailabilityForDays($days, $targetTimezone = null)
+    {
+        $availability = $this->availability()
+            ->whereIn('day_of_week', $days)
+            ->where('is_available', true)
+            ->get();
+
+        if ($targetTimezone) {
+            return $availability->map(function ($avail) use ($targetTimezone) {
+                return $avail->convertToTimezone($targetTimezone);
+            });
+        }
+
+        return $availability;
+    }
+
     /**
      * Check if user has an active subscription.
      */
@@ -445,6 +594,42 @@ class User extends WaveUser implements MustVerifyEmail
     public function subscriptionPlan()
     {
         return $this->currentSubscription()?->subscriptionPlan;
+    }
+
+    /**
+     * Check if user has access to a specific feature based on their subscription.
+     */
+    public function hasFeatureAccess(string $feature): bool
+    {
+        // Admins have access to everything
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $subscription = $this->currentSubscription();
+        if (!$subscription) {
+            return $feature === 'basic_messaging'; // Only basic messaging for free users
+        }
+
+        $plan = $subscription->subscriptionPlan;
+        if (!$plan) {
+            return false;
+        }
+
+        return match($feature) {
+            'unlimited_chats' => (bool) $plan->unlimited_chats,
+            'advanced_filters' => (bool) $plan->advanced_filters,
+            'analytics' => (bool) $plan->analytics,
+            'priority_listings' => (bool) $plan->priority_listings,
+            'featured_status' => (bool) $plan->featured_status,
+            'enhanced_messaging' => $plan->price > 0, // Paid plans get enhanced messaging
+            'file_uploads' => $plan->price > 0, // Paid plans can upload files
+            'voice_messages' => $plan->price > 0, // Paid plans can send voice messages
+            'message_reactions' => $plan->price > 0, // Paid plans can react to messages
+            'conversation_search' => $plan->price > 0, // Paid plans can search conversations
+            'basic_messaging' => true, // All subscribed users get basic messaging
+            default => false
+        };
     }
 
     /**
@@ -593,6 +778,171 @@ class User extends WaveUser implements MustVerifyEmail
     }
 
     /**
+     * Get subscription tier information for dynamic layout adaptation.
+     */
+    public function getSubscriptionTier(): array
+    {
+        $subscription = $this->currentSubscription();
+        
+        if (!$subscription) {
+            return [
+                'tier' => 'free',
+                'name' => 'Free Plan',
+                'features' => ['basic_messaging'],
+                'limits' => [
+                    'job_posts' => 0,
+                    'applications' => 5, // Free users can still apply to basic jobs
+                    'conversations' => 3,
+                ]
+            ];
+        }
+
+        $plan = $subscription->subscriptionPlan;
+        
+        return [
+            'tier' => $this->determineTierLevel($plan),
+            'name' => $plan->name,
+            'features' => $this->getAvailableFeatures($plan),
+            'limits' => [
+                'job_posts' => $plan->job_post_limit,
+                'applications' => $plan->chat_application_limit,
+                'conversations' => $plan->unlimited_chats ? null : 50,
+            ],
+            'expires_at' => $subscription->expires_at,
+        ];
+    }
+
+    /**
+     * Determine tier level based on subscription plan.
+     */
+    private function determineTierLevel($plan): string
+    {
+        if ($plan->price == 0) {
+            return 'free';
+        } elseif ($plan->price <= 29.99) {
+            return 'basic';
+        } elseif ($plan->price <= 59.99) {
+            return 'premium';
+        } else {
+            return 'enterprise';
+        }
+    }
+
+    /**
+     * Get available features based on subscription plan.
+     */
+    private function getAvailableFeatures($plan): array
+    {
+        $features = ['basic_messaging'];
+        
+        if ($plan->unlimited_chats) $features[] = 'unlimited_chats';
+        if ($plan->advanced_filters) $features[] = 'advanced_filters';
+        if ($plan->analytics) $features[] = 'analytics';
+        if ($plan->priority_listings) $features[] = 'priority_listings';
+        if ($plan->featured_status) $features[] = 'featured_status';
+        
+        // Add messaging features for paid plans
+        if ($plan->price > 0) {
+            $features = array_merge($features, [
+                'enhanced_messaging',
+                'file_uploads',
+                'voice_messages',
+                'message_reactions',
+                'conversation_search'
+            ]);
+        }
+        
+        return $features;
+    }
+
+    /**
+     * Check if user has reached their subscription limits.
+     */
+    public function hasReachedLimit(string $limitType): bool
+    {
+        return match($limitType) {
+            'job_posts' => !$this->canPostJob(),
+            'applications' => !$this->canApplyToJob(),
+            'conversations' => $this->hasReachedConversationLimit(),
+            default => false
+        };
+    }
+
+    /**
+     * Check if user has reached conversation limit.
+     */
+    private function hasReachedConversationLimit(): bool
+    {
+        $subscription = $this->currentSubscription();
+        
+        if (!$subscription) {
+            // Free users limited to 3 active conversations
+            return $this->allConversations()->count() >= 3;
+        }
+
+        $plan = $subscription->subscriptionPlan;
+        
+        // Unlimited chats feature bypasses conversation limits
+        if ($plan->unlimited_chats) {
+            return false;
+        }
+        
+        // Paid plans get higher limits
+        $limit = $plan->price > 0 ? 50 : 3;
+        return $this->allConversations()->count() >= $limit;
+    }
+
+    /**
+     * Get usage statistics for the current subscription period.
+     */
+    public function getSubscriptionUsage(): array
+    {
+        return [
+            'job_posts' => [
+                'used' => $this->getJobPostsUsedThisMonth(),
+                'limit' => $this->subscriptionPlan()?->job_post_limit,
+                'remaining' => $this->getRemainingJobPosts()
+            ],
+            'applications' => [
+                'used' => $this->getJobApplicationsUsedThisMonth(),
+                'limit' => $this->subscriptionPlan()?->chat_application_limit,
+                'remaining' => $this->getRemainingJobApplications()
+            ],
+            'conversations' => [
+                'used' => $this->allConversations()->count(),
+                'limit' => $this->hasFeatureAccess('unlimited_chats') ? null : ($this->hasActiveSubscription() ? 50 : 3)
+            ]
+        ];
+    }
+
+    /**
+     * Check if user can access premium content or features.
+     */
+    public function canAccessPremiumContent(): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $subscription = $this->currentSubscription();
+        return $subscription && $subscription->subscriptionPlan->price > 0;
+    }
+
+    /**
+     * Check if subscription requires renewal soon (within 7 days).
+     */
+    public function subscriptionRequiresRenewal(): bool
+    {
+        $subscription = $this->currentSubscription();
+        
+        if (!$subscription || !$subscription->expires_at) {
+            return false;
+        }
+        
+        return $subscription->expires_at->diffInDays(now()) <= 7;
+    }
+
+    /**
      * Calculate total cost for featured/urgent job features.
      */
     public function calculateJobFeatureCost($isFeatured = false, $isUrgent = false)
@@ -732,5 +1082,165 @@ class User extends WaveUser implements MustVerifyEmail
     public function getFeaturedUntil()
     {
         return $this->userProfile?->featured_until;
+    }
+    
+    /**
+     * Get user type change requests.
+     */
+    public function userTypeChangeRequests()
+    {
+        return $this->hasMany(UserTypeChangeRequest::class);
+    }
+    
+    /**
+     * Check if user type is locked.
+     */
+    public function isUserTypeLocked(): bool
+    {
+        return $this->user_type_locked ?? false;
+    }
+    
+    /**
+     * Lock user type (usually done after registration).
+     */
+    public function lockUserType(): void
+    {
+        $this->update([
+            'user_type_locked' => true,
+            'user_type_locked_at' => now(),
+        ]);
+    }
+    
+    /**
+     * Unlock user type (admin only).
+     */
+    public function unlockUserType(): void
+    {
+        $this->update([
+            'user_type_locked' => false,
+            'user_type_locked_at' => null,
+        ]);
+    }
+    
+    /**
+     * Check if user can change their user type.
+     */
+    public function canChangeUserType(): bool
+    {
+        return !$this->isUserTypeLocked() || $this->isAdmin();
+    }
+    
+    /**
+     * Get pending user type change request.
+     */
+    public function getPendingUserTypeChangeRequest()
+    {
+        return $this->userTypeChangeRequests()
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+    }
+    
+    /**
+     * Check if user has a pending user type change request.
+     */
+    public function hasPendingUserTypeChangeRequest(): bool
+    {
+        return $this->getPendingUserTypeChangeRequest() !== null;
+    }
+    
+    /**
+     * Request user type change.
+     */
+    public function requestUserTypeChange(int $newUserTypeId, string $reason, array $supportingDocuments = []): UserTypeChangeRequest
+    {
+        // Cancel any existing pending requests
+        $this->userTypeChangeRequests()
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
+            
+        return $this->userTypeChangeRequests()->create([
+            'current_user_type_id' => $this->user_type_id,
+            'requested_user_type_id' => $newUserTypeId,
+            'reason' => $reason,
+            'supporting_documents' => $supportingDocuments,
+            'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Check if user has completed all training modules.
+     */
+    public function hasCompletedAllTraining(): bool
+    {
+        // Get count of active training modules
+        $totalModules = \App\Models\TrainingModule::where('is_active', true)->count();
+        
+        if ($totalModules === 0) {
+            return true; // No modules required
+        }
+        
+        // Get count of completed modules for this user
+        $completedModules = $this->trainingProgress()
+            ->where('status', 'completed')
+            ->whereHas('trainingModule', function($query) {
+                $query->where('is_active', true);
+            })
+            ->count();
+            
+        return $completedModules >= $totalModules;
+    }
+
+    /**
+     * Check if user has passed at least one typing test.
+     */
+    public function hasPassedTypingTest(): bool
+    {
+        return $this->userTestResults()
+            ->where('testable_type', 'App\\Models\\TypingTest')
+            ->where('passed', true)
+            ->exists();
+    }
+
+    /**
+     * Check if user meets all requirements to appear in talent marketplace.
+     */
+    public function meetsMarketplaceRequirements(): bool
+    {
+        $requirements = [
+            $this->hasVerifiedEmail()
+        ];
+        
+        if ($this->userType && $this->userType->requires_kyc) {
+            $requirements[] = $this->isKycVerified();
+        }
+        
+        return !in_array(false, $requirements);
+    }
+
+    /**
+     * Get the requirements status for marketplace visibility.
+     */
+    public function getMarketplaceRequirementsStatus(): array
+    {
+        $requirements = [
+            'email_verified' => $this->hasVerifiedEmail()
+        ];
+        
+        if ($this->userType && $this->userType->requires_kyc) {
+            $requirements['kyc_completed'] = $this->isKycVerified();
+        }
+
+        // Training and typing tests are not required for marketplace visibility,
+        // but we can still check their status for displaying on the profile.
+        if ($this->isChatter() || $this->isVA()) {
+            $requirements['training_completed'] = $this->hasCompletedAllTraining();
+        }
+
+        if ($this->isChatter()) {
+            $requirements['typing_test_passed'] = $this->hasPassedTypingTest();
+        }
+        
+        return $requirements;
     }
 }

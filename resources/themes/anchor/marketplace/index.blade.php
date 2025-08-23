@@ -1,7 +1,7 @@
 @php
 $seoData = [
-'title'         => 'OnlyFans Ecosystem - Professional Marketplace',
-'description'   => 'Connect chatters with agencies. Secure, verified, and professional hub for the OnlyFans Ecosystem.',
+'title'         => 'OnlyVerified - Professional Marketplace',
+'description'   => 'Connect chatters with agencies. Secure, verified, and professional hub for the OnlyFans ecosystem.',
     'image'         => url('/og_image.png'),
     'type'          => 'website'
 ];
@@ -33,13 +33,13 @@ $seoData = [
             <h1 class="text-5xl lg:text-7xl font-bold mb-8 text-white">
                 <span class="block">Welcome to</span>
                 <span class="block bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 bg-clip-text text-transparent">
-                    OnlyFans Ecosystem
+                    OnlyVerified
                 </span>
             </h1>
             
             <!-- Subtitle -->
             <p class="text-xl lg:text-2xl mb-12 max-w-4xl mx-auto text-blue-100 leading-relaxed">
-                Connect verified chatters with top agencies. Build your career with our secure, professional hub designed for the OnlyFans Ecosystem.
+                Connect verified chatters with top agencies. Build your career with our secure, professional hub designed for the OnlyFans ecosystem.
             </p>
             
             <!-- CTA Buttons -->
@@ -84,6 +84,153 @@ $seoData = [
                     </svg>
                     24/7 Support
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div id="how-it-works" class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 py-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="text-center mb-20">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-full text-blue-700 text-sm font-medium mb-8">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Simple 3-Step Process
+            </div>
+            <h2 class="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                How It 
+                <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">Works</span>
+            </h2>
+            <p class="text-xl lg:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                Join OnlyVerified and transform your career with our streamlined process designed for success
+            </p>
+        </div>
+        
+        <!-- Steps -->
+        <div class="grid lg:grid-cols-3 gap-12 lg:gap-16">
+            <!-- Step 1 -->
+            <div class="relative group">
+                <!-- Connection Line -->
+                <div class="hidden lg:block absolute top-24 left-full w-16 h-0.5 bg-gradient-to-r from-blue-200 to-transparent z-0"></div>
+                
+                <div class="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 relative z-10">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
+                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                            1
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Sign Up & Verify</h3>
+                    <p class="text-gray-600 leading-relaxed text-center mb-6">
+                        Create your professional account and complete our comprehensive verification process to ensure trust and security for all platform members.
+                    </p>
+                    <div class="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            5 minutes
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-blue-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                            </svg>
+                            100% Secure
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="relative group">
+                <!-- Connection Line -->
+                <div class="hidden lg:block absolute top-24 left-full w-16 h-0.5 bg-gradient-to-r from-green-200 to-transparent z-0"></div>
+                
+                <div class="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 relative z-10">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
+                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                            2
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Connect & Communicate</h3>
+                    <p class="text-gray-600 leading-relaxed text-center mb-6">
+                        Browse premium opportunities, connect with verified partners, and communicate securely through our encrypted messaging platform.
+                    </p>
+                    <div class="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            Instant matching
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-purple-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                            </svg>
+                            Secure chat
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="relative group">
+                <div class="bg-white rounded-3xl p-10 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3 relative z-10">
+                    <div class="relative mb-8">
+                        <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
+                            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                            3
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 text-center">Work & Get Paid</h3>
+                    <p class="text-gray-600 leading-relaxed text-center mb-6">
+                        Complete projects professionally, build your stellar reputation, and receive fast, secure payments while growing your business network.
+                    </p>
+                    <div class="flex items-center justify-center space-x-4 text-sm text-gray-500">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-green-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            Weekly payouts
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                            </svg>
+                            Build reputation
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Call to Action -->
+        <div class="text-center mt-20">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 inline-block">
+                <h3 class="text-2xl font-bold text-white mb-4">Ready to Get Started?</h3>
+                <p class="text-blue-100 mb-6 max-w-md">Join thousands of professionals already earning through OnlyVerified</p>
+                <a href="{{ route('register') }}" class="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-xl font-bold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Start Your Journey
+                </a>
             </div>
         </div>
     </div>
@@ -168,21 +315,21 @@ $seoData = [
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
             <h2 class="text-4xl font-bold text-gray-900 mb-6">Ready to Join?</h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Choose your role and start building your career in the OnlyFans Ecosystem. Join thousands of professionals already earning through OnlyFans Ecosystem.</p>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Choose your role and start building your career. Join thousands of professionals already earning through the OnlyFans ecosystem.</p>
         </div>
         
         <!-- Featured User Types -->
         <div class="grid md:grid-cols-3 gap-8 mb-16">
             <!-- Chatter -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group">
-                <div class="text-center">
+            <div class="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group flex flex-col h-full">
+                <div class="text-center flex-1 flex flex-col">
                     <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Chatter</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">Individual professionals providing high-quality chatting services to OnlyFans Ecosystem models and agencies. Perfect for freelancers looking to earn $15-50/hour.</p>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Individual professionals providing high-quality chatting services to OnlyVerified models and agencies. Perfect for freelancers looking to earn $15-50/hour.</p>
                     
                     <div class="mb-6 space-y-3">
                         <div class="flex items-center text-sm text-gray-700">
@@ -205,22 +352,24 @@ $seoData = [
                         </div>
                     </div>
                     
-                    <a href="{{ route('register') }}?type=chatter" class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                        Join as Chatter
-                    </a>
+                    <div class="mt-auto">
+                        <a href="{{ route('register') }}?type=chatter" class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Join as Chatter
+                        </a>
+                    </div>
                 </div>
             </div>
             
             <!-- OFM Agency -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group">
-                <div class="text-center">
+            <div class="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group flex flex-col h-full">
+                <div class="text-center flex-1 flex flex-col">
                     <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">OFM Agency</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">OnlyFans Ecosystem management agencies looking to hire skilled chatters for their models. Scale your operations with verified talent.</p>
+                    <p class="text-gray-600 mb-6 leading-relaxed">OnlyVerified management agencies looking to hire skilled chatters for their models. Scale your operations with verified talent.</p>
                     
                     <div class="mb-6 space-y-3">
                         <div class="flex items-center text-sm text-gray-700">
@@ -243,22 +392,24 @@ $seoData = [
                         </div>
                     </div>
                     
-                    <a href="{{ route('register') }}?type=ofm_agency" class="block w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                        Join as OFM Agency
-                    </a>
+                    <div class="mt-auto">
+                        <a href="{{ route('register') }}?type=ofm_agency" class="block w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-700 hover:to-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Join as OFM Agency
+                        </a>
+                    </div>
                 </div>
             </div>
             
             <!-- Chatting Agency -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group">
-                <div class="text-center">
+            <div class="bg-white rounded-2xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 group flex flex-col h-full">
+                <div class="text-center flex-1 flex flex-col">
                     <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-900 mb-4">Chatting Agency</h3>
-                    <p class="text-gray-600 mb-6 leading-relaxed">Specialized agencies providing outsourced chatting services to OFM agencies. Manage teams and deliver exceptional results.</p>
+                    <p class="text-gray-600 mb-6 leading-relaxed">Specialized agencies providing outsourced chatting services to agencies. Manage teams and deliver exceptional results.</p>
                     
                     <div class="mb-6 space-y-3">
                         <div class="flex items-center text-sm text-gray-700">
@@ -281,9 +432,11 @@ $seoData = [
                         </div>
                     </div>
                     
-                    <a href="{{ route('register') }}?type=chatting_agency" class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                        Join as Chatting Agency
-                    </a>
+                    <div class="mt-auto">
+                        <a href="{{ route('register') }}?type=chatting_agency" class="block w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Join as Chatting Agency
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -359,48 +512,116 @@ $seoData = [
 
 <!-- Featured Jobs Section -->
 @if($featuredJobs->count() > 0)
-<div class="bg-white py-16">
+<div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center mb-12">
-            <h2 class="text-3xl font-bold">Featured Jobs</h2>
-            <a href="{{ route('marketplace.jobs') }}" class="text-blue-600 hover:text-blue-800">View All →</a>
+        <!-- Header Section -->
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full text-black text-sm font-semibold mb-6">
+                ⭐ Featured Opportunities
+            </div>
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Premium Job Opportunities</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                Discover hand-picked, high-quality positions from verified employers. These featured jobs offer the best opportunities for skilled professionals.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="{{ route('marketplace.jobs.index') }}" 
+                   class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Explore All Jobs
+                </a>
+                @guest
+                <a href="{{ route('register') }}" 
+                   class="inline-flex items-center px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 shadow-md hover:shadow-lg border border-gray-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Join OnlyVerified
+                </a>
+                @endguest
+            </div>
         </div>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Jobs Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             @foreach($featuredJobs as $job)
-            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full">
+                <!-- Header -->
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
-                        <h3 class="text-lg font-semibold mb-2">{{ $job->title }}</h3>
-                        <div class="text-sm text-gray-600 mb-2">{{ $job->user->name }}</div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">{{ $job->title }}</h3>
+                        <div class="text-sm text-gray-600 font-medium">{{ $job->user->name }}</div>
                     </div>
-                    <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-medium">Featured</span>
+                    <span class="bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-3 py-1 rounded-full text-xs font-bold flex-shrink-0 ml-2">
+                        ⭐ Featured
+                    </span>
                 </div>
-                <p class="text-gray-600 mb-4 line-clamp-3">{{ Str::limit($job->description, 150) }}</p>
-                <div class="flex items-center justify-between">
+                
+                <!-- Description -->
+                <p class="text-gray-600 mb-6 line-clamp-3 flex-grow">{{ Str::limit($job->description, 120) }}</p>
+                
+                <!-- Details -->
+                <div class="flex items-center justify-between mb-6">
                     <div class="text-sm text-gray-500">
-                        <span class="capitalize">{{ $job->experience_level }}</span> • 
-                        <span class="capitalize">{{ $job->market }}</span>
+                        <span class="inline-flex items-center px-2 py-1 bg-gray-100 rounded-md capitalize mr-2">
+                            {{ $job->experience_level }}
+                        </span>
+                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded-md capitalize">
+                            {{ $job->market }}
+                        </span>
                     </div>
-                                        <div class="text-lg font-semibold text-green-600">
-                                            @if($job->rate_type === 'hourly' && $job->hourly_rate)
-                                                ${{ $job->hourly_rate }}/hr
-                                            @elseif($job->rate_type === 'fixed' && $job->fixed_rate)
-                                                ${{ $job->fixed_rate }}
-                                            @elseif($job->rate_type === 'commission' && $job->commission_percentage)
-                                                {{ $job->commission_percentage }}%
-                                            @else
-                                                Contact for rates
-                                            @endif
-                                        </div>
                 </div>
-                <div class="mt-4">
-                    <a href="{{ route('jobs.show', $job->id) }}" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-center block">
-                        View Job
+                
+                <!-- Rate -->
+                <div class="mb-6">
+                    <div class="text-2xl font-bold text-green-600">
+                        @if($job->rate_type === 'hourly' && $job->hourly_rate)
+                            ${{ $job->hourly_rate }}/hr
+                        @elseif($job->rate_type === 'fixed' && $job->fixed_rate)
+                            ${{ $job->fixed_rate }}
+                        @elseif($job->rate_type === 'commission' && $job->commission_percentage)
+                            {{ $job->commission_percentage }}%
+                        @else
+                            Contact for rates
+                        @endif
+                    </div>
+                </div>
+                
+                <!-- Action Button - Always at bottom -->
+                <div class="mt-auto">
+                    <a href="{{ route('jobs.show', $job->id) }}" 
+                       class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 text-center block shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        View Job Details
                     </a>
                 </div>
             </div>
             @endforeach
         </div>
+        
+        <!-- Call to Action for New Users -->
+        @guest
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-center text-white">
+            <h3 class="text-2xl font-bold mb-4">Ready to Find Your Perfect Job?</h3>
+            <p class="text-lg mb-6 text-white">
+                Join thousands of verified professionals already earning through OnlyVerified. 
+                <strong class="text-yellow-300">Get access to exclusive opportunities</strong> and connect with top-tier employers.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{{ route('register') }}" 
+                   class="inline-flex items-center px-8 py-4 bg-white text-indigo-600 rounded-xl font-bold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Start Your Journey Today
+                </a>
+                <a href="{{ route('marketplace.jobs.index') }}" 
+                   class="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-indigo-600 transition-all duration-300">
+                    Browse All {{ $stats['total_jobs'] ?? \App\Models\Job::count() }} Jobs
+                </a>
+            </div>
+        </div>
+        @endguest
     </div>
 </div>
 @endif
@@ -410,7 +631,7 @@ $seoData = [
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-3xl font-bold text-gray-900 mb-4">Platform Resources</h2>
-            <p class="text-lg text-gray-600">Everything you need to succeed on OnlyFans Ecosystem</p>
+            <p class="text-lg text-gray-600">Everything you need to succeed on OnlyVerified</p>
         </div>
         
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -423,7 +644,7 @@ $seoData = [
                 </div>
                 <h3 class="text-xl font-semibold mb-3">Getting Started Guide</h3>
                 <p class="text-gray-600 mb-4">Step-by-step instructions for setting up your profile and getting verified on the platform.</p>
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Read Guide →</a>
+                <a href="{{ route('resources.getting-started') }}" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Read Guide →</a>
             </div>
             
             <!-- Best Practices -->
@@ -435,7 +656,7 @@ $seoData = [
                 </div>
                 <h3 class="text-xl font-semibold mb-3">Best Practices</h3>
                 <p class="text-gray-600 mb-4">Tips and tricks for chatters and agencies to maximize their success and build strong partnerships.</p>
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Learn More →</a>
+                <a href="{{ route('resources.best-practices') }}" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Learn More →</a>
             </div>
             
             <!-- Safety Guidelines -->
@@ -447,7 +668,7 @@ $seoData = [
                 </div>
                 <h3 class="text-xl font-semibold mb-3">Safety Guidelines</h3>
                 <p class="text-gray-600 mb-4">Important safety and security measures to protect yourself and maintain professional standards.</p>
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">View Guidelines →</a>
+                <a href="{{ route('resources.safety-guidelines') }}" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">View Guidelines →</a>
             </div>
             
             <!-- FAQ -->
@@ -459,7 +680,7 @@ $seoData = [
                 </div>
                 <h3 class="text-xl font-semibold mb-3">FAQ</h3>
                 <p class="text-gray-600 mb-4">Frequently asked questions about using the platform, payments, and common issues.</p>
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Browse FAQ →</a>
+                <a href="{{ route('resources.faq') }}" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Browse FAQ →</a>
             </div>
             
             <!-- Video Tutorials -->
@@ -471,7 +692,7 @@ $seoData = [
                 </div>
                 <h3 class="text-xl font-semibold mb-3">Video Tutorials</h3>
                 <p class="text-gray-600 mb-4">Watch comprehensive video guides covering all aspects of the platform functionality.</p>
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Watch Videos →</a>
+                <a href="{{ route('resources.video-tutorials') }}" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Coming Soon</a>
             </div>
             
             <!-- Support Center -->
@@ -483,48 +704,19 @@ $seoData = [
                 </div>
                 <h3 class="text-xl font-semibold mb-3">Support Center</h3>
                 <p class="text-gray-600 mb-4">Get help from our dedicated support team available 24/7 to assist with any issues.</p>
-                <a href="#" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Get Support →</a>
+                <a href="{{ route('resources.support') }}" class="text-blue-600 hover:text-blue-800 font-medium group-hover:underline">Get Support →</a>
             </div>
         </div>
     </div>
 </div>
 
-<!-- How It Works Section -->
-<div id="how-it-works" class="bg-gray-50 py-16">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="text-center">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span class="text-2xl font-bold text-blue-600">1</span>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Sign Up & Verify</h3>
-                <p class="text-gray-600">Create your account and complete verification for full access to OnlyFans Ecosystem.</p>
-            </div>
-            <div class="text-center">
-                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span class="text-2xl font-bold text-green-600">2</span>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Connect & Communicate</h3>
-                <p class="text-gray-600">Browse jobs, apply to opportunities, and chat with potential partners through our secure messaging system.</p>
-            </div>
-            <div class="text-center">
-                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span class="text-2xl font-bold text-purple-600">3</span>
-                </div>
-                <h3 class="text-xl font-semibold mb-2">Work & Get Paid</h3>
-                <p class="text-gray-600">Complete projects, build your reputation, and grow your business with verified reviews and ratings.</p>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- CTA Section -->
 <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white py-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold mb-6">Scale Your OnlyFans Ecosystem Business</h2>
+        <h2 class="text-4xl font-bold mb-6">Scale Your Business</h2>
         <p class="text-xl mb-8 max-w-3xl mx-auto text-blue-100">
-            Connect with verified professionals, streamline your operations, and maximize your revenue potential through OnlyFans Ecosystem.
+            Connect with verified professionals, streamline your operations, and maximize your revenue potential through OnlyVerified.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
             @if(Auth::check())
@@ -539,9 +731,9 @@ $seoData = [
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
-                    Join OnlyFans Ecosystem
+                    Join OnlyVerified
                 </a>
-                <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all duration-200">
+                <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-8 py-4 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                     </svg>

@@ -12,7 +12,7 @@
                         </h1>
                         <p class="mt-2 text-lg text-gray-600 dark:text-gray-300">Track all your job applications and their status</p>
                     </div>
-                    <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
@@ -181,7 +181,7 @@
                                             </button>
                                         @endif
                                         @if($application->jobPost->user_id !== auth()->id())
-                                            <a href="{{ route('marketplace.messages.create', $application->jobPost->user) }}?job_id={{ $application->jobPost->id }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
+                                            <a href="{{ route('messages.create', $application->jobPost->user) }}?job_id={{ $application->jobPost->id }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                                                 </svg>
@@ -221,7 +221,7 @@
                     </div>
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No applications yet</h3>
                     <p class="text-gray-500 dark:text-gray-400 mb-6">Start applying to jobs to track your applications here.</p>
-                    <a href="{{ route('marketplace.jobs') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
+                    <a href="{{ route('marketplace.jobs.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium">
                         Browse Jobs
                     </a>
                 </div>

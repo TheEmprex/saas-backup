@@ -64,6 +64,8 @@ class UserProfile extends Model
         'timezone',
         'availability_hours',
         'shift_requirements',
+        'average_ltv',
+        'work_hours',
     ];
 
     protected $casts = [
@@ -100,6 +102,8 @@ class UserProfile extends Model
         // New agency field casts
         'traffic_types' => 'array',
         'shift_requirements' => 'array',
+        'average_ltv' => 'decimal:2',
+        'work_hours' => 'array',
     ];
 
     public function user(): BelongsTo

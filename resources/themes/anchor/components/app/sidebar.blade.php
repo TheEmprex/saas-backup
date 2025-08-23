@@ -41,10 +41,18 @@
                     <div class="w-full">
                         <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Marketplace</div>
                         <div class="space-y-1">
-                            <x-app.sidebar-link href="{{ route('marketplace.jobs') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/jobs*')">Browse Jobs</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('marketplace.jobs.index') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/jobs*')">Browse Jobs</x-app.sidebar-link>
                             <x-app.sidebar-link href="{{ route('marketplace.profiles') }}" icon="phosphor-users" :active="Request::is('marketplace/profiles*')">Find Talent</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('marketplace.messages') }}" icon="phosphor-chat-circle" :active="Request::is('marketplace/messages*')">Messages</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')">Post Job</x-app.sidebar-link>
+                            <x-app.sidebar-link href="{{ route('messages.index') }}" icon="phosphor-chat-circle" :active="Request::is('messages*')">Messages</x-app.sidebar-link>
+                            @if(auth()->check())
+                                @if(auth()->user()->isChatter())
+                                    <x-app.sidebar-link href="{{ route('chatter.tests') }}" icon="phosphor-check-circle" :active="Request::is('chatter/tests')">Take Tests</x-app.sidebar-link>
+                                @else
+                                    <x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')">Post Job</x-app.sidebar-link>
+                                @endif
+                            @else
+                                <x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')">Post Job</x-app.sidebar-link>
+                            @endif
                         </div>
                     </div>
                     

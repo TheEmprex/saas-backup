@@ -14,19 +14,24 @@
         "devdojo/auth": "^1.0",
         "devdojo/themes": "0.0.11",
         "filament/filament": "^3.2",
+        "firebase/php-jwt": "^6.11",
         "gehrisandro/tailwind-merge-laravel": "^1.2",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image": "^2.7",
         "lab404/laravel-impersonate": "^1.7.5",
         "laravel/folio": "^1.1",
         "laravel/framework": "^11.0",
+        "laravel/horizon": "^5.33",
         "laravel/pail": "^1.2",
+        "laravel/reverb": "^1.5",
         "laravel/tinker": "^2.7",
         "laravel/ui": "^4.5",
-        "livewire/livewire": "^3.0",
+"livewire/livewire": "^3.6.4",
+        "predis/predis": "^3.2",
+        "pusher/pusher-php-server": "^7.2",
         "ralphjsmit/livewire-urls": "^1.4",
         "spatie/laravel-permission": "^6.4",
-        "stripe/stripe-php": "^15.3",
+        "stripe/stripe-php": "^17.4",
         "tymon/jwt-auth": "@dev"
     },
     "require-dev": {
@@ -98,6 +103,6 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

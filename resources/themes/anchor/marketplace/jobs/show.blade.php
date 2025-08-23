@@ -13,7 +13,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <a href="{{ route('marketplace.jobs') }}" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 group">
+                    <a href="{{ route('marketplace.jobs.index') }}" class="flex items-center text-gray-600 hover:text-blue-600 transition-colors duration-200 group">
                         <svg class="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
@@ -260,6 +260,144 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Timezone & Availability Section -->
+                    @if($job->required_timezone || $job->timezone_flexible || $job->required_days || $job->preferred_start_time || $job->preferred_end_time)
+                    <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 mt-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                            <svg class="w-6 h-6 mr-3 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Timezone & Availability
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Timezone Requirements -->
+                            @if($job->required_timezone || $job->timezone_flexible)
+                            <div class="bg-white/70 backdrop-blur-sm rounded-lg p-4">
+                                <div class="flex items-center mb-3">
+                                    <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-gray-900">Timezone Requirements</span>
+                                </div>
+                                
+                                @if($job->required_timezone)
+                                    <div class="mb-2">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                            @php
+                                                $timezoneLabels = [
+                                                    'UTC' => '🌐 UTC',
+                                                    'America/New_York' => '🇺🇸 Eastern Time',
+                                                    'America/Chicago' => '🇺🇸 Central Time',
+                                                    'America/Denver' => '🇺🇸 Mountain Time',
+                                                    'America/Los_Angeles' => '🇺🇸 Pacific Time',
+                                                    'Europe/London' => '🇬🇧 London',
+                                                    'Europe/Paris' => '🇫🇷 Paris',
+                                                    'Europe/Berlin' => '🇩🇪 Berlin',
+                                                    'Asia/Tokyo' => '🇯🇵 Tokyo',
+                                                    'Asia/Shanghai' => '🇨🇳 Shanghai',
+                                                    'Australia/Sydney' => '🇦🇺 Sydney'
+                                                ];
+                                            @endphp
+                                            {{ $timezoneLabels[$job->required_timezone] ?? $job->required_timezone }}
+                                        </span>
+                                    </div>
+                                @endif
+                                
+                                @if($job->timezone_flexible)
+                                    <div class="flex items-center text-green-700">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-sm font-medium">🌐 Timezone Flexible</span>
+                                    </div>
+                                @endif
+                            </div>
+                            @endif
+                            
+                            <!-- Working Hours -->
+                            @if($job->preferred_start_time || $job->preferred_end_time)
+                            <div class="bg-white/70 backdrop-blur-sm rounded-lg p-4">
+                                <div class="flex items-center mb-3">
+                                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-gray-900">Preferred Hours</span>
+                                </div>
+                                
+                                <div class="space-y-2">
+                                    @if($job->preferred_start_time)
+                                        <div class="flex items-center">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                                            <span class="text-sm text-gray-700">
+                                                <strong>Start:</strong> {{ $job->preferred_start_time->format('g:i A') }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                    
+                                    @if($job->preferred_end_time)
+                                        <div class="flex items-center">
+                                            <span class="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
+                                            <span class="text-sm text-gray-700">
+                                                <strong>End:</strong> {{ $job->preferred_end_time->format('g:i A') }}
+                                            </span>
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                @if($job->preferred_start_time && $job->preferred_end_time)
+                                    @php
+                                        $start = \Carbon\Carbon::parse($job->preferred_start_time);
+                                        $end = \Carbon\Carbon::parse($job->preferred_end_time);
+                                        $duration = $start->diffInHours($end);
+                                    @endphp
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        ⏱️ {{ $duration }} hour{{ $duration != 1 ? 's' : '' }} daily
+                                    </div>
+                                @endif
+                            </div>
+                            @endif
+                        </div>
+                        
+                        <!-- Working Days -->
+                        @if($job->required_days)
+                            <div class="mt-6">
+                                <div class="flex items-center mb-3">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-gray-900">Required Working Days</span>
+                                </div>
+                                
+                                <div class="flex flex-wrap gap-2">
+                                    @php
+                                        $dayLabels = [
+                                            'monday' => 'Monday',
+                                            'tuesday' => 'Tuesday',
+                                            'wednesday' => 'Wednesday',
+                                            'thursday' => 'Thursday',
+                                            'friday' => 'Friday',
+                                            'saturday' => 'Saturday',
+                                            'sunday' => 'Sunday'
+                                        ];
+                                        $requiredDays = is_array($job->required_days) ? $job->required_days : json_decode($job->required_days, true) ?? [];
+                                    @endphp
+                                    
+                                    @foreach($dayLabels as $day => $label)
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ in_array($day, $requiredDays) ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-400' }}">
+                                            📅 {{ $label }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                                
+                                <div class="mt-2 text-xs text-gray-500">
+                                    {{ count($requiredDays) }} day{{ count($requiredDays) != 1 ? 's' : '' }} per week required
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
 
@@ -417,7 +555,7 @@
                                                 name="available_hours" 
                                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                 min="1"
-                                                max="80"
+                                                max="160"
                                                 required
                                             >
                                         </div>
@@ -480,7 +618,7 @@
                     @auth
                         @if(auth()->user()->id !== $job->user_id)
                             <div class="mt-4">
-                                <a href="{{ route('marketplace.messages.create', $job->user_id) }}?job_id={{ $job->id }}" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-center inline-block">
+                                <a href="{{ route('messages.create', $job->user_id) }}?job_id={{ $job->id }}" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-center inline-block">
                                     Send Message
                                 </a>
                             </div>

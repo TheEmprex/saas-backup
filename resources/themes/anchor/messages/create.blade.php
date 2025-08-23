@@ -10,7 +10,7 @@
 <div class="bg-white">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-6">
-            <a href="{{ route('messages.web.index') }}" class="text-blue-600 hover:text-blue-800">
+            <a href="{{ route('messages.index') }}" class="text-blue-600 hover:text-blue-800">
                 ← Back to Messages
             </a>
         </div>
@@ -138,7 +138,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-4">
-                    <a href="{{ route('messages.web.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    <a href="{{ route('messages.index') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                         Cancel
                     </a>
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">

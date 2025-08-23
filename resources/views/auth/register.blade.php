@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join OnlyVerified - Premium Talent Platform</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>OnlyVerified - Join Premium Talent Platform</title>
+    @vite(['resources/themes/anchor/assets/css/app.css', 'resources/themes/anchor/assets/js/app.js'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -49,6 +49,20 @@
         .btn-clickable:hover {
             transform: translateY(-2px) !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        /* User Type Selection Styles */
+        .user-type-card.selected {
+            border-color: #6366f1 !important;
+            background-color: #f8fafc;
+        }
+        
+        .user-type-card.selected .user-type-radio {
+            border-color: #6366f1;
+        }
+        
+        .user-type-card.selected .selected-indicator {
+            display: block !important;
         }
     </style>
 </head>
@@ -253,26 +267,93 @@
 
                         <!-- User Type Field -->
                         <div>
-                            <label for="user_type_id" class="block text-sm font-medium text-gray-700 mb-2">I am a... *</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
+                            <label for="user_type_id" class="block text-sm font-medium text-gray-700 mb-3">Choose Your Account Type *</label>
+                            
+                            <!-- User Type Selection -->
+                            <div class="mb-4">
+                                <!-- Hiring Entities Section -->
+                                <div class="mb-4">
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-4 h-4 bg-purple-100 rounded flex items-center justify-center mr-2">
+                                            <svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-xs font-semibold text-purple-800">Can Post Jobs & Hire Talent</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-2">
+                                        @foreach($userTypes->where('can_hire', true) as $userType)
+                                        <div class="user-type-card cursor-pointer border border-gray-200 rounded-lg p-2 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200" 
+                                             data-type="{{ $userType->id }}" 
+                                             onclick="selectUserType({{ $userType->id }})">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-sm font-medium text-gray-900">{{ $userType->display_name }}</span>
+                                                </div>
+                                                <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center user-type-radio">
+                                                    <div class="w-2 h-2 bg-indigo-600 rounded-full hidden selected-indicator"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                                <select id="user_type_id" name="user_type_id" required 
-                                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400 bg-white appearance-none">
-                                    <option value="" class="text-gray-500">Select your role</option>
-                                    @foreach($userTypes as $userType)
-                                        <option value="{{ $userType->id }}" {{ old('user_type_id') == $userType->id ? 'selected' : '' }}>
-                                            {{ ucfirst(str_replace('_', ' ', $userType->name)) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                    </svg>
+
+                                <!-- Professionals Section -->
+                                <div>
+                                    <div class="flex items-center mb-2">
+                                        <div class="w-4 h-4 bg-blue-100 rounded flex items-center justify-center mr-2">
+                                            <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-xs font-semibold text-blue-800">Can Apply to Jobs & Get Featured</span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        @foreach($userTypes->where('can_hire', false) as $userType)
+                                        <div class="user-type-card cursor-pointer border border-gray-200 rounded-lg p-2 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200" 
+                                             data-type="{{ $userType->id }}" 
+                                             onclick="selectUserType({{ $userType->id }})">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span class="text-xs font-medium text-gray-900">{{ $userType->display_name }}</span>
+                                                </div>
+                                                <div class="w-4 h-4 border-2 border-gray-300 rounded-full flex items-center justify-center user-type-radio">
+                                                    <div class="w-2 h-2 bg-indigo-600 rounded-full hidden selected-indicator"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hidden input for form submission -->
+                            <input type="hidden" id="user_type_id" name="user_type_id" value="{{ old('user_type_id') }}" required>
+                            
+                            <!-- Important Note -->
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-amber-800">
+                                            <strong>Important:</strong> Your account type cannot be changed after registration. Choose carefully based on your intended use.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -317,9 +398,9 @@
                                 <div class="ml-3 text-sm">
                                     <label for="terms" class="text-gray-700">
                                         I agree to OnlyVerified's 
-                                        <a href="#" class="text-indigo-600 hover:text-indigo-500 font-medium">Terms of Service</a> 
+                                        <a href="{{ route('terms-of-service') }}" target="_blank" class="text-indigo-600 hover:text-indigo-500 font-medium">Terms of Service</a> 
                                         and 
-                                        <a href="#" class="text-indigo-600 hover:text-indigo-500 font-medium">Privacy Policy</a>
+                                        <a href="{{ route('privacy-policy') }}" target="_blank" class="text-indigo-600 hover:text-indigo-500 font-medium">Privacy Policy</a>
                                     </label>
                                 </div>
                             </div>
@@ -367,5 +448,31 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        function selectUserType(typeId) {
+            // Remove selection from all cards
+            document.querySelectorAll('.user-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            const selectedCard = document.querySelector(`[data-type="${typeId}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            // Set the hidden input value
+            document.getElementById('user_type_id').value = typeId;
+        }
+        
+        // Initialize selection if there's an old value
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldValue = document.getElementById('user_type_id').value;
+            if (oldValue) {
+                selectUserType(oldValue);
+            }
+        });
+    </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 <!-- Advanced Search and Filters -->
 <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6">
-    <form method="GET" action="{{ route('marketplace.jobs') }}" id="jobsSearchForm" class="p-6">
+    <form method="GET" action="{{ route('marketplace.jobs.index') }}" id="jobsSearchForm" class="p-6">
         <!-- Search Bar -->
         <div class="mb-6">
             <div class="relative">
@@ -28,7 +28,7 @@
         </div>
 
         <!-- Filters Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-4">
             <!-- Market Filter -->
             <div>
                 <label for="market" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -114,6 +114,28 @@
                 </select>
             </div>
 
+            <!-- Timezone Filter -->
+            <div>
+                <label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    Timezone
+                </label>
+                <select name="timezone" id="timezone" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm">
+                    <option value="">Any Timezone</option>
+                    <option value="UTC" {{ request('timezone') == 'UTC' ? 'selected' : '' }}>UTC</option>
+                    <option value="America/New_York" {{ request('timezone') == 'America/New_York' ? 'selected' : '' }}>Eastern Time (EST/EDT)</option>
+                    <option value="America/Chicago" {{ request('timezone') == 'America/Chicago' ? 'selected' : '' }}>Central Time (CST/CDT)</option>
+                    <option value="America/Denver" {{ request('timezone') == 'America/Denver' ? 'selected' : '' }}>Mountain Time (MST/MDT)</option>
+                    <option value="America/Los_Angeles" {{ request('timezone') == 'America/Los_Angeles' ? 'selected' : '' }}>Pacific Time (PST/PDT)</option>
+                    <option value="Europe/London" {{ request('timezone') == 'Europe/London' ? 'selected' : '' }}>GMT (London)</option>
+                    <option value="Europe/Paris" {{ request('timezone') == 'Europe/Paris' ? 'selected' : '' }}>CET (Paris/Berlin)</option>
+                    <option value="Asia/Tokyo" {{ request('timezone') == 'Asia/Tokyo' ? 'selected' : '' }}>JST (Tokyo)</option>
+                    <option value="Australia/Sydney" {{ request('timezone') == 'Australia/Sydney' ? 'selected' : '' }}>AEST (Sydney)</option>
+                </select>
+            </div>
+
             <!-- Per Page -->
             <div>
                 <label for="per_page" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -144,7 +166,7 @@
                     Search Jobs
                 </button>
                 <a 
-                    href="{{ route('marketplace.jobs') }}" 
+                    href="{{ route('marketplace.jobs.index') }}" 
                     class="inline-flex items-center px-6 py-2.5 border border-gray-300 dark:border-zinc-600 text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200"
                 >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +178,7 @@
         </div>
 
         <!-- Active Filters Display -->
-        @if(request()->hasAny(['search', 'market', 'experience_level', 'contract_type', 'rate_type']))
+        @if(request()->hasAny(['search', 'market', 'experience_level', 'contract_type', 'rate_type', 'timezone']))
             <div class="border-t border-gray-200 dark:border-zinc-600 pt-4">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-sm text-gray-700 dark:text-gray-300">Active filters:</span>
@@ -188,6 +210,43 @@
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-pink-100 text-pink-800 dark:bg-pink-900/20 dark:text-pink-400">
                             Rate: {{ ucfirst(request('rate_type')) }}
                             <a href="{{ request()->fullUrlWithQuery(['rate_type' => null]) }}" class="ml-1 text-pink-600 hover:text-pink-800">×</a>
+                        </span>
+                    @endif
+                    @if(request('timezone'))
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/20 dark:text-teal-400">
+                            Timezone: 
+                            @switch(request('timezone'))
+                                @case('UTC')
+                                    UTC
+                                    @break
+                                @case('America/New_York')
+                                    Eastern Time
+                                    @break
+                                @case('America/Chicago')
+                                    Central Time
+                                    @break
+                                @case('America/Denver')
+                                    Mountain Time
+                                    @break
+                                @case('America/Los_Angeles')
+                                    Pacific Time
+                                    @break
+                                @case('Europe/London')
+                                    GMT
+                                    @break
+                                @case('Europe/Paris')
+                                    CET
+                                    @break
+                                @case('Asia/Tokyo')
+                                    JST
+                                    @break
+                                @case('Australia/Sydney')
+                                    AEST
+                                    @break
+                                @default
+                                    {{ request('timezone') }}
+                            @endswitch
+                            <a href="{{ request()->fullUrlWithQuery(['timezone' => null]) }}" class="ml-1 text-teal-600 hover:text-teal-800">×</a>
                         </span>
                     @endif
                 </div>

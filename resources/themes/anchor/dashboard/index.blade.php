@@ -248,7 +248,7 @@
                         </svg>
                         View Profile
                     </a>
-                    <a href="{{ route('marketplace.messages') }}" class="inline-flex items-center justify-center bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors">
+                    <a href="{{ route('messages.index') }}" class="inline-flex items-center justify-center bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors">
                         <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                         </svg>
@@ -296,7 +296,7 @@
             <div class="bg-white border border-gray-200 rounded-lg p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-semibold text-gray-900">My Applications</h2>
-                    <a href="{{ route('marketplace.jobs') }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                    <a href="{{ route('marketplace.jobs.index') }}" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
                         Browse Jobs
                     </a>
                 </div>
@@ -339,7 +339,7 @@
                     @empty
                     <div class="text-center py-8">
                         <p class="text-gray-500">You haven't applied to any jobs yet.</p>
-                        <a href="{{ route('marketplace.jobs') }}" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                        <a href="{{ route('marketplace.jobs.index') }}" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">
                             Browse available jobs
                         </a>
                     </div>

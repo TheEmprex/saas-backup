@@ -2,17 +2,14 @@
 
 dataset('routes', function () {
     return [
-        '/',
-        '/blog',
-        '/blog/marketing',
-        '/blog/marketing/best-ways-to-market-your-application',
-        '/pricing',
-        '/changelog',
-        '/changelog/3',
-        '/auth/login',
-        '/auth/register',
-        '/auth/password/reset',
         '/about',
-        '/profile/admin'
+        '/pricing',
+        '/contact',
+        '/our-story',
+        '/our-team',
+        '/work-with-us',
+        '/trust-safety',
+        '/privacy-policy',
+        '/terms-of-service'
     ];
 });

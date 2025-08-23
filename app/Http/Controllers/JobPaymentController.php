@@ -89,7 +89,7 @@ class JobPaymentController extends Controller
             // Clear session data
             session()->forget('job_data');
 
-            return redirect()->route('marketplace.jobs')
+            return redirect()->route('marketplace.jobs.index')
                 ->with('success', 'Job posted successfully!' . ($totalCost > 0 ? ' Payment of $' . $totalCost . ' processed.' : ''));
 
         } catch (\Exception $e) {

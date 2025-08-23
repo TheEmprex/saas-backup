@@ -22,7 +22,7 @@ class CheckSubscriptionLimits
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $action = null): Response
+    public function handle(Request $request, Closure $next, string $action = null, string $feature = null): Response
     {
         $user = Auth::user();
         
@@ -34,20 +34,35 @@ class CheckSubscriptionLimits
         switch ($action) {
             case 'job_post':
                 if (!$user->canPostJob()) {
-                    return redirect()->back()->with('error', 'You have reached your job posting limit for this month. Please upgrade your subscription.');
+                    $message = 'You have reached your job posting limit for this month.';
+                    if (!$user->hasActiveSubscription()) {
+                        $message .= ' Please subscribe to a plan to post jobs.';
+                    } else {
+                        $message .= ' Please upgrade your subscription for more job posts.';
+                    }
+                    return $this->redirectWithSubscriptionError($message);
                 }
                 break;
                 
             case 'job_application':
                 if (!$user->canApplyToJob()) {
-                    return redirect()->back()->with('error', 'You have reached your job application limit for this month. Please upgrade your subscription.');
+                    $remaining = $user->getRemainingJobApplications();
+                    $message = 'You have reached your job application limit for this month.';
+                    if (!$user->hasActiveSubscription()) {
+                        $message .= ' Please subscribe to a plan for unlimited applications.';
+                    } else {
+                        $message .= ' Please upgrade your subscription for more applications.';
+                    }
+                    return $this->redirectWithSubscriptionError($message);
                 }
                 break;
                 
             case 'premium_access':
                 $jobPostId = $request->route('job_post') ?? $request->input('job_post_id');
                 if ($jobPostId && !$user->hasAccessToPremiumJob($jobPostId)) {
-                    return redirect()->back()->with('error', 'You need a premium subscription or microtransaction to access this job post.');
+                    return $this->redirectWithSubscriptionError(
+                        'You need a premium subscription or microtransaction to access this job post.'
+                    );
                 }
                 break;
                 
@@ -56,8 +71,53 @@ class CheckSubscriptionLimits
                     return redirect()->route('subscription.plans')->with('error', 'A subscription is required to access this feature.');
                 }
                 break;
+                
+            case 'feature_access':
+                if ($feature && !$user->hasFeatureAccess($feature)) {
+                    $tierInfo = $user->getSubscriptionTier();
+                    $message = "This feature requires a premium subscription. You are currently on the {$tierInfo['name']} plan.";
+                    return $this->redirectWithSubscriptionError($message);
+                }
+                break;
+                
+            case 'conversation_limit':
+                if ($user->hasReachedLimit('conversations')) {
+                    $message = 'You have reached your conversation limit.';
+                    if (!$user->hasActiveSubscription()) {
+                        $message .= ' Subscribe to create more conversations.';
+                    } else {
+                        $message .= ' Upgrade to unlimited conversations.';
+                    }
+                    return $this->redirectWithSubscriptionError($message);
+                }
+                break;
+                
+            case 'premium_content':
+                if (!$user->canAccessPremiumContent()) {
+                    return $this->redirectWithSubscriptionError(
+                        'You need a paid subscription to access premium content.'
+                    );
+                }
+                break;
         }
         
         return $next($request);
+    }
+    
+    /**
+     * Redirect with subscription error and tier information.
+     */
+    private function redirectWithSubscriptionError(string $message)
+    {
+        $user = Auth::user();
+        $tierInfo = $user->getSubscriptionTier();
+        $usage = $user->getSubscriptionUsage();
+        
+        return redirect()->back()->with([
+            'error' => $message,
+            'subscription_tier' => $tierInfo,
+            'usage_stats' => $usage,
+            'show_upgrade' => true
+        ]);
     }
 }

@@ -21,9 +21,9 @@ class KycVerificationMiddleware
             return redirect()->route('login');
         }
         
-        // Check verification based on user type
-        if ($user->userType && $user->userType->name === 'chatter') {
-            // Chatters require KYC verification
+        // Check verification based on user type's KYC requirement
+        if ($user->userType && $user->userType->requires_kyc) {
+            // Users with KYC-required types need verification
             if (!$user->hasKycSubmitted()) {
                 return redirect()->route('profile.kyc')
                     ->with('error', 'You must complete KYC verification to access this feature.');

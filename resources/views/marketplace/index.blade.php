@@ -100,7 +100,7 @@
         <div class="mb-16">
             <div class="flex items-center justify-between mb-8">
                 <h2 class="text-3xl font-bold text-gray-900">Featured Jobs</h2>
-                <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                     View All Jobs
                     <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -176,7 +176,7 @@
         <div class="bg-white rounded-xl shadow-lg border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-xl font-bold text-gray-900">Recent Job Posts</h3>
-                <a href="{{ route('marketplace.jobs') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                <a href="{{ route('marketplace.jobs.index') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
                     View All Jobs
                 </a>
             </div>

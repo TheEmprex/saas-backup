@@ -16,6 +16,14 @@
                         <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Ratings</span>
                     </h1>
                     <p class="text-lg text-gray-600 dark:text-gray-300">View and track your ratings and reviews from clients and collaborators</p>
+                    <div class="mt-4">
+                        <a href="{{ route('ratings.contests.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            My Contests
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -136,10 +144,10 @@
                                     <div class="flex justify-between items-start mb-3">
                                         <div class="flex items-center space-x-3">
                                             <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                {{ substr($rating->reviewer->name ?? 'U', 0, 1) }}
+                                                {{ substr($rating->rater->name ?? 'U', 0, 1) }}
                                             </div>
                                             <div>
-                                                <p class="font-semibold text-gray-900 dark:text-white">{{ $rating->reviewer->name ?? 'Unknown Reviewer' }}</p>
+                                                <p class="font-semibold text-gray-900 dark:text-white">{{ $rating->rater->name ?? 'Unknown Reviewer' }}</p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -148,27 +156,64 @@
                                                 </p>
                                             </div>
                                         </div>
-                                        <div class="flex items-center space-x-2">
-                                            <div class="flex space-x-1">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    @if($i <= $rating->rating)
-                                                        <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                        </svg>
-                                                    @else
-                                                        <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 fill-current" viewBox="0 0 20 20">
-                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                                                        </svg>
-                                                    @endif
-                                                @endfor
+                                        <div class="flex items-center space-x-3">
+                                            <div class="flex items-center space-x-2">
+                                                <div class="flex space-x-1">
+                                                    @for($i = 1; $i <= 5; $i++)
+                                                        @if($i <= $rating->overall_rating)
+                                                            <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                            </svg>
+                                                        @else
+                                                            <svg class="w-4 h-4 text-gray-300 dark:text-gray-600 fill-current" viewBox="0 0 20 20">
+                                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                            </svg>
+                                                        @endif
+                                                    @endfor
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $rating->overall_rating }}/5</span>
                                             </div>
-                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $rating->rating }}/5</span>
+                                            
+                                            <!-- Contest Button -->
+                                            @if($rating->reviewContest)
+                                                @if($rating->reviewContest->isPending())
+                                                    <a href="{{ route('ratings.contests.show', $rating->reviewContest) }}" 
+                                                       class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-900/50 transition-colors duration-200">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        Contest Pending
+                                                    </a>
+                                                @elseif($rating->reviewContest->isApproved())
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-700">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        Contest Approved
+                                                    </span>
+                                                @elseif($rating->reviewContest->isRejected())
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        Contest Rejected
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <a href="{{ route('ratings.contests.create', $rating) }}" 
+                                                   class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-700 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors duration-200">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                                    </svg>
+                                                    Contest Review
+                                                </a>
+                                            @endif
                                         </div>
                                     </div>
                                     
-                                    @if($rating->comment)
+                                    @if($rating->review_content)
                                         @php
-                                            $comment = $rating->comment;
+                                            $comment = $rating->review_content;
                                             // Basic content filtering - replace inappropriate content
                                             $inappropriateWords = ['bitch', 'fuck', 'shit', 'asshole', 'damn'];
                                             $cleanComment = str_replace($inappropriateWords, '***', strtolower($comment));
@@ -178,17 +223,17 @@
                                                 $cleanComment = '[Review content unavailable]';
                                             }
                                         @endphp
+                                        
                                         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-3 border-l-4 border-blue-500">
                                             <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ $cleanComment }}</p>
                                         </div>
                                     @endif
-                                    
-                                    @if($rating->contract)
+                                    @if($rating->jobPost)
                                         <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-3">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            For contract: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $rating->contract->title ?? 'Contract #' . $rating->contract->id }}</span>
+                                            For job: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $rating->jobPost->title ?? 'Job #' . $rating->jobPost->id }}</span>
                                         </div>
                                     @endif
                                     
@@ -266,10 +311,10 @@
                                     <div class="flex justify-between items-start mb-3">
                                         <div class="flex items-center space-x-3">
                                             <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                {{ substr($rating->reviewedUser->name ?? 'U', 0, 1) }}
+                                                {{ substr($rating->rated->name ?? 'U', 0, 1) }}
                                             </div>
                                             <div>
-                                                <p class="font-semibold text-gray-900 dark:text-white">{{ $rating->reviewedUser->name ?? 'Unknown User' }}</p>
+                                                <p class="font-semibold text-gray-900 dark:text-white">{{ $rating->rated->name ?? 'Unknown User' }}</p>
                                                 <p class="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -281,7 +326,7 @@
                                         <div class="flex items-center space-x-2">
                                             <div class="flex space-x-1">
                                                 @for($i = 1; $i <= 5; $i++)
-                                                    @if($i <= $rating->rating)
+                                                    @if($i <= $rating->overall_rating)
                                                         <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
                                                             <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                                                         </svg>
@@ -292,22 +337,22 @@
                                                     @endif
                                                 @endfor
                                             </div>
-                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $rating->rating }}/5</span>
+                                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $rating->overall_rating }}/5</span>
                                         </div>
                                     </div>
                                     
-                                    @if($rating->comment)
+                                    @if($rating->review_content)
                                         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 mb-3 border-l-4 border-green-500">
-                                            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ $rating->comment }}</p>
+                                            <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{{ $rating->review_content }}</p>
                                         </div>
                                     @endif
                                     
-                                    @if($rating->contract)
+                                    @if($rating->jobPost)
                                         <div class="flex items-center text-xs text-gray-500 dark:text-gray-400 mb-3">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            For contract: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $rating->contract->title ?? 'Contract #' . $rating->contract->id }}</span>
+                                            For job: <span class="font-medium text-gray-700 dark:text-gray-300">{{ $rating->jobPost->title ?? 'Job #' . $rating->jobPost->id }}</span>
                                         </div>
                                     @endif
                                     

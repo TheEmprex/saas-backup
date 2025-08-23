@@ -58,6 +58,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'messaging_app_url' => env('MESSAGING_APP_URL', 'http://localhost:3000'),
+
     'asset_url' => env('ASSET_URL'),
 
     /*
@@ -190,15 +192,17 @@ return [
 
         Lab404\Impersonate\ImpersonateServiceProvider::class,
         Wave\WaveServiceProvider::class,
-        DevDojo\Themes\ThemesServiceProvider::class,
 
         /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BladeServiceProvider::class,
+        App\Providers\SubscriptionServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+        App\Providers\HorizonServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\FolioServiceProvider::class,

@@ -1,0 +1,91 @@
+{
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "description": "ID of the conversation this message belongs to"
+    },
+    "sender_id": {
+      "type": "string",
+      "description": "ID of the message sender"
+    },
+    "content": {
+      "type": "string",
+      "description": "Message text content"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "file",
+        "image",
+        "video",
+        "audio",
+        "call"
+      ],
+      "default": "text",
+      "description": "Type of message"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL for attached files"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Name of attached file"
+    },
+    "file_size": {
+      "type": "number",
+      "description": "Size of attached file in bytes"
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether message has been read"
+    },
+    "read_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of user IDs who have read the message"
+    },
+    "reply_to_id": {
+      "type": "string",
+      "description": "ID of message this is replying to"
+    },
+    "edited_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when message was last edited"
+    },
+    "call_duration": {
+      "type": "number",
+      "description": "Duration of call in seconds (for call messages)"
+    },
+    "reactions": {
+      "type": "array",
+      "description": "Emoji reactions to the message",
+      "items": {
+        "type": "object",
+        "properties": {
+          "emoji": {
+            "type": "string"
+          },
+          "user_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "conversation_id",
+    "sender_id",
+    "message_type"
+  ]
+}

@@ -11,7 +11,7 @@
             </a>
         </div>
 
-        <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg flex flex-col" style="height: 80vh;">
+        <div class="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg flex flex-col" style="height: 80vh;" data-contact-id="{{ $contact->id }}">
             <!-- Chat Header -->
             <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-t-2xl flex justify-between items-center">
                 <div class="flex items-center space-x-4">
@@ -246,11 +246,13 @@ messageTextarea.addEventListener('input', function() {
     this.style.height = this.scrollHeight + 'px';
 });
 
-// Handle Enter key submission (Shift+Enter for new line)
+// Handle Enter key submission (Enter to send, Shift+Enter for new line)
 messageTextarea.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        messageForm.dispatchEvent(new Event('submit'));
+        if (messageTextarea.value.trim() || selectedFiles.length > 0) {
+            messageForm.submit();
+        }
     }
 });
 

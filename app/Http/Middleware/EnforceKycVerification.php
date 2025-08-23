@@ -27,8 +27,8 @@ class EnforceKycVerification
             return $next($request);
         }
         
-        // For chatters, KYC is MANDATORY - no access to anything without it
-        if ($user->isChatter() && !$user->isKycVerified()) {
+        // For users whose type requires KYC, verification is MANDATORY - no access to anything without it
+        if ($user->userType && $user->userType->requires_kyc && !$user->isKycVerified()) {
             // Exception: allow access to KYC-related routes and essential routes
             $allowedRoutes = [
                 // KYC routes
@@ -60,7 +60,7 @@ class EnforceKycVerification
             
             if (!in_array($request->route()->getName(), $allowedRoutes)) {
                 return redirect()->route('kyc.index')
-                    ->with('error', 'Chatters must complete KYC verification to access the platform.');
+                    ->with('error', 'You must complete KYC verification to access the platform.');
             }
         }
         

@@ -8,8 +8,8 @@
 
 <x-layouts.marketing
     :seo="[
-        'title' => 'Blog',
-        'description' => 'Our Blog',
+        'title' => 'Blog - OnlyVerified',
+        'description' => 'Latest news, insights, and tips for the OnlyFans ecosystem on OnlyVerified',
     ]"
 >
     <x-container>

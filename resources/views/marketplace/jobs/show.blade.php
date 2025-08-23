@@ -133,7 +133,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Available Hours/Week <span class="text-danger">*</span></label>
-                                    <input type="number" name="available_hours" class="form-control" min="1" max="80" placeholder="Hours per week" required>
+                                    <input type="number" name="available_hours" class="form-control" min="1" max="160" placeholder="Hours per week" required>
                                 </div>
                             </div>
                         </div>
@@ -284,7 +284,7 @@
                     
                     <div class="mb-3">
                         <a href="{{ route('marketplace.profiles.show', $job->user) }}" class="btn btn-outline-primary btn-sm">View Profile</a>
-                        <a href="{{ route('marketplace.messages.create', $job->user) }}" class="btn btn-outline-secondary btn-sm">Send Message</a>
+                        <a href="{{ route('messages.create', $job->user) }}" class="btn btn-outline-secondary btn-sm">Send Message</a>
                     </div>
                 </div>
             </div>

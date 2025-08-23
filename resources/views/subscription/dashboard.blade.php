@@ -33,7 +33,19 @@
                                 @endif
 
                                 @if ($stats['expires_at'])
-                                    <p class="text-gray-700">Expires: {{ \Carbon\Carbon::parse($stats['expires_at'])->format('M d, Y') }}</p>
+                                    @php
+                                        $expiryDate = \Carbon\Carbon::parse($stats['expires_at']);
+                                        $daysLeft = $expiryDate->diffInDays(now());
+                                        $isExpiring = $daysLeft <= 7;
+                                    @endphp
+                                    <div class="{{ $isExpiring ? 'bg-yellow-50 border border-yellow-200 rounded p-3' : '' }}">
+                                        <p class="text-gray-700">Expires: {{ $expiryDate->format('M d, Y') }}</p>
+                                        @if ($isExpiring)
+                                            <p class="text-yellow-800 text-sm mt-1">
+                                                ⚠️ {{ $daysLeft > 0 ? $daysLeft . ' days left' : 'Expired' }} - Renew to continue using premium features
+                                            </p>
+                                        @endif
+                                    </div>
                                 @endif
                             </div>
 

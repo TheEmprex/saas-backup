@@ -2,6 +2,11 @@
 <html lang="{{ app()->getLocale() }}">
 <head>
     @include('theme::partials.head', ['seo' => ($seo ?? null) ])
+    @if(auth()->check())
+        <meta name="user-id" content="{{ auth()->user()->id }}">
+        <meta name="user-name" content="{{ auth()->user()->name }}">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+    @endif
     <!-- Used to add dark mode right away, adding here prevents any flicker -->
     <script>
         if (typeof(Storage) !== "undefined") {

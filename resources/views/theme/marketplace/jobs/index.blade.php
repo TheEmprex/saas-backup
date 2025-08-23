@@ -74,9 +74,28 @@
                         </div>
                         
                         <div class="col-md-3">
+                            <label class="form-label">Timezone</label>
+                            <select name="timezone" class="form-select">
+                                <option value="">Any Timezone</option>
+                                @if(auth()->check() && auth()->user()->timezone)
+                                    <option value="{{ auth()->user()->timezone }}" 
+                                        {{ request('timezone') == auth()->user()->timezone ? 'selected' : '' }}>
+                                        My Timezone ({{ auth()->user()->timezone_display ?? auth()->user()->timezone }})
+                                    </option>
+                                @endif
+                                @php
+                                    $commonTimezones = \App\Models\UserAvailabilitySchedule::getCommonTimezones();
+                                @endphp
+                                @foreach($commonTimezones as $tz => $label)
+                                    <option value="{{ $tz }}" {{ request('timezone') == $tz ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
                             <label class="form-label">&nbsp;</label>
                             <button type="submit" class="btn btn-outline-primary w-100">
-                                <i class="ti ti-search me-2"></i>Filter
+                                <i class="ti ti-search me-2"></i>Filter Jobs
                             </button>
                         </div>
                     </form>
@@ -112,7 +131,32 @@
                                     <div class="mb-3">
                                         <span class="badge bg-secondary me-1">{{ ucfirst(str_replace('_', ' ', $job->market)) }}</span>
                                         <span class="badge bg-outline-secondary me-1">{{ ucfirst($job->experience_level) }}</span>
-                                        <span class="badge bg-outline-secondary">{{ ucfirst(str_replace('_', ' ', $job->contract_type)) }}</span>
+                                        <span class="badge bg-outline-secondary me-1">{{ ucfirst(str_replace('_', ' ', $job->contract_type)) }}</span>
+                                        
+                                        @if($job->timezone_flexible)
+                                            <span class="badge bg-success me-1"><i class="ti ti-world"></i> Timezone Flexible</span>
+                                        @elseif($job->required_timezone)
+                                            @php
+                                                $timezones = \App\Models\UserAvailabilitySchedule::getCommonTimezones();
+                                                $timezoneLabel = $timezones[$job->required_timezone] ?? $job->required_timezone;
+                                            @endphp
+                                            <span class="badge bg-info me-1"><i class="ti ti-clock"></i> {{ $timezoneLabel }}</span>
+                                        @endif
+                                        
+                                        @if($job->shift_start_time && $job->shift_end_time && !$job->timezone_flexible)
+                                            @php
+                                                $userTimezone = auth()->check() && auth()->user()->timezone ? auth()->user()->timezone : 'UTC';
+                                                $shiftInfo = $job->getShiftTimeInTimezone($userTimezone);
+                                            @endphp
+                                            @if($shiftInfo && !isset($shiftInfo['error']))
+                                                <span class="badge bg-warning text-dark me-1">
+                                                    <i class="ti ti-clock"></i> {{ $shiftInfo['start_time'] }}-{{ $shiftInfo['end_time'] }}
+                                                    @if($userTimezone !== $job->required_timezone)
+                                                        ({{ $userTimezone }})
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        @endif
                                     </div>
                                     
                                     <div class="row text-center mb-3">
@@ -202,7 +246,7 @@
                                     <i class="ti ti-plus me-2"></i>Post the First Job
                                 </a>
                             @else
-                                <a href="{{ route('marketplace.jobs') }}" class="btn btn-outline-primary">
+                                <a href="{{ route('marketplace.jobs.index') }}" class="btn btn-outline-primary">
                                     <i class="ti ti-refresh me-2"></i>Clear Filters
                                 </a>
                             @endif

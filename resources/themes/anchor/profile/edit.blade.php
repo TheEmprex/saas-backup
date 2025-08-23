@@ -60,14 +60,12 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">User Type</label>
-                        <select name="user_type_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Select User Type</option>
-                            @foreach($userTypes as $userType)
-                                <option value="{{ $userType->id }}" {{ old('user_type_id', $user->user_type_id) == $userType->id ? 'selected' : '' }}>
-                                    {{ $userType->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 bg-gray-50 dark:text-white shadow-sm px-3 py-2 text-gray-500 dark:text-gray-400">
+                            {{ $user->userType->display_name ?? 'Not Set' }}
+                            <span class="text-xs block mt-1">Contact support to change your user type</span>
+                        </div>
+                        <!-- Hidden field to maintain current value -->
+                        <input type="hidden" name="user_type_id" value="{{ $user->user_type_id }}">
                     </div>
 
                     <div>
@@ -209,6 +207,149 @@
                 </div>
             </div>
 
+            @if(auth()->user()->isAgency())
+            <!-- Agency Information -->
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Agency Information</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Monthly Revenue</label>
+                        <select name="monthly_revenue" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Select Revenue Range</option>
+                            <option value="0-5k" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '0-5k' ? 'selected' : '' }}>$0-5k</option>
+                            <option value="5-10k" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '5-10k' ? 'selected' : '' }}>$5-10k</option>
+                            <option value="10-25k" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '10-25k' ? 'selected' : '' }}>$10-25k</option>
+                            <option value="25-50k" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '25-50k' ? 'selected' : '' }}>$25-50k</option>
+                            <option value="50-100k" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '50-100k' ? 'selected' : '' }}>$50-100k</option>
+                            <option value="100-250k" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '100-250k' ? 'selected' : '' }}>$100-250k</option>
+                            <option value="250k-1m" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '250k-1m' ? 'selected' : '' }}>$250k-1M</option>
+                            <option value="1m+" {{ old('monthly_revenue', $user->userProfile->monthly_revenue ?? '') == '1m+' ? 'selected' : '' }}>$1M+</option>
+                        </select>
+                    </div>
+
+                    @if(in_array(strtolower($user->userType->name ?? ''), ['chatting_agency', 'ofm_agency']))
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Average LTV per Traffic ($)</label>
+                        <input 
+                            type="number" 
+                            name="average_ltv" 
+                            value="{{ old('average_ltv', $user->userProfile->average_ltv ?? '') }}"
+                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            step="0.01"
+                            min="0"
+                            placeholder="Average lifetime value"
+                        >
+                    </div>
+                    @endif
+                </div>
+
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Traffic Types</label>
+                    <div class="flex flex-wrap gap-2 mb-3" id="traffic-types-container">
+                        @php
+                            $trafficTypes = old('traffic_types', $user->userProfile->traffic_types ?? []);
+                            if(is_string($trafficTypes)) {
+                                $trafficTypes = json_decode($trafficTypes, true) ?? [];
+                            }
+                        @endphp
+                        @foreach($trafficTypes as $trafficType)
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                                {{ $trafficType }}
+                                <button type="button" onclick="removeTrafficType(this)" class="ml-2 text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                                <input type="hidden" name="traffic_types[]" value="{{ $trafficType }}">
+                            </span>
+                        @endforeach
+                    </div>
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="traffic-type-input"
+                            placeholder="Add a traffic type and press Enter"
+                            class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            onkeypress="addTrafficType(event)"
+                        >
+                        <button type="button" onclick="addTrafficTypeFromInput()" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if(!auth()->user()->isAgency() && (auth()->user()->isVa() || auth()->user()->isChatter()))
+            <!-- Work Hours & Availability -->
+            <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Work Hours & Availability</h2>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Timezone</label>
+                    <select name="timezone" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select your timezone</option>
+                        @php
+                            $timezones = [
+                                'America/New_York' => 'Eastern Time (ET)',
+                                'America/Chicago' => 'Central Time (CT)',
+                                'America/Denver' => 'Mountain Time (MT)',
+                                'America/Los_Angeles' => 'Pacific Time (PT)',
+                                'Europe/London' => 'GMT (London)',
+                                'Europe/Berlin' => 'CET (Berlin)',
+                                'Europe/Paris' => 'CET (Paris)',
+                                'Asia/Tokyo' => 'JST (Tokyo)',
+                                'Asia/Shanghai' => 'CST (Shanghai)',
+                                'Asia/Manila' => 'PHT (Manila)',
+                                'Australia/Sydney' => 'AEDT (Sydney)',
+                                'UTC' => 'UTC'
+                            ];
+                        @endphp
+                        @foreach($timezones as $value => $label)
+                            <option value="{{ $value }}" {{ old('timezone', $user->userProfile->timezone ?? '') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Available Work Hours</label>
+                    <div class="space-y-4">
+                        @php
+                            $workHours = old('work_hours', $user->userProfile->work_hours ?? []);
+                            if(is_string($workHours)) {
+                                $workHours = json_decode($workHours, true) ?? [];
+                            }
+                            $daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                            $dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+                        @endphp
+                        @foreach($daysOfWeek as $index => $day)
+                            <div class="flex items-center space-x-4">
+                                <div class="w-24">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="work_hours[{{ $day }}][enabled]" value="1" 
+                                               {{ isset($workHours[$day]['enabled']) && $workHours[$day]['enabled'] ? 'checked' : '' }}
+                                               class="mr-2" onchange="toggleDayHours('{{ $day }}')"> 
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ $dayLabels[$index] }}</span>
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-2" id="{{ $day }}-hours" style="{{ isset($workHours[$day]['enabled']) && $workHours[$day]['enabled'] ? '' : 'display: none;' }}">
+                                    <input type="time" name="work_hours[{{ $day }}][start]" 
+                                           value="{{ $workHours[$day]['start'] ?? '09:00' }}"
+                                           class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <span class="text-gray-500">to</span>
+                                    <input type="time" name="work_hours[{{ $day }}][end]" 
+                                           value="{{ $workHours[$day]['end'] ?? '17:00' }}"
+                                           class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Times are in your selected timezone. Clients will see these hours converted to their local time.</p>
+                </div>
+            </div>
+            @endif
+
             <!-- Feature Profile -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                 <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Feature Your Profile</h2>
@@ -273,6 +414,7 @@
                 @endif
             </div>
 
+            @if(!auth()->user()->isAgency())
             <!-- Skills -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                 <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Skills</h2>
@@ -312,7 +454,9 @@
                     </div>
                 </div>
             </div>
+            @endif
 
+            @if(!auth()->user()->isAgency())
             <!-- Services -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                 <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Services</h2>
@@ -352,7 +496,9 @@
                     </div>
                 </div>
             </div>
+            @endif
 
+            @if(!auth()->user()->isAgency())
             <!-- Languages -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                 <h2 class="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Languages</h2>
@@ -392,6 +538,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Portfolio -->
             <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
@@ -684,6 +831,57 @@ function removePortfolioItem(button) {
         });
     });
 }
+
+// Traffic types management (for agencies)
+function addTrafficType(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        addTrafficTypeFromInput();
+    }
+}
+
+function addTrafficTypeFromInput() {
+    const input = document.getElementById('traffic-type-input');
+    const trafficType = input.value.trim();
+    
+    if (trafficType) {
+        addTrafficTypeTag(trafficType);
+        input.value = '';
+    }
+}
+
+function addTrafficTypeTag(trafficType) {
+    const container = document.getElementById('traffic-types-container');
+    const span = document.createElement('span');
+    span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+    span.innerHTML = `
+        ${trafficType}
+        <button type="button" onclick="removeTrafficType(this)" class="ml-2 text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <input type="hidden" name="traffic_types[]" value="${trafficType}">
+    `;
+    container.appendChild(span);
+}
+
+function removeTrafficType(button) {
+    button.parentElement.remove();
+}
+
+// Work hours management (for VAs/chatters)
+function toggleDayHours(day) {
+    const checkbox = document.querySelector(`input[name="work_hours[${day}][enabled]"]`);
+    const hoursDiv = document.getElementById(`${day}-hours`);
+    
+    if (checkbox.checked) {
+        hoursDiv.style.display = 'flex';
+    } else {
+        hoursDiv.style.display = 'none';
+    }
+}
+
 </script>
 
 </x-layouts.app>

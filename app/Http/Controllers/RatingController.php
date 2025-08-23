@@ -19,20 +19,20 @@ class RatingController extends Controller
     {
         $user = Auth::user();
         
-        // Use contract reviews instead of old ratings
-        $givenRatings = $user->contractReviewsGiven()
-            ->with(['reviewedUser', 'contract'])
+        
+        $receivedRatings = Rating::where('rated_id', $user->id)
+            ->with(['rater', 'jobPost', 'reviewContest'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10, ['*'], 'received');
+            
+        $givenRatings = Rating::where('rater_id', $user->id)
+            ->with(['rated', 'jobPost'])
             ->orderBy('created_at', 'desc')
             ->paginate(10, ['*'], 'given');
         
-        $receivedRatings = $user->contractReviewsReceived()
-            ->with(['reviewer', 'contract'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10, ['*'], 'received');
-        
-        // Use contract review statistics
-        $averageRating = $user->average_contract_rating;
-        $totalRatings = $user->total_contract_reviews;
+        // Calculate rating statistics
+        $averageRating = Rating::where('rated_id', $user->id)->where('is_public', true)->avg('overall_rating') ?? 0;
+        $totalRatings = Rating::where('rated_id', $user->id)->where('is_public', true)->count();
         $ratingBreakdown = null; // Not implemented for contract reviews yet
         
         return view('theme::ratings.index', compact(

@@ -105,7 +105,7 @@
                             value="{{ old('expected_hours_per_week', $job->expected_hours_per_week) }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             min="1"
-                            max="80"
+                            max="160"
                             required
                         >
                     </div>
