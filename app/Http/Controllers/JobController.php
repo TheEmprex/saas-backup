@@ -1,48 +1,50 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\JobPost;
 use App\Models\JobApplication;
+use App\Models\JobPost;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class JobController extends Controller
 {
-    public function show(int $id): View
+    public function index(): View
     {
-        $job = JobPost::with('user.userProfile')->findOrFail($id);
-        
-        return view('theme::marketplace.jobs.show', compact('job'));
+        $jobs = JobPost::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('theme::jobs.index', ['jobs' => $jobs]);
     }
 
     public function create(): View
     {
         $user = Auth::user();
-        
+
         // Get subscription info
         $subscription = $user->currentSubscription();
         $plan = $subscription ? $subscription->subscriptionPlan : null;
-        
+
         // Get usage stats
         $remainingJobPosts = $user->getRemainingJobPosts();
         $usedJobPosts = $user->getJobPostsUsedThisMonth();
         $totalJobPosts = $plan ? $plan->job_post_limit : 0;
-        
-        return view('theme::marketplace.jobs.create', compact(
-            'user', 'subscription', 'plan', 'remainingJobPosts', 'usedJobPosts', 'totalJobPosts'
-        ));
+
+        return view('theme::marketplace.jobs.create', ['user' => $user, 'subscription' => $subscription, 'plan' => $plan, 'remainingJobPosts' => $remainingJobPosts, 'usedJobPosts' => $usedJobPosts, 'totalJobPosts' => $totalJobPosts]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::user();
-        
+
         // Check if user can post jobs
-        if (!$user->canPostJob()) {
+        if (! $user->canPostJob()) {
             return redirect()->back()
                 ->with('error', 'You have reached your job posting limit for this month. Please upgrade your subscription.');
         }
@@ -77,15 +79,16 @@ class JobController extends Controller
         // Check if payment is required for featured/urgent features
         $isFeatured = $validated['is_featured'];
         $isUrgent = $validated['is_urgent'];
-        $featuredCost = $isFeatured && !$user->canUseFeaturedForFree() ? 10 : 0;
+        $featuredCost = $isFeatured && ! $user->canUseFeaturedForFree() ? 10 : 0;
         $urgentCost = $isUrgent ? 5 : 0;
         $totalCost = $featuredCost + $urgentCost;
 
         // If payment is required, store job data in session and redirect to payment
         if ($totalCost > 0) {
             session(['job_data' => $validated]);
+
             return redirect()->route('job.payment')
-                ->with('info', 'Payment required for selected features. Total cost: $' . $totalCost);
+                ->with('info', 'Payment required for selected features. Total cost: $'.$totalCost);
         }
 
         // No payment required, create job directly
@@ -96,17 +99,24 @@ class JobController extends Controller
             ->with('success', 'Job posted successfully!');
     }
 
+    public function show(int $id): View
+    {
+        $job = JobPost::with('user.userProfile')->findOrFail($id);
+
+        return view('theme::marketplace.jobs.show', ['job' => $job]);
+    }
+
     public function edit(int $id): View
     {
         $job = JobPost::findOrFail($id);
-        
-        return view('theme::marketplace.jobs.edit', compact('job'));
+
+        return view('theme::marketplace.jobs.edit', ['job' => $job]);
     }
 
     public function update(Request $request, int $id): RedirectResponse
     {
         $job = JobPost::findOrFail($id);
-        
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -140,7 +150,7 @@ class JobController extends Controller
     public function destroy(int $id): RedirectResponse
     {
         $job = JobPost::findOrFail($id);
-        
+
         $job->delete();
 
         return redirect()->route('marketplace.index')
@@ -151,7 +161,7 @@ class JobController extends Controller
     {
         $job = JobPost::findOrFail($id);
         $user = Auth::user()->load('userProfile', 'userType');
-        
+
         // Check if user already applied
         $existingApplication = JobApplication::where('job_post_id', $id)
             ->where('user_id', Auth::id())
@@ -173,23 +183,23 @@ class JobController extends Controller
 
         // Check if typing test is required for chatter positions
         $requiresTypingTest = $this->requiresTypingTest($job, $user);
-        
+
         $validationRules = [
             'cover_letter' => 'required|string|max:2000',
             'proposed_rate' => 'required|numeric|min:0',
             'available_hours' => 'required|integer|min:1|max:80',
         ];
-        
+
         // Add typing test validation if required
         if ($requiresTypingTest) {
-            $validationRules['typing_test_wpm'] = 'required|integer|min:' . ($job->min_typing_speed ?? 30);
+            $validationRules['typing_test_wpm'] = 'required|integer|min:'.($job->min_typing_speed ?? 30);
             $validationRules['typing_test_accuracy'] = 'required|integer|min:85|max:100';
             $validationRules['typing_test_results'] = 'required|json';
         }
-        
+
         $validated = $request->validate($validationRules);
 
-        DB::transaction(function() use ($validated, $job, $id, $requiresTypingTest) {
+        DB::transaction(function () use ($validated, $job, $id, $requiresTypingTest): void {
             $applicationData = [
                 'job_post_id' => $id,
                 'user_id' => Auth::id(),
@@ -198,7 +208,7 @@ class JobController extends Controller
                 'available_hours' => $validated['available_hours'],
                 'status' => 'pending',
             ];
-            
+
             // Add typing test data if provided
             if ($requiresTypingTest) {
                 $applicationData['typing_test_wpm'] = $validated['typing_test_wpm'];
@@ -207,7 +217,7 @@ class JobController extends Controller
                 $applicationData['typing_test_taken_at'] = now();
                 $applicationData['typing_test_passed'] = $validated['typing_test_wpm'] >= ($job->min_typing_speed ?? 30) && $validated['typing_test_accuracy'] >= 85;
             }
-            
+
             // Create application
             JobApplication::create($applicationData);
 
@@ -218,34 +228,19 @@ class JobController extends Controller
         return redirect()->route('jobs.show', $id)
             ->with('success', 'Your application has been submitted successfully!');
     }
-    
-    private function requiresTypingTest(JobPost $job, $user): bool
-    {
-        // Check if job requires typing test (for chatter positions)
-        if ($job->min_typing_speed && $job->min_typing_speed > 0) {
-            return true;
-        }
-        
-        // Check if user type is chatter
-        if ($user->userType && in_array($user->userType->name, ['chatter', 'chatting_agency'])) {
-            return true;
-        }
-        
-        return false;
-    }
 
     public function applications(int $id): View
     {
         $job = JobPost::with('applications.user.userProfile')->findOrFail($id);
-        
-        return view('theme::marketplace.jobs.applications', compact('job'));
+
+        return view('theme::marketplace.jobs.applications', ['job' => $job]);
     }
 
     public function updateApplicationStatus(Request $request, int $jobId, int $applicationId): RedirectResponse
     {
-        $job = JobPost::findOrFail($jobId);
+        JobPost::findOrFail($jobId);
         $application = JobApplication::findOrFail($applicationId);
-        
+
         $validated = $request->validate([
             'status' => 'required|in:pending,accepted,rejected',
         ]);
@@ -261,16 +256,18 @@ class JobController extends Controller
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
-        return view('theme::jobs.applications', compact('applications'));
+
+        return view('theme::jobs.applications', ['applications' => $applications]);
     }
 
-    public function index(): View
+    private function requiresTypingTest(JobPost $job, $user): bool
     {
-        $jobs = JobPost::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        
-        return view('theme::jobs.index', compact('jobs'));
+        // Check if job requires typing test (for chatter positions)
+        if ($job->min_typing_speed && $job->min_typing_speed > 0) {
+            return true;
+        }
+
+        // Check if user type is chatter
+        return $user->userType && in_array($user->userType->name, ['chatter', 'chatting_agency']);
     }
 }

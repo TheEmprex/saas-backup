@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Illuminate\Http\UploadedFile;
@@ -20,15 +22,15 @@ class ImageService
 
         // Process the image
         $image = Image::make($file);
-        
+
         // Resize to 300x300 pixels maintaining aspect ratio
-        $image->fit(300, 300, function ($constraint) {
+        $image->fit(300, 300, function ($constraint): void {
             $constraint->upsize();
         });
 
         // Generate unique filename
-        $filename = uniqid() . '.jpg';
-        $path = 'avatars/' . $filename;
+        $filename = uniqid().'.jpg';
+        $path = 'avatars/'.$filename;
 
         // Save the processed image
         Storage::disk('public')->put($path, (string) $image->encode('jpg', 80));
@@ -49,7 +51,7 @@ class ImageService
         $sizes = [
             'sm' => 100,
             'md' => 300,
-            'lg' => 600
+            'lg' => 600,
         ];
 
         $paths = [];
@@ -57,12 +59,12 @@ class ImageService
 
         foreach ($sizes as $size => $pixels) {
             $image = Image::make($file);
-            $image->fit($pixels, $pixels, function ($constraint) {
+            $image->fit($pixels, $pixels, function ($constraint): void {
                 $constraint->upsize();
             });
 
-            $filename = $baseFilename . '_' . $size . '.jpg';
-            $path = 'avatars/' . $filename;
+            $filename = $baseFilename.'_'.$size.'.jpg';
+            $path = 'avatars/'.$filename;
 
             Storage::disk('public')->put($path, (string) $image->encode('jpg', 80));
             $paths[$size] = $path;
@@ -89,7 +91,7 @@ class ImageService
     public function getProfilePictureUrl(?string $path): string
     {
         if ($path && Storage::disk('public')->exists($path)) {
-            return asset('storage/' . $path);
+            return asset('storage/'.$path);
         }
 
         return asset('images/default-avatar.png');

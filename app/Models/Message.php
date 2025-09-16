@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -66,14 +68,14 @@ class Message extends Model
 
     public function scopeConversation($query, $userId1, $userId2)
     {
-        return $query->where(function ($q) use ($userId1, $userId2) {
+        return $query->where(function ($q) use ($userId1, $userId2): void {
             $q->where('sender_id', $userId1)->where('recipient_id', $userId2);
-        })->orWhere(function ($q) use ($userId1, $userId2) {
+        })->orWhere(function ($q) use ($userId1, $userId2): void {
             $q->where('sender_id', $userId2)->where('recipient_id', $userId1);
         });
     }
 
-    public function markAsRead()
+    public function markAsRead(): void
     {
         $this->update([
             'is_read' => true,

@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\UserType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use App\Models\User;
-use App\Models\UserType;
 
 class CustomAuthController extends Controller
 {
@@ -27,6 +29,7 @@ class CustomAuthController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
+
             return redirect()->intended(route('dashboard'));
         }
 
@@ -38,7 +41,8 @@ class CustomAuthController extends Controller
     public function showRegistrationForm()
     {
         $userTypes = UserType::all();
-        return view('auth.register', compact('userTypes'));
+
+        return view('auth.register', ['userTypes' => $userTypes]);
     }
 
     public function register(Request $request)

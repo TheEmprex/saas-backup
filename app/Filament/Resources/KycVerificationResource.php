@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\KycVerificationResource\Pages;
@@ -9,8 +11,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class KycVerificationResource extends Resource
 {
@@ -163,7 +163,7 @@ class KycVerificationResource extends Resource
                 Tables\Actions\Action::make('approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->action(function (KycVerification $record) {
+                    ->action(function (KycVerification $record): void {
                         $record->update([
                             'status' => 'approved',
                             'reviewed_at' => now(),
@@ -179,7 +179,7 @@ class KycVerificationResource extends Resource
                             ->required()
                             ->label('Reason for rejection'),
                     ])
-                    ->action(function (KycVerification $record, array $data) {
+                    ->action(function (KycVerification $record, array $data): void {
                         $record->update([
                             'status' => 'rejected',
                             'rejection_reason' => $data['rejection_reason'],
@@ -199,7 +199,7 @@ class KycVerificationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

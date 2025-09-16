@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -30,11 +32,6 @@ class SubscriptionPlan extends Model
         'featured_status' => 'boolean',
     ];
 
-    public function userSubscriptions()
-    {
-        return $this->hasMany(UserSubscription::class);
-    }
-
     public static function freePlans()
     {
         return self::where('price', 0.0)->get();
@@ -48,5 +45,10 @@ class SubscriptionPlan extends Model
     public static function chatterPlans()
     {
         return self::where('name', 'like', '%chatter%')->get();
+    }
+
+    public function userSubscriptions()
+    {
+        return $this->hasMany(UserSubscription::class);
     }
 }

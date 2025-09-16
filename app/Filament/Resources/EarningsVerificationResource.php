@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\EarningsVerificationResource\Pages;
@@ -9,8 +11,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
 
 class EarningsVerificationResource extends Resource
@@ -130,13 +130,13 @@ class EarningsVerificationResource extends Resource
                     ->boolean()
                     ->trueIcon('heroicon-o-photo')
                     ->falseIcon('heroicon-o-x-mark')
-                    ->getStateUsing(fn (EarningsVerification $record): bool => !empty($record->earnings_screenshot_path)),
+                    ->getStateUsing(fn (EarningsVerification $record): bool => ! empty($record->earnings_screenshot_path)),
                 Tables\Columns\IconColumn::make('profile_screenshot_path')
                     ->label('Profile File')
                     ->boolean()
                     ->trueIcon('heroicon-o-photo')
                     ->falseIcon('heroicon-o-x-mark')
-                    ->getStateUsing(fn (EarningsVerification $record): bool => !empty($record->profile_screenshot_path)),
+                    ->getStateUsing(fn (EarningsVerification $record): bool => ! empty($record->profile_screenshot_path)),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -161,7 +161,7 @@ class EarningsVerificationResource extends Resource
                 Tables\Actions\Action::make('approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->action(function (EarningsVerification $record) {
+                    ->action(function (EarningsVerification $record): void {
                         $record->update([
                             'status' => 'approved',
                             'verified_at' => now(),
@@ -176,7 +176,7 @@ class EarningsVerificationResource extends Resource
                             ->required()
                             ->label('Reason for rejection'),
                     ])
-                    ->action(function (EarningsVerification $record, array $data) {
+                    ->action(function (EarningsVerification $record, array $data): void {
                         $record->update([
                             'status' => 'rejected',
                             'rejection_reason' => $data['rejection_reason'],
@@ -192,7 +192,7 @@ class EarningsVerificationResource extends Resource
                             return Storage::disk('private')->download($record->earnings_screenshot_path);
                         }
                     })
-                    ->visible(fn (EarningsVerification $record): bool => !empty($record->earnings_screenshot_path)),
+                    ->visible(fn (EarningsVerification $record): bool => ! empty($record->earnings_screenshot_path)),
                 Tables\Actions\Action::make('download_profile')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('info')
@@ -201,7 +201,7 @@ class EarningsVerificationResource extends Resource
                             return Storage::disk('private')->download($record->profile_screenshot_path);
                         }
                     })
-                    ->visible(fn (EarningsVerification $record): bool => !empty($record->profile_screenshot_path)),
+                    ->visible(fn (EarningsVerification $record): bool => ! empty($record->profile_screenshot_path)),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -210,8 +210,8 @@ class EarningsVerificationResource extends Resource
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
-                        ->action(function ($records) {
-                            $records->each(function ($record) {
+                        ->action(function ($records): void {
+                            $records->each(function ($record): void {
                                 $record->update([
                                     'status' => 'approved',
                                     'verified_at' => now(),
@@ -225,7 +225,7 @@ class EarningsVerificationResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

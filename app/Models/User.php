@@ -4,24 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Wave\Traits\HasProfileKeyValues;
 use Wave\User as WaveUser;
-use App\Models\UserProfile;
-use App\Models\UserType;
-use App\Models\JobPost;
-use App\Models\JobApplication;
-use App\Models\Message;
-use App\Models\Rating;
-use App\Models\KycVerification;
-use App\Models\EarningsVerification;
-use App\Models\UserSubscription;
-use App\Models\ChatterMicrotransaction;
-use App\Models\FeaturedJobPost;
-use App\Models\ContractReview;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends WaveUser
 {
@@ -58,12 +46,42 @@ class User extends WaveUser
         'password',
         'remember_token',
     ];
-    
+
     protected $casts = [
         'email_verified_at' => 'datetime',
         'last_seen_at' => 'datetime',
         'trial_ends_at' => 'datetime',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Listen for the creating event of the model
+        static::creating(function ($user): void {
+            // Check if the username attribute is empty
+            if (empty($user->username)) {
+                // Use the name to generate a slugified username
+                $username = Str::slug($user->name, '');
+                $i = 1;
+
+                while (self::where('username', $username)->exists()) {
+                    $username = Str::slug($user->name, '').$i;
+                    $i++;
+                }
+
+                $user->username = $username;
+            }
+        });
+
+        // Listen for the created event of the model
+        static::created(function ($user): void {
+            // Remove all roles
+            $user->syncRoles([]);
+            // Assign the default role
+            $user->assignRole(config('wave.default_user_role', 'registered'));
+        });
+    }
 
     /**
      * Get the user's profile.
@@ -72,7 +90,7 @@ class User extends WaveUser
     {
         return $this->hasOne(UserProfile::class);
     }
-    
+
     /**
      * Get the user's profile (alias for userProfile).
      */
@@ -104,12 +122,12 @@ class User extends WaveUser
     {
         return $this->hasMany(JobApplication::class);
     }
-    
+
     public function ratingsReceived()
     {
         return $this->hasMany(Rating::class, 'rated_id');
     }
-    
+
     public function ratingsGiven()
     {
         return $this->hasMany(Rating::class, 'rater_id');
@@ -158,13 +176,13 @@ class User extends WaveUser
     public function requiresVerification(): bool
     {
         if ($this->isChatter()) {
-            return !$this->isKycVerified();
+            return ! $this->isKycVerified();
         }
-        
+
         if ($this->isAgency()) {
-            return !$this->isEarningsVerified();
+            return ! $this->isEarningsVerified();
         }
-        
+
         return false;
     }
 
@@ -356,7 +374,7 @@ class User extends WaveUser
     /**
      * Check if user has an active subscription.
      */
-    public function hasActiveSubscription()
+    public function hasActiveSubscription(): bool
     {
         return $this->currentSubscription() !== null;
     }
@@ -375,18 +393,20 @@ class User extends WaveUser
     public function canPostJob()
     {
         $subscription = $this->currentSubscription();
-        if (!$subscription) {
+
+        if (! $subscription) {
             return false;
         }
 
         $plan = $subscription->subscriptionPlan;
+
         if ($plan->job_post_limit === null) {
             return true; // Unlimited
         }
 
         $currentMonth = now()->format('Y-m');
         $jobPostsThisMonth = $this->jobPosts()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
-        
+
         return $jobPostsThisMonth < $plan->job_post_limit;
     }
 
@@ -396,27 +416,30 @@ class User extends WaveUser
     public function canApplyToJob()
     {
         $subscription = $this->currentSubscription();
-        if (!$subscription) {
+
+        if (! $subscription) {
             return $this->isChatter(); // Chatters can apply without subscription
         }
 
         $plan = $subscription->subscriptionPlan;
+
         if ($plan->chat_application_limit === null) {
             return true; // Unlimited
         }
 
         $currentMonth = now()->format('Y-m');
         $applicationsThisMonth = $this->jobApplications()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
-        
+
         return $applicationsThisMonth < $plan->chat_application_limit;
     }
 
     /**
      * Check if user has unlimited chats feature.
      */
-    public function hasUnlimitedChats()
+    public function hasUnlimitedChats(): bool
     {
         $subscription = $this->currentSubscription();
+
         return $subscription && $subscription->subscriptionPlan->unlimited_chats;
     }
 
@@ -427,6 +450,7 @@ class User extends WaveUser
     {
         // Check if user has advanced filters in their subscription
         $subscription = $this->currentSubscription();
+
         if ($subscription && $subscription->subscriptionPlan->advanced_filters) {
             return true;
         }
@@ -442,42 +466,46 @@ class User extends WaveUser
     /**
      * Get remaining job posts for current month.
      */
-    public function getRemainingJobPosts()
+    public function getRemainingJobPosts(): int|float
     {
         $subscription = $this->currentSubscription();
-        if (!$subscription) {
+
+        if (! $subscription) {
             return 0;
         }
 
         $plan = $subscription->subscriptionPlan;
+
         if ($plan->job_post_limit === null) {
             return 999; // Unlimited
         }
 
         $currentMonth = now()->format('Y-m');
         $jobPostsThisMonth = $this->jobPosts()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
-        
+
         return max(0, $plan->job_post_limit - $jobPostsThisMonth);
     }
 
     /**
      * Get remaining job applications for current month.
      */
-    public function getRemainingJobApplications()
+    public function getRemainingJobApplications(): int|float
     {
         $subscription = $this->currentSubscription();
-        if (!$subscription) {
+
+        if (! $subscription) {
             return $this->isChatter() ? 999 : 0; // Chatters can apply without subscription
         }
 
         $plan = $subscription->subscriptionPlan;
+
         if ($plan->chat_application_limit === null) {
             return 999; // Unlimited
         }
 
         $currentMonth = now()->format('Y-m');
         $applicationsThisMonth = $this->jobApplications()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
-        
+
         return max(0, $plan->chat_application_limit - $applicationsThisMonth);
     }
 
@@ -487,6 +515,7 @@ class User extends WaveUser
     public function getJobPostsUsedThisMonth()
     {
         $currentMonth = now()->format('Y-m');
+
         return $this->jobPosts()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
     }
 
@@ -496,42 +525,45 @@ class User extends WaveUser
     public function getJobApplicationsUsedThisMonth()
     {
         $currentMonth = now()->format('Y-m');
+
         return $this->jobApplications()->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])->count();
     }
 
     /**
      * Calculate total cost for featured/urgent job features.
      */
-    public function calculateJobFeatureCost($isFeatured = false, $isUrgent = false)
+    public function calculateJobFeatureCost($isFeatured = false, $isUrgent = false): int
     {
         $cost = 0;
-        
+
         if ($isFeatured) {
             $cost += 10; // $10 for featured job
         }
-        
+
         if ($isUrgent) {
             $cost += 5; // $5 for urgent job
         }
-        
+
         return $cost;
     }
 
     /**
      * Check if user can use featured job feature without payment.
      */
-    public function canUseFeaturedForFree()
+    public function canUseFeaturedForFree(): bool
     {
         $subscription = $this->currentSubscription();
+
         return $subscription && $subscription->subscriptionPlan->featured_status;
     }
 
     /**
      * Check if user has priority listings feature.
      */
-    public function hasPriorityListings()
+    public function hasPriorityListings(): bool
     {
         $subscription = $this->currentSubscription();
+
         return $subscription && $subscription->subscriptionPlan->priority_listings;
     }
 
@@ -540,8 +572,8 @@ class User extends WaveUser
      */
     public function getProfilePictureUrl(): string
     {
-        if ($this->avatar && \Storage::disk('public')->exists($this->avatar)) {
-            return asset('storage/' . $this->avatar);
+        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
+            return asset('storage/'.$this->avatar);
         }
 
         return asset('images/default-avatar.png');
@@ -553,35 +585,5 @@ class User extends WaveUser
     public function getProfilePictureUrlAttribute(): string
     {
         return $this->getProfilePictureUrl();
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Listen for the creating event of the model
-        static::creating(function ($user): void {
-            // Check if the username attribute is empty
-            if (empty($user->username)) {
-                // Use the name to generate a slugified username
-                $username = Str::slug($user->name, '');
-                $i = 1;
-
-                while (self::where('username', $username)->exists()) {
-                    $username = Str::slug($user->name, '').$i;
-                    $i++;
-                }
-
-                $user->username = $username;
-            }
-        });
-
-        // Listen for the created event of the model
-        static::created(function ($user): void {
-            // Remove all roles
-            $user->syncRoles([]);
-            // Assign the default role
-            $user->assignRole(config('wave.default_user_role', 'registered'));
-        });
     }
 }

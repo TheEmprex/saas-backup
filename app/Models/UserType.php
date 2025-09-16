@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,17 +11,17 @@ class UserType extends Model
 {
     protected $fillable = [
         'name',
-        'display_name', 
+        'display_name',
         'description',
         'required_fields',
         'requires_kyc',
-        'active'
+        'active',
     ];
 
     protected $casts = [
         'required_fields' => 'array',
         'requires_kyc' => 'boolean',
-        'active' => 'boolean'
+        'active' => 'boolean',
     ];
 
     public function users(): HasMany

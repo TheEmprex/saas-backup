@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserTypeResource\Pages;
-use App\Filament\Resources\UserTypeResource\RelationManagers;
 use App\Models\UserType;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserTypeResource extends Resource
 {
@@ -61,7 +60,7 @@ class UserTypeResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -76,7 +75,7 @@ class UserTypeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+
         ];
     }
 

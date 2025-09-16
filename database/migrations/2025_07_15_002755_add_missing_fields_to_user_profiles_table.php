@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('user_profiles', function (Blueprint $table) {
+        Schema::table('user_profiles', function (Blueprint $table): void {
             // Basic profile fields
             $table->string('location')->nullable();
             $table->string('website')->nullable();
@@ -25,19 +24,16 @@ return new class extends Migration
             $table->string('portfolio_url')->nullable();
             $table->string('linkedin_url')->nullable();
             $table->integer('views')->default(0);
-            
+
             // Typing test fields
             $table->integer('typing_accuracy')->nullable();
             $table->timestamp('typing_test_taken_at')->nullable();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('user_profiles', function (Blueprint $table) {
+        Schema::table('user_profiles', function (Blueprint $table): void {
             $table->dropColumn([
                 'location',
                 'website',

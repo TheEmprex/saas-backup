@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -32,12 +34,12 @@ class ChatterMicrotransaction extends Model
         return $this->belongsTo(JobPost::class);
     }
 
-    public function isActive()
+    public function isActive(): bool
     {
         return $this->expires_at === null || $this->expires_at->isFuture();
     }
 
-    public function isExpired()
+    public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
     }

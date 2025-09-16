@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\KycVerification;
 use App\Models\EarningsVerification;
-use App\Models\User;
+use App\Models\KycVerification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -15,9 +15,10 @@ class AdminController extends Controller
     {
         $this->middleware('auth');
         $this->middleware(function ($request, $next) {
-            if (!auth()->user()->isAdmin()) {
+            if (! auth()->user()->isAdmin()) {
                 abort(403, 'Unauthorized access');
             }
+
             return $next($request);
         });
     }
@@ -29,7 +30,7 @@ class AdminController extends Controller
     {
         $kycPendingCount = KycVerification::where('status', 'pending')->count();
         $earningsPendingCount = EarningsVerification::where('status', 'pending')->count();
-        
+
         $stats = [
             'kyc_pending' => $kycPendingCount,
             'kyc_approved' => KycVerification::where('status', 'approved')->count(),
@@ -39,7 +40,7 @@ class AdminController extends Controller
             'earnings_rejected' => EarningsVerification::where('status', 'rejected')->count(),
         ];
 
-        return view('admin.dashboard', compact('stats'));
+        return view('admin.dashboard', ['stats' => $stats]);
     }
 
     /**
@@ -48,14 +49,14 @@ class AdminController extends Controller
     public function kycVerifications(Request $request)
     {
         $query = KycVerification::with('user')->latest();
-        
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         $verifications = $query->paginate(20);
-        
-        return view('admin.kyc.index', compact('verifications'));
+
+        return view('admin.kyc.index', ['verifications' => $verifications]);
     }
 
     /**
@@ -64,7 +65,8 @@ class AdminController extends Controller
     public function showKycVerification(KycVerification $verification)
     {
         $verification->load('user');
-        return view('admin.kyc.show', compact('verification'));
+
+        return view('admin.kyc.show', ['verification' => $verification]);
     }
 
     /**
@@ -74,7 +76,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,approved,rejected',
-            'rejection_reason' => 'nullable|string|max:1000'
+            'rejection_reason' => 'nullable|string|max:1000',
         ]);
 
         $verification->update([
@@ -93,14 +95,14 @@ class AdminController extends Controller
     public function earningsVerifications(Request $request)
     {
         $query = EarningsVerification::with('user')->latest();
-        
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         $verifications = $query->paginate(20);
-        
-        return view('admin.earnings.index', compact('verifications'));
+
+        return view('admin.earnings.index', ['verifications' => $verifications]);
     }
 
     /**
@@ -109,7 +111,8 @@ class AdminController extends Controller
     public function showEarningsVerification(EarningsVerification $verification)
     {
         $verification->load('user');
-        return view('admin.earnings.show', compact('verification'));
+
+        return view('admin.earnings.show', ['verification' => $verification]);
     }
 
     /**
@@ -119,7 +122,7 @@ class AdminController extends Controller
     {
         $request->validate([
             'status' => 'required|in:pending,approved,rejected',
-            'rejection_reason' => 'nullable|string|max:1000'
+            'rejection_reason' => 'nullable|string|max:1000',
         ]);
 
         // Only update specific fields, don't affect file paths
@@ -143,7 +146,7 @@ class AdminController extends Controller
             default => null
         };
 
-        if (!$filePath || !Storage::disk('private')->exists($filePath)) {
+        if (! $filePath || ! Storage::disk('private')->exists($filePath)) {
             abort(404, 'File not found');
         }
 
@@ -161,7 +164,7 @@ class AdminController extends Controller
             default => null
         };
 
-        if (!$filePath || !Storage::disk('private')->exists($filePath)) {
+        if (! $filePath || ! Storage::disk('private')->exists($filePath)) {
             abort(404, 'File not found');
         }
 

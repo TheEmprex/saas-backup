@@ -1,58 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\UserProfile;
 use App\Models\UserType;
-use App\Models\EarningsVerification;
 use App\Services\ImageService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class UserProfileController extends Controller
 {
     public function show($userId = null)
     {
         $user = Auth::user();
-        if (!$user) {
+
+        if (! $user) {
             return redirect()->route('login');
         }
+
         $user->load(['userProfile', 'userType', 'contractReviewsReceived.reviewer', 'contractReviewsGiven.reviewedUser']);
-        
-        return view('theme::profile.show', compact('user'));
+
+        return view('theme::profile.show', ['user' => $user]);
     }
-    
-    public function publicProfile(User $user)
-    {
-        // Load user with profile and user type
-        $user->load(['userProfile', 'userType', 'contractReviewsReceived.reviewer']);
-        
-        // Only show public profiles for users with complete profiles
-        if (!$user->userProfile || !$user->userProfile->bio) {
-            abort(404, 'Profile not found or incomplete');
-        }
-        
-        return view('theme::profile.public', compact('user'));
-    }
-    
+
     public function edit()
     {
         $user = Auth::user()->load(['userProfile', 'userType']);
         $userTypes = UserType::where('active', true)->get();
-        
-        return view('theme::profile.edit', compact('user', 'userTypes'));
+
+        return view('theme::profile.edit', ['user' => $user, 'userTypes' => $userTypes]);
     }
-    
+
     public function update(Request $request)
     {
         $user = Auth::user();
-        
+
         // Validate basic user info
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
+            'email' => 'required|email|unique:users,email,'.$user->id,
             'user_type_id' => 'nullable|exists:user_types,id',
             'bio' => 'nullable|string|max:1000',
             'location' => 'nullable|string|max:255',
@@ -69,14 +59,14 @@ class UserProfileController extends Controller
             'linkedin_url' => 'nullable|url|max:500',
             'avatar' => 'nullable|image|max:2048',
         ]);
-        
+
         // Update user basic info
         $user->update([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'user_type_id' => $validated['user_type_id'] ?? $user->user_type_id,
         ]);
-        
+
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
             $imageService = new ImageService();
@@ -86,7 +76,7 @@ class UserProfileController extends Controller
             );
             $user->update(['avatar' => $avatarPath]);
         }
-        
+
         // Update or create user profile
         $profileData = [
             'user_type_id' => $user->user_type_id ?? 1, // Default to first user type if not set
@@ -104,42 +94,55 @@ class UserProfileController extends Controller
             'portfolio_url' => $validated['portfolio_url'] ?? null,
             'linkedin_url' => $validated['linkedin_url'] ?? null,
         ];
-        
+
         $user->userProfile()->updateOrCreate(
             ['user_id' => $user->id],
             $profileData
         );
-        
+
         return redirect()->route('profile.show')
             ->with('success', 'Profile updated successfully!');
     }
-    
+
+    public function publicProfile(User $user)
+    {
+        // Load user with profile and user type
+        $user->load(['userProfile', 'userType', 'contractReviewsReceived.reviewer']);
+
+        // Only show public profiles for users with complete profiles
+        if (! $user->userProfile || ! $user->userProfile->bio) {
+            abort(404, 'Profile not found or incomplete');
+        }
+
+        return view('theme::profile.public', ['user' => $user]);
+    }
+
     public function kyc()
     {
         $user = Auth::user()->load(['userProfile', 'userType', 'kycVerification']);
-        
+
         // If user already has KYC submitted, redirect to view it
         if ($user->hasKycSubmitted()) {
             return redirect()->route('kyc.show', $user->kycVerification->id);
         }
-        
+
         return redirect()->route('kyc.create');
     }
-    
+
     public function submitKyc(Request $request)
     {
         // Redirect to proper KYC controller
         return redirect()->route('kyc.create')
             ->with('info', 'Please use the dedicated KYC verification form.');
     }
-    
+
     public function typingTest()
     {
         $user = Auth::user()->load(['userProfile']);
-        
-        return view('theme::profile.typing-test', compact('user'));
+
+        return view('theme::profile.typing-test', ['user' => $user]);
     }
-    
+
     public function submitTypingTest(Request $request)
     {
         $validated = $request->validate([
@@ -147,7 +150,7 @@ class UserProfileController extends Controller
             'accuracy' => 'required|integer|min:50|max:100',
             'time_taken' => 'required|integer|min:30|max:300',
         ]);
-        
+
         $user = Auth::user();
         $user->userProfile()->updateOrCreate(
             ['user_id' => $user->id],
@@ -158,34 +161,34 @@ class UserProfileController extends Controller
                 'typing_test_taken_at' => now(),
             ]
         );
-        
+
         return redirect()->route('profile.show')
-            ->with('success', 'Typing test completed! Your WPM: ' . $validated['wpm']);
+            ->with('success', 'Typing test completed! Your WPM: '.$validated['wpm']);
     }
-    
+
     public function earningsVerification()
     {
         $user = Auth::user()->load(['userProfile', 'userType', 'earningsVerification']);
-        
+
         // Check if user is an agency
-        if (!$user->isAgency()) {
+        if (! $user->isAgency()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Earnings verification is only for agencies.');
         }
-        
-        return view('theme::profile.earnings-verification', compact('user'));
+
+        return view('theme::profile.earnings-verification', ['user' => $user]);
     }
-    
+
     public function submitEarningsVerification(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check if user is an agency
-        if (!$user->isAgency()) {
+        if (! $user->isAgency()) {
             return redirect()->route('dashboard')
                 ->with('error', 'Earnings verification is only for agencies.');
         }
-        
+
         $validated = $request->validate([
             'platform_name' => 'required|string|max:255',
             'platform_username' => 'required|string|max:255',
@@ -194,18 +197,19 @@ class UserProfileController extends Controller
             'profile_screenshot' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'additional_notes' => 'nullable|string|max:1000',
         ]);
-        
+
         try {
             // Handle file uploads
             $earningsScreenshotPath = $request->file('earnings_screenshot')
                 ->store('earnings-verifications', 'private');
-            
+
             $profileScreenshotPath = null;
+
             if ($request->hasFile('profile_screenshot')) {
                 $profileScreenshotPath = $request->file('profile_screenshot')
                     ->store('earnings-verifications', 'private');
             }
-            
+
             // Create or update earnings verification
             $verification = $user->earningsVerification()->updateOrCreate(
                 ['user_id' => $user->id],
@@ -220,14 +224,14 @@ class UserProfileController extends Controller
                     'verified_at' => null,
                 ]
             );
-            
+
             return redirect()->route('profile.earnings-verification')
                 ->with('success', 'Earnings verification submitted successfully! We will review your submission within 24-48 hours.');
-                
-        } catch (\Exception $e) {
+
+        } catch (Exception $exception) {
             // Log the error for debugging
-            \Log::error('Earnings verification submission failed: ' . $e->getMessage());
-            
+            Log::error('Earnings verification submission failed: '.$exception->getMessage());
+
             return redirect()->back()
                 ->with('error', 'There was an error submitting your verification. Please try again.')
                 ->withInput();
