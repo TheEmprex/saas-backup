@@ -48,7 +48,7 @@ class JobApplicationController extends Controller
         $jobPost = JobPost::findOrFail($request->job_post_id);
 
         // Check if user already applied
-        $existingApplication = JobApplication::query->where('job_post_id', $jobPost->id)
+        $existingApplication = JobApplication::query()->where('job_post_id', $jobPost->id)
             ->where('user_id', Auth::id())
             ->first();
 
@@ -188,7 +188,7 @@ class JobApplicationController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $applications = JobApplication::query->whereIn('id', $request->application_ids)
+        $applications = JobApplication::query()->whereIn('id', $request->application_ids)
             ->whereHas('jobPost', function ($query): void {
                 $query->where('user_id', Auth::id());
             })
@@ -203,7 +203,7 @@ class JobApplicationController extends Controller
             'notes' => $request->notes,
         ];
 
-        JobApplication::query->whereIn('id', $request->application_ids)
+        JobApplication::query()->whereIn('id', $request->application_ids)
             ->whereHas('jobPost', function ($query): void {
                 $query->where('user_id', Auth::id());
             })

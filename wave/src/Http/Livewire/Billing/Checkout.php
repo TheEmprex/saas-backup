@@ -69,7 +69,7 @@ class Checkout extends Component
 
     public function updateCycleBasedOnPlans(): void
     {
-        $plans = Plan::query->where('active', 1)->get();
+        $plans = Plan::query()->where('active', 1)->get();
         $hasMonthly = false;
         $hasYearly = false;
 
@@ -133,9 +133,9 @@ class Checkout extends Component
             $user = auth()->user();
 
             if ($this->billing_cycle_selected == 'month') {
-                $plan = Plan::query->where('monthly_price_id', $transaction->items[0]->price->id)->first();
+                $plan = Plan::query()->where('monthly_price_id', $transaction->items[0]->price->id)->first();
             } else {
-                $plan = Plan::query->where('yearly_price_id', $transaction->items[0]->price->id)->first();
+                $plan = Plan::query()->where('yearly_price_id', $transaction->items[0]->price->id)->first();
             }
 
             if (! isset($plan->id)) {
@@ -212,7 +212,7 @@ class Checkout extends Component
     public function render()
     {
         return view('wave::livewire.billing.checkout', [
-            'plans' => Plan::query->where('active', 1)->get(),
+            'plans' => Plan::query()->where('active', 1)->get(),
         ]);
     }
 }

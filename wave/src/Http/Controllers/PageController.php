@@ -11,7 +11,7 @@ class PageController extends Controller
 {
     public function page($slug)
     {
-        $page = Page::query->where('slug', '=', $slug)->firstOrFail();
+        $page = Page::query()->where('slug', '=', $slug)->firstOrFail();
 
         $seo = [
             'seo_title' => $page->title,

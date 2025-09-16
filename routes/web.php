@@ -89,7 +89,7 @@ Route::get('about', fn () => view('theme::about'))->name('about');
 
 // Temporary test route for authentication bypass
 Route::get('test-login', function () {
-    $user = App\Models\User::query->where('email', 'test@example.com')->first();
+    $user = App\Models\User::query()->where('email', 'test@example.com')->first();
 
     if ($user) {
         Auth::login($user);

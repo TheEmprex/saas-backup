@@ -22,26 +22,26 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // Get user's posted jobs
-        $postedJobs = JobPost::query->where('user_id', $user->id)
+        $postedJobs = JobPost::query()->where('user_id', $user->id)
             ->with('applications')
             ->latest()
             ->limit(5)
             ->get();
 
         // Get user's applications
-        $myApplications = JobApplication::query->where('user_id', $user->id)
+        $myApplications = JobApplication::query()->where('user_id', $user->id)
             ->with('jobPost.user')
             ->latest()
             ->limit(5)
             ->get();
 
         // Get pending applications for user's jobs
-        $pendingApplications = JobApplication::query->whereHas('jobPost', function ($query) use ($user): void {
+        $pendingApplications = JobApplication::query()->whereHas('jobPost', function ($query) use ($user): void {
             $query->where('user_id', $user->id);
         })->where('status', 'pending')->count();
 
         // Get total applications received on user's jobs
-        $totalApplicationsReceived = JobApplication::query->whereHas('jobPost', function ($query) use ($user): void {
+        $totalApplicationsReceived = JobApplication::query()->whereHas('jobPost', function ($query) use ($user): void {
             $query->where('user_id', $user->id);
         })->count();
 
@@ -232,10 +232,10 @@ class DashboardController extends Controller
 
     private function getAnalytics($user)
     {
-        $totalApplications = JobApplication::query->where('user_id', $user->id)->count();
-        $acceptedApplications = JobApplication::query->where('user_id', $user->id)->where('status', 'accepted')->count();
-        $unreadMessages = Message::query->where('recipient_id', $user->id)->where('is_read', false)->count();
-        $averageRating = Rating::query->where('rated_id', $user->id)->avg('overall_rating') ?: 0;
+        $totalApplications = JobApplication::query()->where('user_id', $user->id)->count();
+        $acceptedApplications = JobApplication::query()->where('user_id', $user->id)->where('status', 'accepted')->count();
+        $unreadMessages = Message::query()->where('recipient_id', $user->id)->where('is_read', false)->count();
+        $averageRating = Rating::query()->where('rated_id', $user->id)->avg('overall_rating') ?: 0;
 
         return [
             'total_applications' => $totalApplications,
@@ -243,8 +243,8 @@ class DashboardController extends Controller
             'success_rate' => $totalApplications > 0 ? round(($acceptedApplications / $totalApplications) * 100, 1) : 0,
             'unread_messages' => $unreadMessages,
             'average_rating' => round($averageRating, 1),
-            'total_jobs_posted' => JobPost::query->where('user_id', $user->id)->count(),
-            'active_jobs' => JobPost::query->where('user_id', $user->id)->where('status', 'active')->count(),
+            'total_jobs_posted' => JobPost::query()->where('user_id', $user->id)->count(),
+            'active_jobs' => JobPost::query()->where('user_id', $user->id)->where('status', 'active')->count(),
             'monthly_growth' => $this->calculateMonthlyGrowth($user),
             'profile_views' => $user->userProfile ? $user->userProfile->views : 0,
         ];
@@ -255,7 +255,7 @@ class DashboardController extends Controller
         $activities = collect();
 
         // Recent applications
-        $recentApplications = JobApplication::query->where('user_id', $user->id)
+        $recentApplications = JobApplication::query()->where('user_id', $user->id)
             ->with(['jobPost', 'jobPost.user'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -274,7 +274,7 @@ class DashboardController extends Controller
         }
 
         // Recent messages
-        $recentMessages = Message::query->where('recipient_id', $user->id)
+        $recentMessages = Message::query()->where('recipient_id', $user->id)
             ->with(['sender'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -293,7 +293,7 @@ class DashboardController extends Controller
         }
 
         // Recent job posts
-        $recentJobs = JobPost::query->where('user_id', $user->id)
+        $recentJobs = JobPost::query()->where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->limit(3)
             ->get();
@@ -315,17 +315,17 @@ class DashboardController extends Controller
 
     private function getPerformanceMetrics($user)
     {
-        $totalApplications = JobApplication::query->where('user_id', $user->id)->count();
-        $acceptedApplications = JobApplication::query->where('user_id', $user->id)->where('status', 'accepted')->count();
-        $completedJobs = JobPost::query->where('user_id', $user->id)->where('status', 'completed')->count();
-        $totalJobs = JobPost::query->where('user_id', $user->id)->count();
-        $averageRating = Rating::query->where('rated_id', $user->id)->avg('overall_rating') ?: 0;
+        $totalApplications = JobApplication::query()->where('user_id', $user->id)->count();
+        $acceptedApplications = JobApplication::query()->where('user_id', $user->id)->where('status', 'accepted')->count();
+        $completedJobs = JobPost::query()->where('user_id', $user->id)->where('status', 'completed')->count();
+        $totalJobs = JobPost::query()->where('user_id', $user->id)->count();
+        $averageRating = Rating::query()->where('rated_id', $user->id)->avg('overall_rating') ?: 0;
 
         return [
             'application_success_rate' => $totalApplications > 0 ? round(($acceptedApplications / $totalApplications) * 100, 1) : 0,
             'job_completion_rate' => $totalJobs > 0 ? round(($completedJobs / $totalJobs) * 100, 1) : 0,
             'average_rating' => round($averageRating, 1),
-            'total_ratings' => Rating::query->where('rated_id', $user->id)->count(),
+            'total_ratings' => Rating::query()->where('rated_id', $user->id)->count(),
             'response_time' => $this->calculateAverageResponseTime(),
             'earnings_trend' => $this->getEarningsTrend(),
             'rating_distribution' => $this->getRatingDistribution($user),
@@ -334,11 +334,11 @@ class DashboardController extends Controller
 
     private function calculateMonthlyGrowth($user): float
     {
-        $thisMonth = JobApplication::query->where('user_id', $user->id)
+        $thisMonth = JobApplication::query()->where('user_id', $user->id)
             ->where('created_at', '>=', Carbon::now()->startOfMonth())
             ->count();
 
-        $lastMonth = JobApplication::query->where('user_id', $user->id)
+        $lastMonth = JobApplication::query()->where('user_id', $user->id)
             ->where('created_at', '>=', Carbon::now()->subMonth()->startOfMonth())
             ->where('created_at', '<', Carbon::now()->startOfMonth())
             ->count();
@@ -382,7 +382,7 @@ class DashboardController extends Controller
         $distribution = [];
 
         for ($i = 1; $i <= 5; $i++) {
-            $count = Rating::query->where('rated_id', $user->id)->where('overall_rating', $i)->count();
+            $count = Rating::query()->where('rated_id', $user->id)->where('overall_rating', $i)->count();
             $distribution[$i] = $count;
         }
 
@@ -402,12 +402,12 @@ class DashboardController extends Controller
     private function getAdminStats()
     {
         return [
-            'kyc_pending' => KycVerification::query->where('status', 'pending')->count(),
-            'kyc_approved' => KycVerification::query->where('status', 'approved')->count(),
-            'kyc_rejected' => KycVerification::query->where('status', 'rejected')->count(),
-            'earnings_pending' => EarningsVerification::query->where('status', 'pending')->count(),
-            'earnings_approved' => EarningsVerification::query->where('status', 'approved')->count(),
-            'earnings_rejected' => EarningsVerification::query->where('status', 'rejected')->count(),
+            'kyc_pending' => KycVerification::query()->where('status', 'pending')->count(),
+            'kyc_approved' => KycVerification::query()->where('status', 'approved')->count(),
+            'kyc_rejected' => KycVerification::query()->where('status', 'rejected')->count(),
+            'earnings_pending' => EarningsVerification::query()->where('status', 'pending')->count(),
+            'earnings_approved' => EarningsVerification::query()->where('status', 'approved')->count(),
+            'earnings_rejected' => EarningsVerification::query()->where('status', 'rejected')->count(),
         ];
     }
 }

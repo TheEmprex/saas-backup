@@ -85,8 +85,8 @@ class SubscriptionController extends Controller
                 }
 
                 if ($guest !== 0) {
-                    if (User::query->where('email', $customerEmail)->exists()) {
-                        $user = User::query->where('email', $customerEmail)->first();
+                    if (User::query()->where('email', $customerEmail)->exists()) {
+                        $user = User::query()->where('email', $customerEmail)->first();
                     } else {
                         $registration = new \Wave\Http\Controllers\Auth\RegisterController();
                         $user_data = [
@@ -101,7 +101,7 @@ class SubscriptionController extends Controller
                     $user = auth()->user();
                 }
 
-                $plan = Plan::query->where('plan_id', $transaction->items[0]->price->id)->first();
+                $plan = Plan::query()->where('plan_id', $transaction->items[0]->price->id)->first();
 
                 // Update user role based on plan
                 $user->role_id = $plan->role_id;
@@ -163,7 +163,7 @@ class SubscriptionController extends Controller
 
     public function switchPlans(Request $request)
     {
-        $plan = Plan::query->where('plan_id', $request->plan_id)->first();
+        $plan = Plan::query()->where('plan_id', $request->plan_id)->first();
 
         if (isset($plan->id)) {
             // Update the user plan with Paddle
@@ -213,7 +213,7 @@ class SubscriptionController extends Controller
         $subscription_id = auth()->user()->latestSubscription->subscription_id;
 
         // Ensure the provided subscription ID matches the user's subscription ID
-        $localSubscription = Subscription::query->where('subscription_id', $subscription_id)->first();
+        $localSubscription = Subscription::query()->where('subscription_id', $subscription_id)->first();
 
         if (! $localSubscription || auth()->user()->latestSubscription->subscription_id != $subscription_id) {
             return back()->with(['message' => 'Invalid subscription ID.', 'message_type' => 'danger']);
@@ -239,7 +239,7 @@ class SubscriptionController extends Controller
 
                 // Update user's role to "cancelled"
                 $user = User::find($localSubscription->user_id);
-                $cancelledRole = Role::query->where('name', '=', 'cancelled')->first();
+                $cancelledRole = Role::query()->where('name', '=', 'cancelled')->first();
                 $user->role_id = $cancelledRole->id;
                 $user->save();
 

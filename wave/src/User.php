@@ -78,7 +78,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
 
     public function subscribedToPlan($planSlug)
     {
-        $plan = Plan::query->where('name', $planSlug)->first();
+        $plan = Plan::query()->where('name', $planSlug)->first();
 
         if (! $plan) {
             return false;
@@ -308,7 +308,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
     //  */
     // public function setRole($name)
     // {
-    //     $role = Role::query->where('name', '=', $name)->first();
+    //     $role = Role::query()->where('name', '=', $name)->first();
 
     //     if ($role) {
     //         $this->role()->associate($role);

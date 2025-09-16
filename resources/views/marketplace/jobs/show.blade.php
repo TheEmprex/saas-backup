@@ -85,7 +85,7 @@
                         $user = auth()->user()->load('userProfile', 'userType');
                         $requiresTypingTest = ($job->min_typing_speed && $job->min_typing_speed > 0) ||
                                               ($user->userType && in_array($user->userType->name, ['chatter', 'chatting_agency']));
-                        $hasApplied = \App\Models\JobApplication::query->where('job_post_id', $job->id)
+                        $hasApplied = \App\Models\JobApplication::query()->where('job_post_id', $job->id)
                                                                   ->where('user_id', auth()->id())
                                                                   ->exists();
                     @endphp

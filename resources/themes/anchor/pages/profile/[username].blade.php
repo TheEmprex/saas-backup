@@ -12,7 +12,7 @@
         #[Computed]
         public function user()
         {
-            return config('wave.user_model')::query->where('username', '=', $this->username)->with('roles')->firstOrFail();
+            return config('wave.user_model')::query()->where('username', '=', $this->username)->with('roles')->firstOrFail();
         }
     }
 ?>

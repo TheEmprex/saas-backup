@@ -28,16 +28,16 @@ class AdminController extends Controller
      */
     public function dashboard()
     {
-        $kycPendingCount = KycVerification::query->where('status', 'pending')->count();
-        $earningsPendingCount = EarningsVerification::query->where('status', 'pending')->count();
+        $kycPendingCount = KycVerification::query()->where('status', 'pending')->count();
+        $earningsPendingCount = EarningsVerification::query()->where('status', 'pending')->count();
 
         $stats = [
             'kyc_pending' => $kycPendingCount,
-            'kyc_approved' => KycVerification::query->where('status', 'approved')->count(),
-            'kyc_rejected' => KycVerification::query->where('status', 'rejected')->count(),
+            'kyc_approved' => KycVerification::query()->where('status', 'approved')->count(),
+            'kyc_rejected' => KycVerification::query()->where('status', 'rejected')->count(),
             'earnings_pending' => $earningsPendingCount,
-            'earnings_approved' => EarningsVerification::query->where('status', 'approved')->count(),
-            'earnings_rejected' => EarningsVerification::query->where('status', 'rejected')->count(),
+            'earnings_approved' => EarningsVerification::query()->where('status', 'approved')->count(),
+            'earnings_rejected' => EarningsVerification::query()->where('status', 'rejected')->count(),
         ];
 
         return view('admin.dashboard', ['stats' => $stats]);

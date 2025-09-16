@@ -51,7 +51,7 @@ echo "   🏷️ User Types: {$userTypeCount}" . PHP_EOL;
 echo PHP_EOL;
 
 echo "🔧 ADMIN ACCESS:" . PHP_EOL;
-$admins = User::query->whereHas('roles', function($q) {
+$admins = User::query()->whereHas('roles', function($q) {
     $q->where('name', 'admin');
 })->get();
 

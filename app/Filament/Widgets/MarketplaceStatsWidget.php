@@ -17,7 +17,7 @@ class MarketplaceStatsWidget extends BaseWidget
     {
         try {
             $totalJobs = JobPost::count();
-            $activeJobs = JobPost::query->where('status', 'active')->count();
+            $activeJobs = JobPost::query()->where('status', 'active')->count();
             $totalApplications = JobApplication::count();
             $totalUsers = User::count();
 

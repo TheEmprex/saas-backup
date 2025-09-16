@@ -37,7 +37,7 @@ class NotificationController extends Controller
         $userId = Auth::id();
 
         // Mark all messages as read
-        Message::query->where('recipient_id', $userId)
+        Message::query()->where('recipient_id', $userId)
             ->where('is_read', false)
             ->update(['is_read' => true, 'read_at' => now()]);
 
@@ -50,7 +50,7 @@ class NotificationController extends Controller
         $activities = collect();
 
         // Recent messages
-        $recentMessages = Message::query->where('recipient_id', $userId)
+        $recentMessages = Message::query()->where('recipient_id', $userId)
             ->with(['sender', 'sender.userType'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -69,7 +69,7 @@ class NotificationController extends Controller
         }
 
         // Recent job applications
-        $recentApplications = JobApplication::query->where('user_id', $userId)
+        $recentApplications = JobApplication::query()->where('user_id', $userId)
             ->with(['jobPost', 'jobPost.user'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -96,7 +96,7 @@ class NotificationController extends Controller
         $notifications = collect();
 
         // Get unread messages
-        $unreadMessages = Message::query->where('recipient_id', $userId)
+        $unreadMessages = Message::query()->where('recipient_id', $userId)
             ->where('is_read', false)
             ->with(['sender', 'sender.userType'])
             ->orderBy('created_at', 'desc')
@@ -117,7 +117,7 @@ class NotificationController extends Controller
         }
 
         // Get job application updates
-        $jobApplications = JobApplication::query->where('user_id', $userId)
+        $jobApplications = JobApplication::query()->where('user_id', $userId)
             ->where('status', '!=', 'pending')
             ->with(['jobPost', 'jobPost.user'])
             ->orderBy('updated_at', 'desc')
@@ -139,7 +139,7 @@ class NotificationController extends Controller
         }
 
         // Get notifications for job posts (for job creators)
-        $myJobPosts = JobPost::query->where('user_id', $userId)
+        $myJobPosts = JobPost::query()->where('user_id', $userId)
             ->with(['applications' => function ($query): void {
                 $query->where('status', 'pending')->latest();
             }])
@@ -169,12 +169,12 @@ class NotificationController extends Controller
         $count = 0;
 
         // Count unread messages
-        $count += Message::query->where('recipient_id', $userId)
+        $count += Message::query()->where('recipient_id', $userId)
             ->where('is_read', false)
             ->count();
 
         // Count pending job applications (for job creators)
-        $count += JobApplication::query->whereHas('jobPost', function ($query) use ($userId): void {
+        $count += JobApplication::query()->whereHas('jobPost', function ($query) use ($userId): void {
             $query->where('user_id', $userId);
         })
             ->where('status', 'pending')

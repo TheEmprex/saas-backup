@@ -24,7 +24,7 @@ class CancelExpiredSubscriptions extends Command
         $now = Carbon::now();
 
         // Find subscriptions where ends_at is past the current date and status is active
-        $subscriptions = Subscription::query->where('status', 'active')
+        $subscriptions = Subscription::query()->where('status', 'active')
             ->where('ends_at', '<', $now)
             ->get();
 

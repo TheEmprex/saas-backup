@@ -34,17 +34,17 @@ class SubscriptionPlan extends Model
 
     public static function freePlans()
     {
-        return self::query->where('price', 0.0)->get();
+        return self::query()->where('price', 0.0)->get();
     }
 
     public static function agencyPlans()
     {
-        return self::query->where('name', 'like', '%agency%')->get();
+        return self::query()->where('name', 'like', '%agency%')->get();
     }
 
     public static function chatterPlans()
     {
-        return self::query->where('name', 'like', '%chatter%')->get();
+        return self::query()->where('name', 'like', '%chatter%')->get();
     }
 
     public function userSubscriptions()

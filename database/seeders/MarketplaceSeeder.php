@@ -45,7 +45,7 @@ class MarketplaceSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::query->where('name', 'Manager')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Manager')->first()->id,
                 'role' => 'admin',
             ],
             [
@@ -53,35 +53,35 @@ class MarketplaceSeeder extends Seeder
                 'email' => 'sarah@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::query->where('name', 'Content Creator')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Content Creator')->first()->id,
             ],
             [
                 'name' => 'Mike Chen',
                 'email' => 'mike@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::query->where('name', 'Manager')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Manager')->first()->id,
             ],
             [
                 'name' => 'Emma Davis',
                 'email' => 'emma@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::query->where('name', 'Chatter')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Chatter')->first()->id,
             ],
             [
                 'name' => 'ProManagement Agency',
                 'email' => 'agency@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::query->where('name', 'Agency')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Agency')->first()->id,
             ],
             [
                 'name' => 'Alex Rodriguez',
                 'email' => 'alex@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::query->where('name', 'Video Editor')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Video Editor')->first()->id,
             ],
         ];
 
@@ -208,7 +208,7 @@ class MarketplaceSeeder extends Seeder
                 'status' => $status,
                 'submitted_at' => now()->subDays(random_int(1, 30)),
                 'reviewed_at' => $status !== 'pending' ? now()->subDays(random_int(1, 7)) : null,
-                'reviewed_by' => $status !== 'pending' ? User::query->where('email', 'admin@example.com')->first()->id : null,
+                'reviewed_by' => $status !== 'pending' ? User::query()->where('email', 'admin@example.com')->first()->id : null,
                 'rejection_reason' => $status === 'rejected' ? 'Document quality is not sufficient for verification.' : null,
             ]
         );
@@ -304,7 +304,7 @@ class MarketplaceSeeder extends Seeder
             $userEmail = $jobData['user_email'];
             unset($jobData['user_email']);
 
-            $user = User::query->where('email', $userEmail)->first();
+            $user = User::query()->where('email', $userEmail)->first();
 
             if ($user) {
                 $jobData['user_id'] = $user->id;
@@ -329,7 +329,7 @@ class MarketplaceSeeder extends Seeder
     private function createJobApplications(): void
     {
         $jobs = JobPost::all();
-        $users = User::query->where('email', '!=', 'admin@example.com')->get();
+        $users = User::query()->where('email', '!=', 'admin@example.com')->get();
 
         foreach ($jobs as $job) {
             $applicants = $users->where('id', '!=', $job->user_id)->random(random_int(1, 3));
@@ -363,7 +363,7 @@ class MarketplaceSeeder extends Seeder
 
     private function createMessages(): void
     {
-        $users = User::query->where('email', '!=', 'admin@example.com')->get();
+        $users = User::query()->where('email', '!=', 'admin@example.com')->get();
 
         for ($i = 0; $i < 20; $i++) {
             $sender = $users->random();
@@ -382,7 +382,7 @@ class MarketplaceSeeder extends Seeder
 
     private function createRatings(): void
     {
-        $users = User::query->where('email', '!=', 'admin@example.com')->get();
+        $users = User::query()->where('email', '!=', 'admin@example.com')->get();
         $jobPosts = JobPost::all();
 
         for ($i = 0; $i < 15; $i++) {

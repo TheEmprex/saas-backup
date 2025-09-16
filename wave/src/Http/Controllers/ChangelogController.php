@@ -12,7 +12,7 @@ class ChangelogController extends Controller
     public function read(): void
     {
         $user = auth()->user();
-        Changelog::query->whereDoesntHave('users', function ($query) use ($user): void {
+        Changelog::query()->whereDoesntHave('users', function ($query) use ($user): void {
             $query->where('user_id', $user->id);
         })->get()
             ->pluck('id')

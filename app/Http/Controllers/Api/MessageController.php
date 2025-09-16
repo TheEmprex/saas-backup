@@ -21,7 +21,7 @@ class MessageController extends Controller
         $userId = Auth::id();
 
         // Get all conversations (unique sender/recipient pairs)
-        $conversations = Message::query->where('sender_id', $userId)
+        $conversations = Message::query()->where('sender_id', $userId)
             ->orWhere('recipient_id', $userId)
             ->with(['sender', 'recipient'])
             ->orderBy('created_at', 'desc')
@@ -67,7 +67,7 @@ class MessageController extends Controller
             return response()->json(['error' => 'Cannot message yourself'], 400);
         }
 
-        $messages = Message::query->where(function ($query) use ($userId, $otherUserId): void {
+        $messages = Message::query()->where(function ($query) use ($userId, $otherUserId): void {
             $query->where('sender_id', $userId)
                 ->where('recipient_id', $otherUserId);
         })
@@ -80,7 +80,7 @@ class MessageController extends Controller
             ->paginate($request->get('per_page', 50));
 
         // Mark messages as read
-        Message::query->where('sender_id', $otherUserId)
+        Message::query()->where('sender_id', $otherUserId)
             ->where('recipient_id', $userId)
             ->where('is_read', false)
             ->update([
@@ -239,7 +239,7 @@ class MessageController extends Controller
         $userId = Auth::id();
         $otherUserId = $user->id;
 
-        Message::query->where('sender_id', $otherUserId)
+        Message::query()->where('sender_id', $otherUserId)
             ->where('recipient_id', $userId)
             ->where('is_read', false)
             ->update([
@@ -255,7 +255,7 @@ class MessageController extends Controller
      */
     public function unreadCount()
     {
-        $count = Message::query->where('recipient_id', Auth::id())
+        $count = Message::query()->where('recipient_id', Auth::id())
             ->where('is_read', false)
             ->count();
 
@@ -279,7 +279,7 @@ class MessageController extends Controller
         $userId = Auth::id();
         $query = $request->query;
 
-        $messages = Message::query->where(function ($q) use ($userId): void {
+        $messages = Message::query()->where(function ($q) use ($userId): void {
             $q->where('sender_id', $userId)
                 ->orWhere('recipient_id', $userId);
         })

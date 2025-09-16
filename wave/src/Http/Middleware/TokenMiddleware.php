@@ -25,7 +25,7 @@ class TokenMiddleware
     public function handle($request, Closure $next, $guard = null)
     {
         if ($request->token && strlen($request->token) <= 60) {
-            $api_token = ApiToken::query->where('token', '=', $request->token)->first();
+            $api_token = ApiToken::query()->where('token', '=', $request->token)->first();
 
             if (isset($api_token->id)) {
                 $token = JWTAuth::fromUser($api_token->user);

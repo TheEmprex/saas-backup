@@ -45,7 +45,7 @@ echo PHP_EOL;
 // Test 2: Admin Users
 echo "2. Testing Admin Users:" . PHP_EOL;
 try {
-    $admins = User::query->whereHas('roles', function($q) {
+    $admins = User::query()->whereHas('roles', function($q) {
         $q->where('name', 'admin');
     })->get();
 

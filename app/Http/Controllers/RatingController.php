@@ -77,7 +77,7 @@ class RatingController extends Controller
         }
 
         // Check if rating already exists
-        $existingRating = Rating::query->where([
+        $existingRating = Rating::query()->where([
             'rater_id' => Auth::id(),
             'rated_id' => $request->rated_id,
             'job_post_id' => $request->job_post_id,

@@ -40,7 +40,7 @@ class ContractController extends Controller
     public function create()
     {
         $userId = Auth::id();
-        $users = User::query->whereIn('id', function ($query) use ($userId): void {
+        $users = User::query()->whereIn('id', function ($query) use ($userId): void {
             $query->select('sender_id')
                 ->from('messages')
                 ->where('recipient_id', $userId)
@@ -55,7 +55,7 @@ class ContractController extends Controller
             ->get();
 
         // Get job posts created by the user
-        $jobPosts = JobPost::query->where('user_id', $userId)
+        $jobPosts = JobPost::query()->where('user_id', $userId)
             ->where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->get();

@@ -77,8 +77,8 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Revenue Overview</h3>
             @php
-                $featuredJobs = \App\Models\JobPost::query->where('is_featured', true)->count();
-                $urgentJobs = \App\Models\JobPost::query->where('is_urgent', true)->count();
+                $featuredJobs = \App\Models\JobPost::query()->where('is_featured', true)->count();
+                $urgentJobs = \App\Models\JobPost::query()->where('is_urgent', true)->count();
                 $potentialRevenue = ($featuredJobs * 10) + ($urgentJobs * 5);
             @endphp
             <div class="space-y-3">
