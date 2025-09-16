@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
+        Schema::create('posts', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->unsignedBigInteger('author_id'); // UNSIGNED INTEGER for the foreign key to the users table
             $table->unsignedInteger('category_id')->nullable(); // UNSIGNED INTEGER for the foreign key to the categories table, nullable

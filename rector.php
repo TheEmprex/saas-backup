@@ -29,6 +29,7 @@ return static function (RectorConfig $rectorConfig): void {
         __DIR__.'/database',
         __DIR__.'/lang',
         __DIR__.'/routes',
+        __DIR__.'/wave',
     ]);
 
     // is your PHP version different from the one your refactor to? [default: your PHP version], uses PHP_VERSION_ID format

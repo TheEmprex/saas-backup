@@ -14,17 +14,20 @@ use Wave\Subscription;
 class Update extends Component
 {
     public $update_url;
+
     public $cancel_url;
+
     public $paddle_url;
 
     public $cancellation_scheduled = false;
+
     public $subscription_ends_at;
 
     public $error_retrieving_data = false;
 
     public $subscription;
 
-    public function mount()
+    public function mount(): void
     {
         $this->subscription = auth()->user()->subscription;
 
@@ -49,7 +52,7 @@ class Update extends Component
                     $response = Http::withToken(config('wave.paddle.api_key'))->get($this->paddle_url.'/subscriptions/'.$subscription->vendor_subscription_id, []);
                     $paddle_subscription = json_decode($response->body());
                     $paddle_subscription = $paddle_subscription->data;
-                } catch (Exception $e) {
+                } catch (Exception) {
                     $this->error_retrieving_data = true;
 
                     return;
@@ -70,7 +73,7 @@ class Update extends Component
         }
     }
 
-    public function cancel()
+    public function cancel(): void
     {
 
         $subscription = auth()->user()->latestSubscription();
@@ -106,6 +109,8 @@ class Update extends Component
 
             return redirect('/settings/subscription');
         }
+
+        return null;
     }
 
     public function render()

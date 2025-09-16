@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('themes', function (Blueprint $table) {
+        Schema::create('themes', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->string('name', 255); // VARCHAR equivalent column
             $table->string('folder', 191)->unique(); // VARCHAR equivalent column with a unique index

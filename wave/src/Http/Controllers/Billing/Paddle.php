@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 
 class Paddle extends Controller
 {
-    public function invoice($transactionId)
+    public function invoice(string $transactionId)
     {
         $paddle_url = (config('wave.paddle.env') == 'sandbox') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
 

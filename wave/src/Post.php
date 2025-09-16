@@ -18,7 +18,7 @@ class Post extends Model
 
     public function user()
     {
-        return $this->belongsTo('\Wave\User', 'author_id');
+        return $this->belongsTo(\Wave\User::class, 'author_id');
     }
 
     public function image()
@@ -28,6 +28,6 @@ class Post extends Model
 
     public function category()
     {
-        return $this->belongsTo('Wave\Category');
+        return $this->belongsTo(\Wave\Category::class);
     }
 }

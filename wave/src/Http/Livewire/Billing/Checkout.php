@@ -15,7 +15,8 @@ use Wave\Subscription;
 
 class Checkout extends Component
 {
-    public $billing_cycle_available = 'month'; // month, year, or both;
+    public $billing_cycle_available = 'month';
+    // month, year, or both;
     public $billing_cycle_selected = 'month';
 
     public $billing_provider;
@@ -24,10 +25,11 @@ class Checkout extends Component
 
     public $change = false;
 
-    public $userSubscription = null;
-    public $userPlan = null;
+    public $userSubscription;
 
-    public function mount()
+    public $userPlan;
+
+    public function mount(): void
     {
         $this->billing_provider = config('wave.billing_provider', 'stripe');
         $this->paddle_url = (config('wave.paddle.env') == 'sandbox') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
@@ -65,7 +67,7 @@ class Checkout extends Component
         return redirect($checkout_session->url);
     }
 
-    public function updateCycleBasedOnPlans()
+    public function updateCycleBasedOnPlans(): void
     {
         $plans = Plan::query->where('active', 1)->get();
         $hasMonthly = false;
@@ -105,10 +107,12 @@ class Checkout extends Component
             ->title('Unable to obtain subscription information from payment provider.')
             ->danger()
             ->send();
+
+        return null;
     }
 
     #[On('verifyPaddleTransaction')]
-    public function verifyPaddleTransaction($transactionId)
+    public function verifyPaddleTransaction(string $transactionId): void
     {
 
         $transaction = null;
@@ -123,7 +127,7 @@ class Checkout extends Component
             }
         }
 
-        if ($transaction) {
+        if ($transaction !== null) {
             // Proceed with processing the transaction
 
             $user = auth()->user();
@@ -201,6 +205,8 @@ class Checkout extends Component
 
             return redirect('/settings/subscription')->with(['update' => true]);
         }
+
+        return null;
     }
 
     public function render()

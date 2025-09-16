@@ -242,7 +242,7 @@ class User extends WaveUser
     /**
      * Override Wave's subscriber method to use our custom subscription system
      */
-    public function subscriber()
+    public function subscriber(): bool
     {
         return $this->hasActiveSubscription();
     }

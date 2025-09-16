@@ -17,20 +17,18 @@ class Setting extends Model
 
     public static function get($key, $default = null)
     {
-        $settings = Cache::rememberForever('wave_settings', function () {
-            return self::pluck('value', 'key')->toArray();
-        });
+        $settings = Cache::rememberForever('wave_settings', fn () => self::query()->pluck('value', 'key')->toArray());
 
         return $settings[$key] ?? $default;
     }
 
     protected static function booted()
     {
-        static::saved(function () {
+        static::saved(function (): void {
             Cache::forget('wave_settings');
         });
 
-        static::deleted(function () {
+        static::deleted(function (): void {
             Cache::forget('wave_settings');
         });
     }

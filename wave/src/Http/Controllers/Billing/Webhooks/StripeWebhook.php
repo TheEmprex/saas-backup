@@ -14,7 +14,7 @@ use Wave\Subscription;
 
 class StripeWebhook extends Controller
 {
-    public function handler(Request $request)
+    public function handler(Request $request): void
     {
         $payload = $request->getContent();
 
@@ -27,11 +27,11 @@ class StripeWebhook extends Controller
                 $sig_header,
                 config('wave.stripe.webhook_secret')
             );
-        } catch (UnexpectedValueException $e) {
+        } catch (UnexpectedValueException) {
             // Invalid payload
             http_response_code(400);
             exit();
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+        } catch (\Stripe\Exception\SignatureVerificationException) {
             // Invalid signature
             http_response_code(400);
             exit();
@@ -86,9 +86,9 @@ class StripeWebhook extends Controller
         http_response_code(200);
     }
 
-    public function fulfill_checkout($session_id, $event): void
+    public function fulfill_checkout(string $session_id, $event): void
     {
-        $stripe = \Stripe\Stripe::setApiKey(config('wave.stripe.secret_key'));
+        \Stripe\Stripe::setApiKey(config('wave.stripe.secret_key'));
 
         // Make this function safe to run multiple times,
         // even concurrently, with the same session ID

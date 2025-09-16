@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('plans', function (Blueprint $table) {
+        Schema::create('plans', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->string('name'); // VARCHAR equivalent column
             $table->text('description')->nullable(); // TEXT column, nullable for the description

@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('theme_options', function (Blueprint $table) {
+        Schema::create('theme_options', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->unsignedInteger('theme_id'); // UNSIGNED INTEGER for the foreign key to the themes table
             $table->string('key', 255); // VARCHAR equivalent column for the option key

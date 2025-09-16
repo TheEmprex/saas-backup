@@ -21,7 +21,7 @@ class InstallMiddleware
 
             try {
                 $user = User::first();
-            } catch (\Illuminate\Database\QueryException $e) {
+            } catch (\Illuminate\Database\QueryException) {
 
                 return redirect()->route('wave.install');
 

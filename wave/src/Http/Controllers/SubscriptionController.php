@@ -17,9 +17,10 @@ use Wave\User;
 
 class SubscriptionController extends Controller
 {
-    private $paddle_url;
+    private readonly string $paddle_url;
 
     private $vendor_id;
+
     private $api_key;
 
     public function __construct()
@@ -64,7 +65,7 @@ class SubscriptionController extends Controller
             sleep($initialDelay * (2 ** $i));
         }
 
-        if ($transaction) {
+        if ($transaction !== null) {
             // Proceed with processing the transaction
             $plans = Plan::all();
 
@@ -83,7 +84,7 @@ class SubscriptionController extends Controller
                     $customerName = $nameParts[0];
                 }
 
-                if ($guest) {
+                if ($guest !== 0) {
                     if (User::query->where('email', $customerEmail)->exists()) {
                         $user = User::query->where('email', $customerEmail)->first();
                     } else {
@@ -140,8 +141,6 @@ class SubscriptionController extends Controller
         if (! $user->latestSubscription) {
             return [];
         }
-
-        $invoices = [];
         $response = Http::withToken($this->api_key)->get($this->paddle_url.'/transactions', [
             'subscription_id' => $user->latestSubscription->subscription_id,
         ]);
@@ -152,7 +151,7 @@ class SubscriptionController extends Controller
 
     }
 
-    public function invoice(Request $request, $transactionId)
+    public function invoice(Request $request, string $transactionId)
     {
 
         $response = Http::withToken($this->api_key)->get($this->paddle_url.'/transactions/'.$transactionId.'/invoice');
@@ -169,7 +168,7 @@ class SubscriptionController extends Controller
         if (isset($plan->id)) {
             // Update the user plan with Paddle
             $response = Http::withToken($this->api_key)->patch(
-                $this->paddle_url.'/subscriptions/'.(string) $request->user()->latestSubscription->subscription_id,
+                $this->paddle_url.'/subscriptions/'.$request->user()->latestSubscription->subscription_id,
                 [
                     'items' => [
                         [
@@ -246,6 +245,7 @@ class SubscriptionController extends Controller
 
                 return back()->with(['message' => 'Your subscription has been successfully canceled.', 'message_type' => 'success']);
             }
+
             // Handle any errors that were returned in the response body
             $error = $body['error']['message'] ?? 'Unknown error while canceling the subscription.';
 

@@ -15,7 +15,7 @@ class AddSubscriptionIdFromTransaction
      *
      * @return mixed
      */
-    public function __invoke($transactionId)
+    public function __invoke(string $transactionId)
     {
         $endpoint = (config('wave.paddle.env') == 'sandbox') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
 
@@ -41,7 +41,7 @@ class AddSubscriptionIdFromTransaction
             sleep($retryDelay);
         }
 
-        if ($transaction) {
+        if ($transaction !== null) {
 
             $subscription = json_decode(Http::withToken(config('wave.paddle.api_key'))->get($endpoint.'/subscriptions/'.$transaction->subscription_id))->data;
 

@@ -12,16 +12,13 @@ class VerifyEmail extends Notification
 {
     use Queueable;
 
-    public $user;
-
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct(public $user)
     {
-        $this->user = $user;
     }
 
     /**

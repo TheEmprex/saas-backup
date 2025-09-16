@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('profile_key_values', function (Blueprint $table) {
+        Schema::create('profile_key_values', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->string('type', 191); // VARCHAR equivalent column for the type
             $table->unsignedInteger('keyvalue_id'); // UNSIGNED INTEGER for the key-value relationship ID

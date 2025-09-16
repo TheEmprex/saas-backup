@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
+use Wave\Plan;
+use Wave\Setting;
 
 if (! function_exists('setting')) {
     function setting($key, $default = null)
@@ -12,9 +15,7 @@ if (! function_exists('setting')) {
 
         // Fetch all settings from cache or database
         if ($settingsCache === null) {
-            $settingsCache = Cache::rememberForever('wave_settings', function () {
-                return Wave\Setting::pluck('value', 'key')->toArray();
-            });
+            $settingsCache = Cache::rememberForever('wave_settings', fn () => Setting::query()->pluck('value', 'key')->toArray());
         }
 
         // Return the requested setting or default value if not found
@@ -25,7 +26,7 @@ if (! function_exists('setting')) {
 if (! function_exists('blade')) {
     function blade($string)
     {
-        return \Illuminate\Support\Facades\Blade::render($string);
+        return Blade::render($string);
     }
 }
 
@@ -34,12 +35,11 @@ if (! function_exists('getMorphAlias')) {
      * Get the morph alias for a given class.
      *
      * @param  string  $class
-     * @return string|null
      */
-    function getMorphAlias($class)
+    function getMorphAlias($class): ?string
     {
         $morphMap = Relation::morphMap();
-        $alias = array_search($class, $morphMap);
+        $alias = array_search($class, $morphMap, true);
 
         return $alias ?: null;
     }
@@ -48,7 +48,7 @@ if (! function_exists('getMorphAlias')) {
 if (! function_exists('has_monthly_yearly_toggle')) {
     function has_monthly_yearly_toggle(): bool
     {
-        $plans = Wave\Plan::query->where('active', 1)->get();
+        $plans = Plan::query()->where('active', 1)->get();
         $hasMonthly = false;
         $hasYearly = false;
 
@@ -65,16 +65,16 @@ if (! function_exists('has_monthly_yearly_toggle')) {
         }
 
         // Return true if both monthly and yearly plans exist
-        return (bool) ($hasMonthly && $hasYearly);
+        return $hasMonthly && $hasYearly;
 
         // Return false if either is missing
     }
 }
 
 if (! function_exists('get_default_billing_cycle')) {
-    function get_default_billing_cycle()
+    function get_default_billing_cycle(): string
     {
-        $plans = Wave\Plan::query->where('active', 1)->get();
+        $plans = Plan::query()->where('active', 1)->get();
         $hasMonthly = false;
         $hasYearly = false;
 

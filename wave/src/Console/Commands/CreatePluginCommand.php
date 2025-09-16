@@ -16,7 +16,7 @@ class CreatePluginCommand extends Command
 
     protected $description = 'Create a new plugin skeleton';
 
-    public function handle()
+    public function handle(): void
     {
         $name = $this->argument('name') ?? $this->ask('What is the name of your plugin?');
         $description = $this->ask('Provide a short description for your plugin:');
@@ -49,7 +49,7 @@ class CreatePluginCommand extends Command
         $this->info("Plugin '{$className}' created successfully!");
     }
 
-    private function createPluginFile($className, $folderName, $description, $path)
+    private function createPluginFile($className, $folderName, $description, $path): void
     {
         $content = <<<EOT
 <?php
@@ -98,7 +98,7 @@ EOT;
         File::put("{$path}/{$className}Plugin.php", $content);
     }
 
-    private function createViewFiles($folderName, $path)
+    private function createViewFiles($folderName, $path): void
     {
         File::put("{$path}/resources/views/home.blade.php", '<p>Hello World</p>');
 
@@ -110,7 +110,7 @@ EOT;
         File::put("{$path}/resources/views/livewire/{$folderName}.blade.php", $exampleContent);
     }
 
-    private function createRouteFile($folderName, $className, $path)
+    private function createRouteFile($folderName, $className, $path): void
     {
         $content = <<<EOT
 <?php
@@ -126,7 +126,7 @@ EOT;
         File::put("{$path}/routes/web.php", $content);
     }
 
-    private function createComponentFile($className, $folderName, $path)
+    private function createComponentFile($className, $folderName, $path): void
     {
         $content = <<<EOT
 <?php
@@ -156,12 +156,12 @@ EOT;
         File::put("{$path}/src/Components/{$className}.php", $content);
     }
 
-    private function createVersionFile($path)
+    private function createVersionFile($path): void
     {
         File::put("{$path}/version.json", json_encode(['version' => '1.0.0'], JSON_PRETTY_PRINT));
     }
 
-    private function downloadPlaceholderImage($path)
+    private function downloadPlaceholderImage($path): void
     {
         $client = new Client();
         $imageUrl = 'https://cdn.devdojo.com/assets/img/plugin-placeholder.jpg';
@@ -171,8 +171,8 @@ EOT;
             $response = $client->get($imageUrl);
             File::put($imagePath, $response->getBody());
             $this->info('Placeholder image downloaded successfully.');
-        } catch (Exception $e) {
-            $this->warn('Failed to download placeholder image: '.$e->getMessage());
+        } catch (Exception $exception) {
+            $this->warn('Failed to download placeholder image: '.$exception->getMessage());
         }
     }
 }

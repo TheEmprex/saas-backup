@@ -73,6 +73,7 @@ class SubscriptionController extends Controller
             // Redirect to payment processor
             return redirect()->route('subscription.payment', ['plan' => $plan->id]);
         }
+
         // Free plan, assign immediately
         $this->subscriptionService->assignPlan($user, $plan);
 
@@ -118,6 +119,7 @@ class SubscriptionController extends Controller
             return redirect()->route('subscription.payment', ['plan' => $plan->id])
                 ->with('pending_upgrade', true);
         }
+
         // Free plan, assign immediately
         $this->subscriptionService->assignPlan($user, $plan);
 
@@ -146,6 +148,7 @@ class SubscriptionController extends Controller
                 ->with('pending_downgrade', true)
                 ->with('warnings', $warnings);
         }
+
         // Free plan, assign immediately
         $this->subscriptionService->assignPlan($user, $plan);
 

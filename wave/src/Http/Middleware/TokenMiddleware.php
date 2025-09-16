@@ -6,17 +6,13 @@ namespace Wave\Http\Middleware;
 
 use Closure;
 // use Illuminate\Support\Facades\Auth;
-use Illuminate\Contracts\Auth\Factory as Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Wave\ApiToken;
 
 class TokenMiddleware
 {
-    protected $auth;
-
-    public function __construct(Auth $auth)
+    public function __construct(protected \Illuminate\Contracts\Auth\Factory $auth)
     {
-        $this->auth = $auth;
     }
 
     /**

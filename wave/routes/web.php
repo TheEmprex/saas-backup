@@ -16,7 +16,7 @@ Route::get('logout', '\Wave\Http\Controllers\LogoutController@logout')->name('wa
 
 Route::view('install', 'wave::install')->name('wave.install');
 
-Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => 'auth'], function (): void {
     Route::redirect('settings', 'settings/profile')->name('settings');
 
     if (config('wave.billing_provider') == 'paddle') {
@@ -58,6 +58,6 @@ try {
     if (! App\Models\User::first()) {
         Route::view('/', 'wave::welcome');
     }
-} catch (\Illuminate\Database\QueryException $e) {
+} catch (\Illuminate\Database\QueryException) {
     // Handle the exception or log it if needed
 }

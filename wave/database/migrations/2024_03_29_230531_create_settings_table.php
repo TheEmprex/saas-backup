@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->string('key', 191)->unique(); // VARCHAR equivalent column with a unique constraint
             $table->string('display_name', 191); // VARCHAR equivalent column

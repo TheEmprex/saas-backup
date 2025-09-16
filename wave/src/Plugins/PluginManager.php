@@ -4,23 +4,20 @@ declare(strict_types=1);
 
 namespace Wave\Plugins;
 
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PluginManager
 {
-    protected $app;
     protected $plugins = [];
 
-    public function __construct(Application $app)
+    public function __construct(protected \Illuminate\Contracts\Foundation\Application $app)
     {
-        $this->app = $app;
         PluginAutoloader::register();
     }
 
-    public function loadPlugins()
+    public function loadPlugins(): void
     {
         $installedPlugins = $this->getInstalledPlugins();
 
@@ -52,7 +49,7 @@ class PluginManager
         }
     }
 
-    protected function findPluginFile($pluginName)
+    protected function findPluginFile($pluginName): ?string
     {
         $basePath = resource_path('plugins');
         $studlyName = Str::studly($pluginName);

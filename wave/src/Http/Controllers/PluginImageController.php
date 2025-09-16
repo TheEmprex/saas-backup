@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Response;
 
 class PluginImageController extends Controller
 {
-    public function show($plugin_name)
+    public function show(string $plugin_name)
     {
         $path = resource_path('plugins/'.$plugin_name.'/plugin.jpg');
 

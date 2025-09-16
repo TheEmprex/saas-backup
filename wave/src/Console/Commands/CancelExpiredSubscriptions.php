@@ -11,6 +11,7 @@ use Wave\Subscription;
 class CancelExpiredSubscriptions extends Command
 {
     protected $signature = 'subscriptions:cancel-expired';
+
     protected $description = 'Cancel subscriptions that have expired';
 
     public function __construct()
@@ -18,7 +19,7 @@ class CancelExpiredSubscriptions extends Command
         parent::__construct();
     }
 
-    public function handle()
+    public function handle(): void
     {
         $now = Carbon::now();
 
