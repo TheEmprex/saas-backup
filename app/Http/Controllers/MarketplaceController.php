@@ -376,7 +376,7 @@ class MarketplaceController extends Controller
         Message::create([
             'sender_id' => Auth::id(),
             'recipient_id' => $request->conversation_id,
-            'message_content' => $request->content,
+            'message_content' => json_encode((string) $request->getContent()),
             'attachments' => $attachmentPath ? [$attachmentPath] : null,
             'message_type' => 'text',
             'is_read' => false,
