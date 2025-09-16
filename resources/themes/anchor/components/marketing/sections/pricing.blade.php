@@ -2,7 +2,7 @@
     <x-marketing.elements.heading
         level="h2"
         title="Chart Your Course"
-        description="Set sail and discover the riches of our value-packed plans, meticulously designed to offer you the very best features for less on your SaaS expedition. " 
+        description="Set sail and discover the riches of our value-packed plans, meticulously designed to offer you the very best features for less on your SaaS expedition. "
     />
 
     <div x-data="{ on: false, billing: '{{ get_default_billing_cycle() }}',
@@ -11,14 +11,14 @@
                 this.$refs.marker.style.height=toggleButton.offsetHeight + 'px';
                 this.$refs.marker.style.left=toggleButton.offsetLeft + 'px';
             }
-         }" 
+         }"
         x-init="
-                setTimeout(function(){ 
-                    toggleRepositionMarker($refs.monthly); 
+                setTimeout(function(){
+                    toggleRepositionMarker($refs.monthly);
                     $refs.marker.classList.remove('opacity-0');
-                    setTimeout(function(){ 
+                    setTimeout(function(){
                         $refs.marker.classList.add('duration-300', 'ease-out');
-                    }, 10); 
+                    }, 10);
                 }, 1);
         "
         class="w-full max-w-6xl mx-auto mt-12 mb-2 md:my-12" x-cloak>
@@ -35,17 +35,17 @@
                     <div x-ref="marker" class="absolute left-0 z-10 w-1/2 h-full opacity-0" x-cloak>
                         <div class="w-full h-full rounded-full shadow-sm bg-zinc-900"></div>
                     </div>
-                </div>  
+                </div>
             </div>
         @endif
 
         <div class="flex flex-col flex-wrap lg:flex-row lg:space-x-5">
 
-            @foreach(Wave\Plan::where('active', 1)->get() as $plan)
+            @foreach(Wave\Plan::query->where('active', 1)->get() as $plan)
                 @php $features = explode(',', $plan->features); @endphp
                 <div
                     {{--  Say that you have a monthly plan that doesn't have a yearly plan, in that case we will hide the place that doesn't have a price_id --}}
-                    x-show="(billing == 'Monthly' && '{{ $plan->monthly_price_id }}' != '') || (billing == 'Yearly' && '{{ $plan->yearly_price_id }}' != '')" 
+                    x-show="(billing == 'Monthly' && '{{ $plan->monthly_price_id }}' != '') || (billing == 'Yearly' && '{{ $plan->yearly_price_id }}' != '')"
                     class="flex-1 w-full px-0 mx-auto mb-6 md:max-w-lg lg:mb-0" x-cloak>
                     <div class="flex flex-col lg:mb-10 h-full bg-white rounded-xl border-2  @if($plan->default){{ 'border-zinc-900 lg:scale-105' }}@else{{ 'border-zinc-200' }}@endif shadow-sm sm:mb-0">
                         <div class="px-8 pt-8">

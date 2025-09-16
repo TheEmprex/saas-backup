@@ -90,7 +90,7 @@ class UserProfileController extends Controller
         }
 
         // Check if user already has a profile
-        $existingProfile = UserProfile::where('user_id', Auth::id())->first();
+        $existingProfile = UserProfile::query->where('user_id', Auth::id())->first();
 
         if ($existingProfile) {
             return response()->json(['error' => 'Profile already exists'], 409);
@@ -225,7 +225,7 @@ class UserProfileController extends Controller
      */
     public function updateMe(Request $request)
     {
-        $profile = UserProfile::where('user_id', Auth::id())->first();
+        $profile = UserProfile::query->where('user_id', Auth::id())->first();
 
         if (! $profile) {
             return response()->json(['error' => 'Profile not found'], 404);

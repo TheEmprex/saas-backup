@@ -49,7 +49,7 @@ class Rating extends Model
 
     public static function calculateAverageRating(int $userId, ?string $ratingType = null): float
     {
-        $query = static::where('rated_id', $userId)
+        $query = static::query->where('rated_id', $userId)
             ->where('is_public', true);
 
         // For now, just use overall_rating as we don't have rating_type column
@@ -58,7 +58,7 @@ class Rating extends Model
 
     public static function getRatingBreakdown(int $userId): array
     {
-        $ratings = static::where('rated_id', $userId)
+        $ratings = static::query->where('rated_id', $userId)
             ->where('is_public', true)
             ->selectRaw('overall_rating as rating, COUNT(*) as count')
             ->groupBy('overall_rating')

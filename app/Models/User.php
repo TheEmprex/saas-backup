@@ -65,7 +65,7 @@ class User extends WaveUser
                 $username = Str::slug($user->name, '');
                 $i = 1;
 
-                while (self::where('username', $username)->exists()) {
+                while (self::query->where('username', $username)->exists()) {
                     $username = Str::slug($user->name, '').$i;
                     $i++;
                 }

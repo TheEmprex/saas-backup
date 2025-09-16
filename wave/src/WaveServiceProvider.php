@@ -191,7 +191,7 @@ class WaveServiceProvider extends ServiceProvider
 
             if (isset($theme->id)) {
                 if (Cookie::get('theme')) {
-                    $theme_cookied = \DevDojo\Themes\Models\Theme::where('folder', '=', Cookie::get('theme'))->first();
+                    $theme_cookied = \DevDojo\Themes\Models\Theme::query->where('folder', '=', Cookie::get('theme'))->first();
 
                     if (isset($theme_cookied->id)) {
                         $theme = $theme_cookied;
@@ -213,7 +213,7 @@ class WaveServiceProvider extends ServiceProvider
 
     protected function getActiveTheme()
     {
-        return \Wave\Theme::where('active', 1)->first();
+        return \Wave\Theme::query->where('active', 1)->first();
     }
 
     protected function hasDBConnection()

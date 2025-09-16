@@ -18,7 +18,7 @@ class SubscriptionService
     {
         $planName = $user->isAgency() ? 'Agency Free' : 'Chatter Free';
 
-        $plan = SubscriptionPlan::where('name', $planName)->firstOrFail();
+        $plan = SubscriptionPlan::query->where('name', $planName)->firstOrFail();
 
         return $this->assignPlan($user, $plan);
     }
@@ -59,11 +59,11 @@ class SubscriptionService
     public function getAvailablePlans(string $userType): array
     {
         if (in_array($userType, ['ofm_agency', 'chatting_agency', 'agency'])) {
-            return SubscriptionPlan::where('name', 'like', 'Agency%')->get()->toArray();
+            return SubscriptionPlan::query->where('name', 'like', 'Agency%')->get()->toArray();
         }
 
         if ($userType === 'chatter') {
-            return SubscriptionPlan::where('name', 'like', 'Chatter%')->get()->toArray();
+            return SubscriptionPlan::query->where('name', 'like', 'Chatter%')->get()->toArray();
         }
 
         return [];

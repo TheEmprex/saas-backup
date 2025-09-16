@@ -1,7 +1,7 @@
 <?php
 /**
  * OnlyFans Management Marketplace - Status Test
- * 
+ *
  * This script tests the key functionality of the marketplace application
  * including routes, models, admin access, and database connectivity.
  */
@@ -30,7 +30,7 @@ try {
     $jobCount = JobPost::count();
     $messageCount = Message::count();
     $applicationCount = JobApplication::count();
-    
+
     echo "   ✓ Users: {$userCount}" . PHP_EOL;
     echo "   ✓ Jobs: {$jobCount}" . PHP_EOL;
     echo "   ✓ Messages: {$messageCount}" . PHP_EOL;
@@ -45,10 +45,10 @@ echo PHP_EOL;
 // Test 2: Admin Users
 echo "2. Testing Admin Users:" . PHP_EOL;
 try {
-    $admins = User::whereHas('roles', function($q) {
+    $admins = User::query->whereHas('roles', function($q) {
         $q->where('name', 'admin');
     })->get();
-    
+
     echo "   ✓ Admin users found: " . $admins->count() . PHP_EOL;
     foreach ($admins as $admin) {
         echo "     - {$admin->name} ({$admin->email})" . PHP_EOL;

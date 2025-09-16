@@ -58,7 +58,7 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'marketplace'], function (
     // Statistics and Analytics
     Route::get('stats/dashboard', function () {
         $user = auth()->user();
-        $userProfile = App\Models\UserProfile::where('user_id', $user->id)->first();
+        $userProfile = App\Models\UserProfile::query->where('user_id', $user->id)->first();
 
         return response()->json([
             'jobs_posted' => $user->jobPosts()->count(),

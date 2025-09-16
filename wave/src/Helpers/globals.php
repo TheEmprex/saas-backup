@@ -48,7 +48,7 @@ if (! function_exists('getMorphAlias')) {
 if (! function_exists('has_monthly_yearly_toggle')) {
     function has_monthly_yearly_toggle(): bool
     {
-        $plans = Wave\Plan::where('active', 1)->get();
+        $plans = Wave\Plan::query->where('active', 1)->get();
         $hasMonthly = false;
         $hasYearly = false;
 
@@ -74,7 +74,7 @@ if (! function_exists('has_monthly_yearly_toggle')) {
 if (! function_exists('get_default_billing_cycle')) {
     function get_default_billing_cycle()
     {
-        $plans = Wave\Plan::where('active', 1)->get();
+        $plans = Wave\Plan::query->where('active', 1)->get();
         $hasMonthly = false;
         $hasYearly = false;
 

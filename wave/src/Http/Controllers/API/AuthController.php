@@ -58,7 +58,7 @@ class AuthController extends Controller
 
         if (isset($request->key)) {
 
-            $key = ApiKey::where('key', '=', $request->key)->first();
+            $key = ApiKey::query->where('key', '=', $request->key)->first();
 
             if (isset($key->id)) {
                 $key->update([

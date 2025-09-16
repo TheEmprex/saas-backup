@@ -30,7 +30,7 @@ class UserProfileController extends Controller
     public function edit()
     {
         $user = Auth::user()->load(['userProfile', 'userType']);
-        $userTypes = UserType::where('active', true)->get();
+        $userTypes = UserType::query->where('active', true)->get();
 
         return view('theme::profile.edit', ['user' => $user, 'userTypes' => $userTypes]);
     }

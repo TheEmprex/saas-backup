@@ -19,7 +19,7 @@ class MessageController extends Controller
         $conversations = collect();
 
         // Get all messages for this user
-        $messages = Message::where('sender_id', $userId)
+        $messages = Message::query->where('sender_id', $userId)
             ->orWhere('recipient_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
@@ -151,7 +151,7 @@ class MessageController extends Controller
             ->paginate(50);
 
         // Mark as read
-        Message::where('sender_id', $contactId)
+        Message::query->where('sender_id', $contactId)
             ->where('recipient_id', $userId)
             ->update(['is_read' => true, 'read_at' => now()]);
 
@@ -171,7 +171,7 @@ class MessageController extends Controller
 
     public function getUnreadCount()
     {
-        $count = Message::where('recipient_id', Auth::id())
+        $count = Message::query->where('recipient_id', Auth::id())
             ->where('is_read', false)
             ->count();
 

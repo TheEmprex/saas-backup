@@ -16,7 +16,7 @@ class JobController extends Controller
 {
     public function index(): View
     {
-        $jobs = JobPost::where('user_id', Auth::id())
+        $jobs = JobPost::query->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -163,7 +163,7 @@ class JobController extends Controller
         $user = Auth::user()->load('userProfile', 'userType');
 
         // Check if user already applied
-        $existingApplication = JobApplication::where('job_post_id', $id)
+        $existingApplication = JobApplication::query->where('job_post_id', $id)
             ->where('user_id', Auth::id())
             ->first();
 

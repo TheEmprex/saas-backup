@@ -25,14 +25,14 @@ class MarketplaceController extends Controller
 
     public function index()
     {
-        $featuredJobs = JobPost::where('status', 'active')
+        $featuredJobs = JobPost::query->where('status', 'active')
             ->where('expires_at', '>', now())
             ->with(['user', 'user.userType'])
             ->latest()
             ->limit(6)
             ->get();
 
-        $recentJobs = JobPost::where('status', 'active')
+        $recentJobs = JobPost::query->where('status', 'active')
             ->where('expires_at', '>', now())
             ->with(['user', 'user.userType'])
             ->latest()
@@ -42,14 +42,14 @@ class MarketplaceController extends Controller
         $userTypes = UserType::all();
 
         $stats = [
-            'total_jobs' => JobPost::where('status', 'active')->count(),
-            'total_chatters' => User::whereHas('userType', function ($query): void {
+            'total_jobs' => JobPost::query->where('status', 'active')->count(),
+            'total_chatters' => User::query->whereHas('userType', function ($query): void {
                 $query->where('name', 'chatter');
             })->count(),
-            'total_agencies' => User::whereHas('userType', function ($query): void {
+            'total_agencies' => User::query->whereHas('userType', function ($query): void {
                 $query->whereIn('name', ['ofm_agency', 'chatting_agency']);
             })->count(),
-            'jobs_filled' => JobPost::where('status', 'closed')->count(),
+            'jobs_filled' => JobPost::query->where('status', 'closed')->count(),
         ];
 
         return view('theme::marketplace.index', ['featuredJobs' => $featuredJobs, 'recentJobs' => $recentJobs, 'userTypes' => $userTypes, 'stats' => $stats]);
@@ -94,7 +94,7 @@ class MarketplaceController extends Controller
             ->get();
 
         // Get recent contracts (for both agencies and chatters)
-        $recentContracts = Contract::where(function ($query) use ($user): void {
+        $recentContracts = Contract::query->where(function ($query) use ($user): void {
             $query->where('employer_id', $user->id)
                 ->orWhere('contractor_id', $user->id);
         })
@@ -104,7 +104,7 @@ class MarketplaceController extends Controller
             ->get();
 
         // Get featured jobs for dashboard
-        $featuredJobs = JobPost::where('status', 'active')
+        $featuredJobs = JobPost::query->where('status', 'active')
             ->where('expires_at', '>', now())
             ->with(['user', 'user.userType', 'applications'])
             ->latest()
@@ -119,7 +119,7 @@ class MarketplaceController extends Controller
 
     public function jobs(Request $request)
     {
-        $query = JobPost::where('status', 'active')
+        $query = JobPost::query->where('status', 'active')
             ->where('expires_at', '>', now())
             ->with(['user', 'user.userType', 'applications']);
 
@@ -171,7 +171,7 @@ class MarketplaceController extends Controller
         $hasApplied = false;
 
         if (Auth::check()) {
-            $hasApplied = JobApplication::where('job_post_id', $job->id)
+            $hasApplied = JobApplication::query->where('job_post_id', $job->id)
                 ->where('user_id', Auth::id())
                 ->exists();
         }
@@ -242,7 +242,7 @@ class MarketplaceController extends Controller
 
     public function myJobs()
     {
-        $jobs = JobPost::where('user_id', Auth::id())
+        $jobs = JobPost::query->where('user_id', Auth::id())
             ->with(['applications.user', 'applications.user.userType'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -252,7 +252,7 @@ class MarketplaceController extends Controller
 
     public function myApplications()
     {
-        $applications = JobApplication::where('user_id', Auth::id())
+        $applications = JobApplication::query->where('user_id', Auth::id())
             ->with(['jobPost', 'jobPost.user', 'jobPost.user.userType'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
@@ -314,7 +314,7 @@ class MarketplaceController extends Controller
             $contact = User::with('userType')->find($data->contact_id);
 
             if ($contact) {
-                $latestMessage = Message::where(function ($query) use ($userId, $data): void {
+                $latestMessage = Message::query->where(function ($query) use ($userId, $data): void {
                     $query->where('sender_id', $userId)->where('recipient_id', $data->contact_id);
                 })->orWhere(function ($query) use ($userId, $data): void {
                     $query->where('sender_id', $data->contact_id)->where('recipient_id', $userId);
@@ -337,14 +337,14 @@ class MarketplaceController extends Controller
             $selectedConversation = $conversations->where('id', $request->conversation)->first();
 
             if ($selectedConversation) {
-                $messages = Message::where(function ($query) use ($userId, $selectedConversation): void {
+                $messages = Message::query->where(function ($query) use ($userId, $selectedConversation): void {
                     $query->where('sender_id', $userId)->where('recipient_id', $selectedConversation->id);
                 })->orWhere(function ($query) use ($userId, $selectedConversation): void {
                     $query->where('sender_id', $selectedConversation->id)->where('recipient_id', $userId);
                 })->with(['sender', 'recipient'])->orderBy('created_at', 'asc')->get();
 
                 // Mark messages as read
-                Message::where('sender_id', $selectedConversation->id)
+                Message::query->where('sender_id', $selectedConversation->id)
                     ->where('recipient_id', $userId)
                     ->where('is_read', false)
                     ->update(['is_read' => true, 'read_at' => now()]);
@@ -388,7 +388,7 @@ class MarketplaceController extends Controller
 
     public function createMessage(?User $user = null)
     {
-        $users = User::where('id', '!=', Auth::id())
+        $users = User::query->where('id', '!=', Auth::id())
             ->with('userType')
             ->limit(50)
             ->get();
@@ -398,7 +398,7 @@ class MarketplaceController extends Controller
 
     public function profile()
     {
-        $profile = UserProfile::where('user_id', Auth::id())->first();
+        $profile = UserProfile::query->where('user_id', Auth::id())->first();
         $userTypes = UserType::all();
 
         return view('marketplace.profile.edit', ['profile' => $profile, 'userTypes' => $userTypes]);
@@ -408,7 +408,7 @@ class MarketplaceController extends Controller
     {
         $stats = [
             'total_jobs' => JobPost::count(),
-            'active_jobs' => JobPost::where('status', 'active')->count(),
+            'active_jobs' => JobPost::query->where('status', 'active')->count(),
             'total_applications' => JobApplication::count(),
             'success_rate' => $this->calculateSuccessRate(),
             'avg_response_time' => $this->calculateAvgResponseTime(),
@@ -443,7 +443,7 @@ class MarketplaceController extends Controller
     private function calculateSuccessRate(): float|int
     {
         $totalApplications = JobApplication::count();
-        $successfulApplications = JobApplication::where('status', 'hired')->count();
+        $successfulApplications = JobApplication::query->where('status', 'hired')->count();
 
         return $totalApplications > 0 ? round(($successfulApplications / $totalApplications) * 100, 2) : 0;
     }
