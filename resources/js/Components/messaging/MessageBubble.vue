@@ -1,11 +1,15 @@
 <template>
   <div
+    :id="`message-${message.id}`"
     :class="[
-      'flex mb-4 message-bubble',
+      'flex mb-4 message-bubble group',
       isOwnMessage ? 'justify-end' : 'justify-start',
-      { 'selected': isSelected }
+      { 'selected': isSelected },
+      { 'highlighted': highlight }
     ]"
     @click="$emit('click', message)"
+    @mouseenter="showActions = true"
+    @mouseleave="() => { showActions = false; showEmojiPicker = false }"
   >
     <!-- Other user's avatar (left side) -->
     <div v-if="!isOwnMessage && showAvatar" class="flex-shrink-0 mr-3">
@@ -54,7 +58,20 @@
 
         <!-- Text message -->
         <div v-if="message.type === 'text'" class="message-content">
-          <p class="whitespace-pre-wrap break-words text-sm">{{ message.content }}</p>
+          <template v-if="isEditing">
+            <textarea
+              v-model="editText"
+              class="w-full text-sm p-2 rounded border focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+              rows="3"
+            ></textarea>
+            <div class="mt-2 flex items-center space-x-2">
+              <button @click.stop="saveEdit" class="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700">Save</button>
+              <button @click.stop="cancelEdit" class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200">Cancel</button>
+            </div>
+          </template>
+          <template v-else>
+            <p class="whitespace-pre-wrap break-words text-sm">{{ message.content }}</p>
+          </template>
         </div>
 
         <!-- Image message -->
@@ -80,7 +97,11 @@
           ]">
             <DocumentIcon class="w-6 h-6 mr-3 flex-shrink-0" />
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium truncate">{{ message.file_name }}</p>
+              <p class="text-sm font-medium truncate">
+                <a :href="message.file_url" target="_blank" rel="noopener" class="underline decoration-white/40 hover:decoration-white">
+                  {{ message.file_name }}
+                </a>
+              </p>
               <p class="text-xs opacity-75">{{ formatFileSize(message.file_size) }}</p>
             </div>
             <button
@@ -122,6 +143,70 @@
             <span class="text-xs opacity-75">{{ formatDuration(message.duration) }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Reactions row -->
+      <div v-if="(message.reactions && message.reactions.length)" class="mt-1 px-1 flex flex-wrap gap-1">
+        <button
+          v-for="r in message.reactions"
+          :key="r.emoji"
+          class="text-xs px-2 py-0.5 rounded-full border bg-white/70 hover:bg-white transition"
+          @click.stop="$emit('react', r.emoji)"
+        >
+          <span class="mr-1">{{ r.emoji }}</span>{{ r.count }}
+        </button>
+      </div>
+
+      <!-- Quick actions -->
+      <div
+        class="mt-1 px-1 flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        v-show="showActions"
+      >
+        <button
+          @click.stop="$emit('reply')"
+          class="text-gray-500 hover:text-gray-700 px-2 py-1 text-xs rounded hover:bg-gray-100"
+        >
+          <ArrowUturnLeftIcon class="w-4 h-4 inline-block mr-1" /> Reply
+        </button>
+        <div class="relative">
+          <button
+            @click.stop="toggleEmojiPicker"
+            class="text-gray-500 hover:text-gray-700 px-2 py-1 text-xs rounded hover:bg-gray-100"
+          >
+            <FaceSmileIcon class="w-4 h-4 inline-block mr-1" /> React
+          </button>
+          <div
+            v-if="showEmojiPicker"
+            v-click-outside="() => showEmojiPicker = false"
+            :class="[
+              'absolute z-10 mt-2 p-2 rounded-lg shadow border bg-white',
+              isOwnMessage ? 'right-0' : 'left-0'
+            ]"
+          >
+            <div class="grid grid-cols-8 gap-1">
+              <button
+                v-for="emoji in commonEmojis"
+                :key="emoji"
+                class="p-1 hover:bg-gray-100 rounded"
+                @click.stop="onEmojiSelect(emoji)"
+              >{{ emoji }}</button>
+            </div>
+          </div>
+        </div>
+        <button
+          v-if="isOwnMessage && message.type === 'text'"
+          @click.stop="beginEdit"
+          class="text-gray-500 hover:text-gray-800 px-2 py-1 text-xs rounded hover:bg-gray-100"
+        >
+          <PencilSquareIcon class="w-4 h-4 inline-block mr-1" /> Edit
+        </button>
+        <button
+          v-if="isOwnMessage"
+          @click.stop="$emit('delete')"
+          class="text-gray-500 hover:text-red-600 px-2 py-1 text-xs rounded hover:bg-red-50"
+        >
+          <TrashIcon class="w-4 h-4 inline-block mr-1" /> Delete
+        </button>
       </div>
 
       <!-- Message metadata -->
@@ -187,7 +272,11 @@ import {
   PauseIcon,
   CheckIcon,
   ClockIcon,
-  ExclamationCircleIcon
+  ExclamationCircleIcon,
+  FaceSmileIcon,
+  TrashIcon,
+  ArrowUturnLeftIcon,
+  PencilSquareIcon
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '../../stores/auth'
 
@@ -208,11 +297,15 @@ const props = defineProps({
   showSenderName: {
     type: Boolean,
     default: false
+  },
+  highlight: {
+    type: Boolean,
+    default: false
   }
 })
 
 // Emits
-defineEmits(['click', 'reply', 'retry'])
+const emit = defineEmits(['click', 'reply', 'retry', 'react', 'delete', 'open-image'])
 
 // Store
 const authStore = useAuthStore()
@@ -221,11 +314,41 @@ const currentUser = computed(() => authStore.user)
 // Reactive data
 const isPlaying = ref(false)
 const playbackProgress = ref(0)
+const showActions = ref(false)
+const showEmojiPicker = ref(false)
+
+const commonEmojis = [
+  '👍','❤️','😂','😮','😢','👏',
+  '🔥','🎉','🙏','💯','😁','🤔',
+  '🎈','✅','❌','😎','🤝','🙌'
+]
 
 // Computed properties
 const isOwnMessage = computed(() => {
   return props.message.sender_id === currentUser.value?.id
 })
+
+// Inline editing
+const isEditing = ref(false)
+const editText = ref('')
+
+const beginEdit = () => {
+  editText.value = props.message.content || ''
+  isEditing.value = true
+}
+
+const saveEdit = () => {
+  if (!editText.value.trim()) {
+    isEditing.value = false
+    return
+  }
+  emit('edit', editText.value.trim())
+  isEditing.value = false
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+}
 
 // Methods
 const formatTimestamp = (timestamp) => {
@@ -286,9 +409,19 @@ const showContextMenu = (event) => {
   console.log('Show context menu for message:', props.message.id)
 }
 
+const toggleEmojiPicker = () => {
+  showEmojiPicker.value = !showEmojiPicker.value
+}
+
+const onEmojiSelect = (emoji) => {
+  emit('react', emoji)
+  showEmojiPicker.value = false
+}
+
 const openImageModal = () => {
-  // Implement image modal logic
-  console.log('Open image modal for:', props.message.file_url)
+  if (props.message.file_url) {
+    emit('open-image', props.message.file_url)
+  }
 }
 
 const downloadFile = () => {
@@ -319,6 +452,22 @@ const retryMessage = () => {
   // Emit retry event for failed messages
   $emit('retry', props.message)
 }
+
+// Custom directive for click outside in <script setup>
+const vClickOutside = {
+  mounted(el, binding) {
+    el._clickOutsideHandler = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event)
+      }
+    }
+    document.addEventListener('click', el._clickOutsideHandler)
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el._clickOutsideHandler)
+  }
+}
+
 </script>
 
 <style scoped>
@@ -358,5 +507,14 @@ const retryMessage = () => {
 .message-content::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 2px;
+}
+.message-bubble.highlighted {
+  animation: highlightFade 2.2s ease-out;
+}
+
+@keyframes highlightFade {
+  0% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.55); }
+  50% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
 }
 </style>

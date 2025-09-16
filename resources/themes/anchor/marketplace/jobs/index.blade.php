@@ -147,10 +147,10 @@ $seoData = [
                         Join thousands of professionals already using our platform to find their perfect match
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a href="{{ route('register') }}" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-all duration-200">
+                        <a href="{{ route('custom.register') }}" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-blue-600 bg-white hover:bg-gray-50 transition-all duration-200">
                             Sign Up Now
                         </a>
-                        <a href="{{ route('login') }}" class="inline-flex items-center px-8 py-3 border border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-all duration-200">
+                        <a href="{{ route('custom.login') }}" class="inline-flex items-center px-8 py-3 border border-white text-base font-medium rounded-lg text-white hover:bg-white hover:text-blue-600 transition-all duration-200">
                             Login
                         </a>
                     </div>

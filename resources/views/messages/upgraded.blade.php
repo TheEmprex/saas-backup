@@ -656,7 +656,7 @@ document.addEventListener('alpine:init', () => {
             }
             
             try {
-                const response = await fetch(`/messages/search-users?q=${encodeURIComponent(this.userSearchQuery)}`);
+                const response = await fetch(`/messages/search-users?q=${encodeURIComponent(this.userSearchQuery)}`, { credentials: 'same-origin' });
                 if (!response.ok) throw new Error('Search failed');
                 
                 const data = await response.json();

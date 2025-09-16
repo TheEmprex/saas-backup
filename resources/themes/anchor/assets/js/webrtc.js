@@ -30,9 +30,11 @@ class WebRTCManager {
         
         // Only set up polling after a delay to ensure page is fully loaded
         setTimeout(() => {
-            // Set up periodic polling for incoming calls
-            setInterval(() => this.checkIncomingCalls(), 2000);
-        }, 5000); // Wait 5 seconds before starting to poll
+            // Only poll if backend route exists (avoid 404 spam in dev)
+            fetch('/api/webrtc/health', { headers: { 'Accept': 'application/json' } })
+                .then(r => { if (r.ok) setInterval(() => this.checkIncomingCalls(), 15000); })
+                .catch(() => {});
+        }, 5000); // Wait before attempting to poll
     }
     
     async startAudioCall() {

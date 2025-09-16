@@ -18,7 +18,13 @@ class Conversation extends Model
         'created_by',
         'is_archived',
         'last_activity_at',
-        'metadata'
+        'metadata',
+        // legacy direct columns for compatibility with broadcasting and uniqueness
+        'user1_id',
+        'user2_id',
+        // last message reference
+        'last_message_id',
+        'last_message_at',
     ];
 
     protected $casts = [
@@ -42,22 +48,50 @@ class Conversation extends Model
     }
 
     /**
+     * User1 (legacy direct conversation participant)
+     */
+    public function user1(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user1_id');
+    }
+
+    /**
+     * User2 (legacy direct conversation participant)
+     */
+    public function user2(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user2_id');
+    }
+
+    /**
      * Get all messages in this conversation
      */
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class)
-            ->where('is_deleted', false)
+            ->where(function ($q) {
+                $q->whereNull('is_deleted')->orWhere('is_deleted', false);
+            })
             ->orderBy('created_at', 'desc');
     }
 
     /**
-     * Get the latest message in this conversation
+     * Relationship to the conversation's last message (via last_message_id)
+     */
+    public function lastMessage(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'last_message_id');
+    }
+
+    /**
+     * Get the latest message in this conversation (query helper)
      */
     public function latestMessage(): HasMany
     {
         return $this->hasMany(Message::class)
-            ->where('is_deleted', false)
+            ->where(function ($q) {
+                $q->whereNull('is_deleted')->orWhere('is_deleted', false);
+            })
             ->latest()
             ->limit(1);
     }
@@ -97,7 +131,15 @@ class Conversation extends Model
      */
     public function hasParticipant(int $userId): bool
     {
-        return $this->participants()->where('user_id', $userId)->exists();
+        // Check pivot participants (new system)
+        if ($this->participants()->where('user_id', $userId)->exists()) {
+            return true;
+        }
+        // Fallback to legacy direct columns (user1_id/user2_id)
+        if (!is_null($this->user1_id) && !is_null($this->user2_id)) {
+            return ($this->user1_id === $userId) || ($this->user2_id === $userId);
+        }
+        return false;
     }
 
     /**
@@ -136,7 +178,13 @@ class Conversation extends Model
         $lastReadAt = $participant->pivot->last_read_at;
         
         return $this->messages()
-            ->where('user_id', '!=', $userId)
+            ->where(function ($q) use ($userId) {
+                // Support both sender_id and user_id message columns
+                $q->where('sender_id', '!=', $userId)
+                  ->orWhere(function ($qq) use ($userId) {
+                      $qq->whereNull('sender_id')->where('user_id', '!=', $userId);
+                  });
+            })
             ->when($lastReadAt, function ($query) use ($lastReadAt) {
                 return $query->where('created_at', '>', $lastReadAt);
             })
@@ -162,6 +210,17 @@ class Conversation extends Model
     }
 
     /**
+     * Update last message references and timestamps
+     */
+    public function updateLastMessage(Message $message): void
+    {
+        $this->last_message_id = $message->id;
+        $this->last_message_at = $message->created_at ?? now();
+        $this->last_activity_at = now();
+        $this->save();
+    }
+
+    /**
      * Get conversation display name for a user
      */
     public function getDisplayNameForUser(int $userId): string
@@ -170,12 +229,11 @@ class Conversation extends Model
             return $this->title;
         }
 
-        // For private conversations, show the other participant's name
-        if ($this->type === 'private') {
-            $otherParticipant = $this->participants()
-                ->where('user_id', '!=', $userId)
-                ->first();
-            return $otherParticipant ? $otherParticipant->name : 'Private Conversation';
+        // For private/direct conversations, show the other participant's name
+        $isPrivate = ($this->type ?? null) === 'private' || ($this->conversation_type ?? null) === 'direct';
+        if ($isPrivate) {
+            $other = $this->otherParticipant($userId);
+            return $other ? $other->name : 'Private Conversation';
         }
 
         return 'Group Conversation';
@@ -186,13 +244,12 @@ class Conversation extends Model
      */
     public function getAvatarForUser(int $userId): string
     {
-        // For private conversations, show the other participant's avatar
-        if ($this->type === 'private') {
-            $otherParticipant = $this->participants()
-                ->where('user_id', '!=', $userId)
-                ->first();
-            return $otherParticipant && method_exists($otherParticipant, 'getProfilePictureUrl') 
-                ? $otherParticipant->getProfilePictureUrl() 
+        // For private/direct conversations, show the other participant's avatar
+        $isPrivate = ($this->type ?? null) === 'private' || ($this->conversation_type ?? null) === 'direct';
+        if ($isPrivate) {
+            $other = $this->otherParticipant($userId);
+            return $other && method_exists($other, 'getProfilePictureUrl') 
+                ? $other->getProfilePictureUrl() 
                 : asset('images/default-avatar.png');
         }
 
@@ -200,12 +257,37 @@ class Conversation extends Model
     }
 
     /**
+     * Find the other participant in a direct/private conversation
+     */
+    public function otherParticipant(int $userId)
+    {
+        // Prefer participants pivot (new system)
+        $other = $this->participants()
+            ->where('user_id', '!=', $userId)
+            ->first();
+        if ($other) {
+            return $other;
+        }
+        // Fallback to user1/user2 columns (legacy)
+        $otherId = null;
+        if (!is_null($this->user1_id) && !is_null($this->user2_id)) {
+            $otherId = $this->user1_id === $userId ? $this->user2_id : $this->user1_id;
+        }
+        return $otherId ? User::find($otherId) : null;
+    }
+
+    /**
      * Scope for conversations involving a specific user
      */
     public function scopeForUser($query, int $userId)
     {
-        return $query->whereHas('participants', function ($q) use ($userId) {
-            $q->where('user_id', $userId);
+        return $query->where(function ($q) use ($userId) {
+            $q->whereHas('participants', function ($qq) use ($userId) {
+                $qq->where('user_id', $userId);
+            })
+            ->orWhere(function ($qq) use ($userId) {
+                $qq->where('user1_id', $userId)->orWhere('user2_id', $userId);
+            });
         });
     }
 
@@ -222,8 +304,11 @@ class Conversation extends Model
      */
     public static function findOrCreateBetweenUsers(int $user1Id, int $user2Id): self
     {
-        // First try to find existing private conversation between these users
-        $conversation = self::where('type', 'private')
+        // First try to find existing private conversation between these users (pivot-based)
+        $conversation = self::where(function ($q) {
+                $q->where('type', 'private')
+                  ->orWhere('conversation_type', 'direct');
+            })
             ->whereHas('participants', function ($query) use ($user1Id) {
                 $query->where('user_id', $user1Id);
             })
@@ -236,11 +321,16 @@ class Conversation extends Model
             return $conversation;
         }
 
+        // Normalize ordering to satisfy unique index on (user1_id, user2_id)
+        [$a, $b] = $user1Id < $user2Id ? [$user1Id, $user2Id] : [$user2Id, $user1Id];
+
         // Create new conversation
         $conversation = self::create([
             'type' => 'private',
             'created_by' => $user1Id,
             'last_activity_at' => now(),
+            'user1_id' => $a,
+            'user2_id' => $b,
         ]);
 
         // Add both users as participants

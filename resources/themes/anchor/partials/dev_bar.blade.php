@@ -18,12 +18,14 @@
             document.removeEventListener('keydown', escapeKeyCloseDevBar);
         }})"
     id="wave_dev_bar"
-    class="fixed bottom-0 left-0 z-[999] w-full h-screen transition-all duration-150 ease-out transform"
+    class="fixed bottom-0 left-0 z-[999] w-full h-screen transition-all duration-150 ease-out transform translate-y-full pointer-events-none"
     x-data="{ open: false, url: '', active: '' }"
-    :class="{ 'translate-y-full': !open, 'translate-y-0': open }"
+    :class="{ 'translate-y-full pointer-events-none': !open, 'translate-y-0 pointer-events-auto': open }"
     x-on:keydown.escape="open = false"
-    x-cloak>
-    <div class="fixed inset-0 z-20 bg-black bg-opacity-25" x-show="open" @click="open=false"></div>
+    x-cloak
+    aria-hidden="true"
+    :aria-hidden="!open">
+    <div class="fixed inset-0 z-20 bg-black bg-opacity-25 hidden" :class="{ 'hidden': !open, 'block': open }" @click="open=false"></div>
 
     
 

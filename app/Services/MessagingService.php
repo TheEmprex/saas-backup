@@ -226,12 +226,14 @@ class MessagingService
         }
 
         return User::where('id', '!=', $excludeUserId)
+            ->whereNotNull('email_verified_at')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                   ->orWhere('email', 'LIKE', "%{$query}%")
                   ->orWhere('username', 'LIKE', "%{$query}%");
             })
             ->select('id', 'name', 'email', 'username', 'avatar')
+            ->orderBy('name')
             ->limit(20)
             ->get()
             ->map(function ($user) {

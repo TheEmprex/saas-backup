@@ -1,11 +1,25 @@
 {
-  "_pusher-TVcwqUbk.js": {
-    "file": "assets/pusher-TVcwqUbk.js",
-    "name": "pusher",
+  "_PWAPrompts-BGVe13wW.css": {
+    "file": "assets/PWAPrompts-BGVe13wW.css",
+    "src": "_PWAPrompts-BGVe13wW.css"
+  },
+  "_PWAPrompts-DPFNXmvV.js": {
+    "file": "assets/PWAPrompts-DPFNXmvV.js",
+    "name": "PWAPrompts",
     "imports": [
-      "_react-vendor-HnKmhvXM.js",
-      "_realtime-uSw6sBMp.js"
+      "_vue-vendor-CqjvUEUK.js",
+      "_preload-helper-Cqtb6kru.js"
+    ],
+    "dynamicImports": [
+      "node_modules/workbox-window/build/workbox-window.prod.es5.mjs"
+    ],
+    "css": [
+      "assets/PWAPrompts-BGVe13wW.css"
     ]
+  },
+  "_preload-helper-Cqtb6kru.js": {
+    "file": "assets/preload-helper-Cqtb6kru.js",
+    "name": "preload-helper"
   },
   "_react-vendor-HnKmhvXM.js": {
     "file": "assets/react-vendor-HnKmhvXM.js",
@@ -19,12 +33,12 @@
     "file": "assets/ui-vendor-l0sNRNKZ.js",
     "name": "ui-vendor"
   },
-  "_utils-fUnvaSCJ.js": {
-    "file": "assets/utils-fUnvaSCJ.js",
+  "_utils-Co1HA6re.js": {
+    "file": "assets/utils-Co1HA6re.js",
     "name": "utils"
   },
-  "_vue-vendor-D7E-VEWL.js": {
-    "file": "assets/vue-vendor-D7E-VEWL.js",
+  "_vue-vendor-CqjvUEUK.js": {
+    "file": "assets/vue-vendor-CqjvUEUK.js",
     "name": "vue-vendor"
   },
   "node_modules/workbox-window/build/workbox-window.prod.es5.mjs": {
@@ -34,48 +48,58 @@
     "isDynamicEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme--OSRRlAK.css",
+    "file": "assets/theme-BKC9T86p.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Ces-3X6x.js",
+    "file": "assets/app-BJUVADMk.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
-      "_utils-fUnvaSCJ.js",
+      "_utils-Co1HA6re.js",
       "_realtime-uSw6sBMp.js",
-      "_pusher-TVcwqUbk.js",
-      "_react-vendor-HnKmhvXM.js"
+      "_react-vendor-HnKmhvXM.js",
+      "_preload-helper-Cqtb6kru.js"
+    ],
+    "dynamicImports": [
+      "node_modules/workbox-window/build/workbox-window.prod.es5.mjs"
     ]
   },
   "resources/js/messaging-app.js": {
-    "file": "assets/messaging-app-CfJMnWV2.js",
+    "file": "assets/messaging-app-UfNUJ6Dv.js",
     "name": "messaging-app",
     "src": "resources/js/messaging-app.js",
     "isEntry": true,
     "imports": [
-      "_vue-vendor-D7E-VEWL.js",
-      "_realtime-uSw6sBMp.js",
-      "_pusher-TVcwqUbk.js",
-      "_react-vendor-HnKmhvXM.js"
-    ],
-    "dynamicImports": [
-      "node_modules/workbox-window/build/workbox-window.prod.es5.mjs"
+      "_vue-vendor-CqjvUEUK.js",
+      "_PWAPrompts-DPFNXmvV.js",
+      "_preload-helper-Cqtb6kru.js"
     ],
     "css": [
-      "assets/messaging-app-Cuu5t9vP.css"
+      "assets/messaging-app-D0rViy-c.css"
+    ]
+  },
+  "resources/js/pwa-global.js": {
+    "file": "assets/pwa-global-CsUwNCfY.js",
+    "name": "pwa-global",
+    "src": "resources/js/pwa-global.js",
+    "isEntry": true,
+    "imports": [
+      "_vue-vendor-CqjvUEUK.js",
+      "_PWAPrompts-DPFNXmvV.js",
+      "_preload-helper-Cqtb6kru.js"
     ]
   },
   "resources/js/react-messaging-app.jsx": {
-    "file": "assets/react-messaging-app-DQsfdH09.js",
+    "file": "assets/react-messaging-app-BOlfJNUr.js",
     "name": "react-messaging-app",
     "src": "resources/js/react-messaging-app.jsx",
     "isEntry": true,
     "imports": [
       "_react-vendor-HnKmhvXM.js",
-      "_utils-fUnvaSCJ.js"
+      "_utils-Co1HA6re.js"
     ]
   },
   "resources/js/stores/enhanced-messaging.js": {
@@ -85,24 +109,21 @@
     "isEntry": true
   },
   "resources/themes/anchor/assets/css/app.css": {
-    "file": "assets/app-dq32wieY.css",
+    "file": "assets/app-DIMtNuNe.css",
     "src": "resources/themes/anchor/assets/css/app.css",
     "isEntry": true
   },
   "resources/themes/anchor/assets/js/app.js": {
-    "file": "assets/app-DG0kc58I.js",
+    "file": "assets/app-B_wXUZZp.js",
     "name": "app",
     "src": "resources/themes/anchor/assets/js/app.js",
     "isEntry": true,
     "imports": [
-      "_realtime-uSw6sBMp.js",
-      "_pusher-TVcwqUbk.js",
-      "resources/themes/anchor/assets/js/webrtc.js",
-      "_react-vendor-HnKmhvXM.js"
+      "resources/themes/anchor/assets/js/webrtc.js"
     ]
   },
   "resources/themes/anchor/assets/js/webrtc.js": {
-    "file": "assets/webrtc-CmzpLl_9.js",
+    "file": "assets/webrtc-ClMNo6Md.js",
     "name": "webrtc",
     "src": "resources/themes/anchor/assets/js/webrtc.js",
     "isEntry": true

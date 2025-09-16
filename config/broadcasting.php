@@ -37,9 +37,13 @@ return [
             'key' => env('PUSHER_APP_KEY'),
             'secret' => env('PUSHER_APP_SECRET'),
             'app_id' => env('PUSHER_APP_ID'),
-            'options' => [
+'options' => [
                 'cluster' => env('PUSHER_APP_CLUSTER'),
-                'useTLS' => true,
+                // Support self-hosted (Reverb) via PUSHER_* or REVERB_* variables
+                'host' => env('PUSHER_HOST', env('REVERB_HOST')),
+                'port' => env('PUSHER_PORT', env('REVERB_PORT', 443)),
+                'scheme' => env('PUSHER_SCHEME', env('REVERB_SCHEME', 'https')),
+                'useTLS' => env('PUSHER_SCHEME', env('REVERB_SCHEME', 'https')) === 'https',
             ],
             'client_options' => [
                 // Guzzle client options: https://docs.guzzlephp.org/en/stable/request-options.html

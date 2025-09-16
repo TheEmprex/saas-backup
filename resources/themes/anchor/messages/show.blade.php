@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <!-- Header -->
         <div class="mb-6">
-            <a href="{{ route('messages.web.index') }}" class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-all duration-200 bg-white dark:bg-slate-800/50 px-4 py-2 rounded-lg shadow-sm hover:shadow-md">
+<a href="{{ route('messages.index') }}" class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-all duration-200 bg-white dark:bg-slate-800/50 px-4 py-2 rounded-lg shadow-sm hover:shadow-md">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
@@ -152,13 +152,13 @@
             <!-- Message Input -->
             <div class="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-b-2xl">
                 <div id="file-preview" class="mb-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2"></div>
-                <form id="message-form" action="{{ route('messages.web.store', $contact->id) }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-3">
+<form id="message-form" action="{{ route('messages.send') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-3">
                     @csrf
                     <label for="file-input" class="p-2 text-slate-500 hover:text-purple-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer" title="Attach files">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                         </svg>
-                        <input type="file" id="file-input" name="attachments[]" multiple accept="image/*,application/pdf,.doc,.docx" class="hidden">
+<input type="file" id="file-input" name="files[]" multiple accept="image/*,application/pdf,.doc,.docx" class="hidden">
                     </label>
                     <div class="flex-1 relative">
                         <textarea id="message-textarea" name="content" rows="1" class="w-full rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 resize-none placeholder-slate-400 dark:placeholder-slate-500" placeholder="Type a message..."></textarea>
@@ -328,6 +328,7 @@ function removeFile(index) {
 }
 
 // Send message
+const recipientId = {{ $contact->id }};
 messageForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const content = messageTextarea.value.trim();
@@ -337,15 +338,16 @@ messageForm.addEventListener('submit', function(e) {
     const formData = new FormData();
     formData.append('content', content);
     formData.append('_token', document.querySelector('[name="_token"]').value);
+    formData.append('recipient_id', recipientId);
     
     selectedFiles.forEach((file, index) => {
-        formData.append('attachments[]', file);
+        formData.append('files[]', file);
     });
     
     sendButton.disabled = true;
     sendButton.innerHTML = '<svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>';
     
-    fetch('{{ route('messages.web.store', $contact->id) }}', {
+fetch('{{ route('messages.send') }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -358,7 +360,7 @@ messageForm.addEventListener('submit', function(e) {
             messageTextarea.value = '';
             selectedFiles = [];
             updateFilePreview();
-            addMessageToChat(data.message);
+            addMessageToChat(data.message || data.data?.message || data);
             scrollToBottom();
         } else {
             alert('Error sending message: ' + (data.message || 'Unknown error'));
@@ -421,17 +423,36 @@ function scrollToBottom() {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
+// Resolve conversation id by fetching conversations once
+let conversationId = null;
+async function ensureConversationId() {
+    if (conversationId) return conversationId;
+    try {
+        const resp = await fetch('/messages/conversations', { headers: { 'Accept': 'application/json' } });
+        if (resp.ok) {
+            const data = await resp.json();
+            const list = (data.conversations || data.data?.conversations || []);
+            const found = list.find(c => c.other_user_id == recipientId);
+            conversationId = found ? found.id : null;
+        }
+    } catch (e) { console.warn('Unable to resolve conversation id', e); }
+    return conversationId;
+}
+
 // Fetch new messages
-function fetchNewMessages() {
-    fetch(`{{ route('messages.web.show', $contact->id) }}?ajax=1&last_id=${getLastMessageId()}`, {
+async function fetchNewMessages() {
+    const convId = await ensureConversationId();
+    if (!convId) return;
+    fetch(`/messages/conversations/${convId}/messages?after=${getLastMessageId()}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => response.json())
     .then(data => {
-        if (data.messages && data.messages.length > 0) {
-            data.messages.forEach(message => addMessageToChat(message));
+        const list = (data.messages || data.data?.messages || []);
+        if (list.length > 0) {
+            list.forEach(message => addMessageToChat(message));
             scrollToBottom();
         }
     })

@@ -55,7 +55,7 @@ export const useMessagingStore = defineStore('messaging', {
     async fetchConversations() {
       this.loading.conversations = true
       try {
-        const response = await axios.get('/api/conversations')
+        const response = await axios.get('/api/marketplace/v1/conversations')
         this.conversations = response.data.conversations || []
         return this.conversations
       } catch (error) {
@@ -71,7 +71,7 @@ export const useMessagingStore = defineStore('messaging', {
     async fetchMessages(conversationId, page = 1) {
       this.loading.messages = true
       try {
-        const response = await axios.get(`/api/conversations/${conversationId}/messages`, {
+        const response = await axios.get(`/api/marketplace/v1/conversations/${conversationId}/messages`, {
           params: { page }
         })
         
@@ -138,7 +138,7 @@ export const useMessagingStore = defineStore('messaging', {
         }
 
         const response = await axios.post(
-          `/api/conversations/${conversationId}/messages`,
+          `/api/marketplace/v1/conversations/${conversationId}/messages`,
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         )
@@ -194,7 +194,7 @@ export const useMessagingStore = defineStore('messaging', {
     // Mark conversation as read
     async markAsRead(conversationId) {
       try {
-        await axios.post(`/api/conversations/${conversationId}/read`)
+        await axios.patch(`/api/marketplace/v1/conversations/${conversationId}/messages/read`, { mark_all: true })
         
         // Update local state
         const conversation = this.conversations.find(c => c.id === conversationId)
@@ -209,7 +209,7 @@ export const useMessagingStore = defineStore('messaging', {
     // Delete a message
     async deleteMessage(messageId) {
       try {
-        await axios.delete(`/api/messages/${messageId}`)
+        await axios.delete(`/api/marketplace/v1/messages/${messageId}`)
         
         // Remove from local state
         Object.keys(this.messages).forEach(conversationId => {
@@ -226,7 +226,7 @@ export const useMessagingStore = defineStore('messaging', {
     // Add reaction to message
     async addReaction(messageId, emoji) {
       try {
-        const response = await axios.post(`/api/messages/${messageId}/reactions`, {
+        const response = await axios.post(`/api/marketplace/v1/messages/${messageId}/reactions`, {
           emoji
         })
 
@@ -259,7 +259,7 @@ export const useMessagingStore = defineStore('messaging', {
     // Fetch folders
     async fetchFolders() {
       try {
-        const response = await axios.get('/api/message-folders')
+        const response = await axios.get('/messages/api/message-folders')
         this.folders = response.data.folders || []
         return this.folders
       } catch (error) {

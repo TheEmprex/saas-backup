@@ -28,14 +28,6 @@
     " 
     class="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm"
 >
-    <div 
-        x-show="showOverlay"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        class="absolute inset-0 w-full h-screen pt-24" x-cloak>
-        <div class="w-screen h-full bg-black/50"></div>
-    </div>
     <x-container>
         <div class="z-30 flex items-center justify-between h-24 md:space-x-8">
             <div class="z-20 flex items-center justify-between w-full md:w-auto">
@@ -53,25 +45,16 @@
             </div>
 
             <!-- Desktop Navigation -->
-            <nav class="hidden md:flex items-center space-x-8">
+            <nav x-data="{ openMenu: null }" @mouseleave="openMenu = null" class="hidden md:flex items-center space-x-8">
                 <!-- Platform Dropdown -->
-                <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                    <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">
+                <div class="relative group" tabindex="0" data-no-transition>
+                    <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200" data-no-transition>
                         <span>Platform</span>
-                        <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-200" 
-                         x-transition:enter-start="opacity-0 transform scale-95" 
-                         x-transition:enter-end="opacity-100 transform scale-100" 
-                         x-transition:leave="transition ease-in duration-150" 
-                         x-transition:leave-start="opacity-100 transform scale-100" 
-                         x-transition:leave-end="opacity-0 transform scale-95"
-                         class="absolute top-full left-0 mt-2 w-96 bg-white rounded-xl border border-gray-200 shadow-xl z-[9999]"
-                         style="min-width: 320px; max-width: 400px;">
+                    <div class="absolute top-full left-0 mt-2 w-96 bg-white rounded-xl border border-gray-200 shadow-xl z-[9999] hidden group-hover:block focus-within:block" style="min-width: 320px; max-width: 400px;" data-no-transition>
                         <div class="p-4 space-y-2">
                             <a href="{{ route('marketplace.index') }}" class="flex items-start space-x-3 p-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg">
                                 <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -112,23 +95,14 @@
                 </div>
 
                 <!-- Resources Dropdown -->
-                <div class="relative" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
-                    <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200">
+                <div class="relative group" tabindex="0" data-no-transition>
+                    <button class="flex items-center space-x-1 px-3 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors duration-200" data-no-transition>
                         <span>Resources</span>
-                        <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                     </button>
-                    <div x-show="open" 
-                         x-cloak
-                         x-transition:enter="transition ease-out duration-200" 
-                         x-transition:enter-start="opacity-0 transform scale-95" 
-                         x-transition:enter-end="opacity-100 transform scale-100" 
-                         x-transition:leave="transition ease-in duration-150" 
-                         x-transition:leave-start="opacity-100 transform scale-100" 
-                         x-transition:leave-end="opacity-0 transform scale-95"
-                         class="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 py-3 z-[9999]"
-                         style="box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform-origin: top left;">
+                    <div class="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl border border-gray-200 py-3 z-[9999] hidden group-hover:block focus-within:block" style="box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); transform-origin: top left;" data-no-transition>
                         <div class="grid grid-cols-1 gap-2">
                             <a href="{{ route('terms-of-service') }}" class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150 rounded-lg mx-2">
                                 <h3 class="text-sm font-medium text-gray-900">Terms of Service</h3>
@@ -156,7 +130,7 @@
             </nav>
 
             <!-- Mobile Navigation -->
-            <nav :class="{ 'hidden': !mobileMenuOpen }" class="md:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
+            <nav :class="{ 'hidden': !mobileMenuOpen }" class="md:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
                 <div class="px-4 py-6 space-y-4">
                     <div>
                         <h3 class="text-sm font-semibold text-gray-900 mb-3">Platform</h3>
@@ -180,8 +154,8 @@
                         
                         @guest
                             <div class="space-y-3 pt-4">
-                                <x-button href="{{ route('login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
-                                <x-button href="{{ route('register') }}" tag="a" class="w-full text-sm">Sign Up</x-button>
+                                <x-button href="{{ route('custom.login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
+                                <x-button href="{{ route('custom.register') }}" tag="a" class="w-full text-sm">Sign Up</x-button>
                             </div>
                         @else
                             <div class="pt-4">
@@ -194,8 +168,8 @@
             
             @guest
                 <div class="relative z-30 items-center justify-center flex-shrink-0 hidden h-full space-x-3 text-sm md:flex">
-                    <x-button href="{{ route('login') }}" tag="a" class="text-sm" color="secondary">Login</x-button>
-                    <x-button href="{{ route('register') }}" tag="a" class="text-sm">Sign Up</x-button>
+                    <x-button href="{{ route('custom.login') }}" tag="a" class="text-sm" color="secondary">Login</x-button>
+                    <x-button href="{{ route('custom.register') }}" tag="a" class="text-sm">Sign Up</x-button>
                 </div>
             @else
                 <x-button href="{{ route('dashboard') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0 hidden ml-2 md:block">View Dashboard</x-button>

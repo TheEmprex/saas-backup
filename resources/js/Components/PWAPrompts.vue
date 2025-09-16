@@ -117,9 +117,9 @@
     <Transition name="fade">
       <div 
         v-if="isInstalling" 
-        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 pointer-events-none"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 m-4 text-center">
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 m-4 text-center pointer-events-auto">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mb-4"></div>
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
             Installing OnlyVerified

@@ -1,19 +1,22 @@
 <div x-data="{ open: false }" class="flex h-full md:flex-1">
     <div class="hidden flex-1 space-x-8 h-full font-semibold md:flex">
         <a href="{{ route('wave.dashboard') }}" class="inline-flex items-center px-1 pt-1 text-sm leading-5 transition duration-150 ease-in-out focus:outline-none border-b-2 border-transparent @if(Request::is('dashboard')){{ 'text-zinc-900' }}@else{{ 'text-zinc-800 hover:text-zinc-900' }}@endif">Dashboard</a>
-        <div x-data="{ dropdown: false }" @mouseenter="dropdown = true" @mouseleave="dropdown=false" @click.away="dropdown=false" class="inline-flex relative items-center px-1 pt-1 text-sm leading-5 border-b-2 border-transparent transition duration-150 ease-in-out cursor-pointer text-zinc-800 hover:text-zinc-900 hover:border-zinc-300">
+        <div x-data="{ dropdown: false }" @mouseenter="dropdown = true" @mouseleave="dropdown=false" @click.away="dropdown=false" @click.outside="dropdown=false" @keydown.escape.window="dropdown=false" tabindex="0" data-no-transition class="inline-flex relative items-center px-1 pt-1 text-sm leading-5 border-b-2 border-transparent transition duration-150 ease-in-out cursor-pointer text-zinc-800 hover:text-zinc-900 hover:border-zinc-300">
             <span>Resources</span>
             <svg class="ml-1 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
             </svg>
             <div x-show="dropdown"
+                @click.away="dropdown=false"
+                @click.outside="dropdown=false"
+                @click="dropdown=false"
                 x-transition:enter="duration-200 ease-out scale-95"
                 x-transition:enter-start="opacity-50 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition duration-100 ease-in scale-100"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
-                class="absolute top-0 left-1/2 px-2 mt-20 w-screen max-w-xs transform -translate-x-1/2 sm:px-0" x-cloak>
+                class="hidden absolute top-0 left-1/2 px-2 mt-20 w-screen max-w-xs transform -translate-x-1/2 sm:px-0" x-cloak data-no-transition>
                 <div class="rounded-xl border shadow-md border-zinc-100">
                     <div class="overflow-hidden rounded-xl shadow-xs">
                         <div class="grid relative z-20 gap-6 px-5 py-6 bg-white sm:p-8 sm:gap-8">
@@ -61,7 +64,7 @@
         @include('theme::partials.notifications')
 
         <!-- Profile dropdown -->
-        <div @click.away="open = false" class="flex relative items-center ml-3 h-full" x-data="{ open: false }">
+        <div @click.away="open = false" @click.outside="open = false" @keydown.escape.window="open = false" tabindex="0" data-no-transition class="flex relative items-center ml-3 h-full" x-data="{ open: false }">
             <div>
                 <button @click="open = !open" class="flex text-sm rounded-full border-2 border-transparent transition duration-150 ease-in-out focus:outline-none focus:border-zinc-300" id="user-menu" aria-label="User menu" aria-haspopup="true" x-bind:aria-expanded="open" aria-expanded="true">
                     <img class="w-8 h-8 rounded-full" src="{{ auth()->user()->avatar() . '?' . time() }}" alt="{{ auth()->user()->name }}'s Avatar">
@@ -70,13 +73,16 @@
 
             <div
                 x-show="open"
+                @click.away="open = false"
+                @click.outside="open = false"
+                @click="open = false"
                 x-transition:enter="duration-100 ease-out scale-95"
                 x-transition:enter-start="opacity-50 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
                 x-transition:leave="transition duration-50 ease-in scale-100"
                 x-transition:leave-start="opacity-100 scale-100"
                 x-transition:leave-end="opacity-0 scale-95"
-                class="absolute top-0 right-0 mt-20 w-56 rounded-xl transform origin-top-right" x-cloak>
+                class="hidden absolute top-0 right-0 mt-20 w-56 rounded-xl transform origin-top-right" x-cloak data-no-transition>
 
                 <div class="bg-white rounded-xl border shadow-md border-zinc-100" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                     <a href="{{ route('wave.profile', auth()->user()->username) }}" class="block px-4 py-3 text-zinc-700 hover:text-zinc-800">

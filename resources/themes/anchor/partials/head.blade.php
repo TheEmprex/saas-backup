@@ -16,6 +16,7 @@
 <meta name="url" content="{{ url('/') }}">
 @auth
 <meta name="user-id" content="{{ auth()->id() }}">
+<meta name="user-name" content="{{ auth()->user()->name }}">
 @endauth
 
 <x-favicon></x-favicon>
@@ -48,6 +49,6 @@
 
 @filamentStyles
 @livewireStyles
-@vite(['resources/themes/anchor/assets/css/app.css', 'resources/themes/anchor/assets/js/app.js'])
+@vite(['resources/themes/anchor/assets/css/app.css', 'resources/themes/anchor/assets/js/app.js', 'resources/js/app.js', 'resources/js/pwa-global.js'])
 
 @stack('styles')

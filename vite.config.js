@@ -34,6 +34,7 @@ export default defineConfig(({ command, mode }) => {
                     'resources/js/react-messaging-app.jsx',
                     'resources/js/messaging-app.js',
                     'resources/js/stores/enhanced-messaging.js',
+                    'resources/js/pwa-global.js',
                 ],
                 refresh: [
                     `resources/themes/${activeTheme}/**/*`,

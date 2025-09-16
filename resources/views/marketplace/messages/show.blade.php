@@ -6,7 +6,7 @@
         <!-- Header -->
         <div class="p-4 border-b">
             <div class="flex items-center space-x-4">
-                <a href="{{ route('messages.web.index') }}" class="text-gray-600 hover:text-gray-800">
+<a href="{{ route('messages.index') }}" class="text-gray-600 hover:text-gray-800">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
@@ -82,7 +82,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                         </svg>
-                        <input type="file" name="attachments[]" multiple class="hidden" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.zip,.txt,.mp3,.mp4,.wav">
+<input type="file" name="files[]" multiple class="hidden" accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.zip,.txt,.mp3,.mp4,.wav">
                     </label>
                     <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         Send
@@ -97,9 +97,26 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const messagesContainer = document.getElementById('messages-container');
-    const messageForm = document.getElementById('message-form');
+const messageForm = document.getElementById('message-form');
+const recipientId = {{ $contact->id }};
+let conversationId = null;
     const messageContent = document.getElementById('message-content');
     let lastMessageId = '{{ $messages->last()?->id }}';
+
+    // Discover conversation id between current user and contact
+    (async function() {
+        try {
+            const convResp = await fetch('/messages/conversations', { headers: { 'Accept': 'application/json' } });
+            if (convResp.ok) {
+                const data = await convResp.json();
+                const list = (data.conversations || (data.data && data.data.conversations) || []);
+                const found = list.find(c => c.other_user_id == {{ $contact->id }} || c.id == {{ $contact->id }});
+                conversationId = found ? found.id : null;
+            }
+        } catch (e) {
+            console.error('Failed to fetch conversations', e);
+        }
+    })();
 
     // Scroll to bottom on load
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -116,9 +133,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formData = new FormData(this);
         formData.append('_token', '{{ csrf_token() }}');
+        formData.append('recipient_id', recipientId);
+        // normalize attachments name if older markup
+        if (formData.has('attachments[]') && !formData.has('files[]')) {
+            const atts = formData.getAll('attachments[]');
+            formData.delete('attachments[]');
+            atts.forEach(f => formData.append('files[]', f));
+        }
         
         try {
-            const response = await fetch('{{ route("messages.web.store", $contact->id) }}', {
+            const response = await fetch('{{ route("messages.send") }}', {
                 method: 'POST',
                 body: formData
             });
@@ -131,10 +155,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageContent.style.height = 'auto';
                 
                 // Append new message
-                appendMessage(result.message);
+                appendMessage(result.message || (result.data && result.data.message) || result);
                 
                 // Update last message ID
-                lastMessageId = result.message_id;
+                lastMessageId = result.message_id || (result.message && result.message.id) || (result.data && result.data.message && result.data.message.id) || lastMessageId;
                 
                 // Scroll to bottom
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -149,17 +173,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Poll for new messages
     setInterval(async function() {
+        if (!conversationId) return;
         try {
-            const response = await fetch(`{{ route("messages.web.show", $contact->id) }}?last_id=${lastMessageId}`, {
+            const response = await fetch(`/messages/conversations/${conversationId}/messages?after=${lastMessageId}`, {
                 headers: {
                     'Accept': 'application/json'
                 }
             });
             
             const result = await response.json();
-            
-            if (result.messages && result.messages.length > 0) {
-                result.messages.forEach(message => {
+            const messages = (result.messages || (result.data && result.data.messages) || []);
+            if (messages.length > 0) {
+                messages.forEach(message => {
                     appendMessage(message);
                     lastMessageId = message.id;
                 });
@@ -177,11 +202,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Poll for user status
     setInterval(async function() {
         try {
-            const response = await fetch('{{ route("messages.web.user.status", $contact->id) }}');
+            const response = await fetch('{{ route("users.status", $contact->id) }}');
             const result = await response.json();
             
-            const statusDot = document.getElementById(`online-status-${contact.id}`);
-            const lastSeen = document.getElementById(`last-seen-${contact.id}`);
+            const statusDot = document.getElementById('online-status-{{ $contact->id }}');
+            const lastSeen = document.getElementById('last-seen-{{ $contact->id }}');
             
             if (result.online) {
                 statusDot.classList.add('bg-green-500');
@@ -204,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="max-w-lg ${isOwnMessage ? 'bg-blue-500 text-white' : 'bg-gray-100'} rounded-lg px-4 py-2 shadow">
                     ${message.job_post_id ? `
                         <div class="mb-2 text-sm ${isOwnMessage ? 'text-blue-100' : 'text-gray-500'}">
-                            Re: <a href="/jobs/${message.job_post_id}" class="underline">${message.job_post.title}</a>
+                            Re: <a href="/jobs/${message.job_post_id}" class="underline">${(message.job_post && message.job_post.title) ? message.job_post.title : 'Job'}</a>
                         </div>
                     ` : ''}
                     <p class="text-sm">${message.message_content}</p>

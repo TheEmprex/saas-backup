@@ -136,7 +136,11 @@
                     {{ formatTypingUsers(typingUsers) }}
                   </p>
                   <p v-else-if="store.activeConversation.other_user" class="text-sm text-gray-500">
-                    {{ store.isOnline(store.activeConversation.other_user.id) ? 'Online' : 'Offline' }}
+                    <span v-if="store.isOnline(store.activeConversation.other_user.id)">Online</span>
+                    <span v-else>
+                      Offline
+                      <span v-if="getOtherUserLastSeen()"> • Last seen {{ formatLastSeen(getOtherUserLastSeen()) }}</span>
+                    </span>
                   </p>
                 </div>
               </div>
@@ -148,6 +152,9 @@
                 <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
                   <VideoCameraIcon class="w-5 h-5" />
                 </button>
+                <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-600" @click="showSearchModal = true" title="Search messages">
+                  <SearchIcon class="w-5 h-5" />
+                </button>
                 <button class="p-2 rounded-lg hover:bg-gray-100 text-gray-600">
                   <EllipsisVerticalIcon class="w-5 h-5" />
                 </button>
@@ -155,32 +162,43 @@
             </div>
           </header>
 
-          <!-- Messages Area -->
-          <div 
-            ref="messagesContainer"
-            class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
-            @scroll="handleScroll"
-          >
-            <!-- Load More Button -->
-            <div v-if="hasMoreMessages" class="text-center">
-              <button
-                @click="loadMoreMessages"
-                :disabled="store.loading.messages"
-                class="px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg disabled:opacity-50"
-              >
-                {{ store.loading.messages ? 'Loading...' : 'Load more messages' }}
-              </button>
+          <!-- Bulk selection toolbar -->
+          <div v-if="selectedMessageIds.length > 0" class="bg-blue-50 border-b border-blue-200 px-4 py-2 flex items-center justify-between">
+            <div class="text-sm text-blue-900">{{ selectedMessageIds.length }} selected</div>
+            <div class="space-x-2">
+              <button class="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700" @click="bulkMarkRead">Mark read</button>
+              <button class="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700" @click="bulkDelete">Delete</button>
+              <button class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200" @click="store.clearSelectedMessages()">Clear</button>
             </div>
+          </div>
 
-            <!-- Messages -->
-            <MessageBubble
-              v-for="message in store.activeMessages"
-              :key="message.id"
-              :message="message"
-              :is-selected="store.selectedMessages.has(message.id)"
-              @click="handleMessageClick(message)"
-              @reply="handleReply(message)"
-            />
+          <!-- Messages Area (virtualized) -->
+          <div ref="messagesContainer" class="flex-1 bg-gray-50">
+            <VirtualList
+              ref="virtualListRef"
+              :items="store.activeMessages"
+              :item-height="84"
+              :overscan="8"
+              key-field="id"
+              class="h-full p-4"
+              @reach-top="loadMoreMessages"
+            >
+              <template #default="{ item }">
+                <div class="mb-4">
+                  <MessageBubble
+                    :message="item"
+                    :is-selected="store.selectedMessages.has(item.id)"
+                    :highlight="item.id === highlightMessageId"
+                    @click="handleMessageClick(item)"
+                    @reply="handleReply(item)"
+                    @react="handleReact(item, $event)"
+                    @delete="handleDelete(item)"
+                    @edit="handleEdit(item, $event)"
+                    @open-image="openLightbox"
+                  />
+                </div>
+              </template>
+            </VirtualList>
           </div>
 
           <!-- Message Input -->
@@ -188,8 +206,10 @@
             <MessageInput
               :conversation-id="store.activeConversationId"
               :is-sending="store.loading.sending"
+              :replying-to="replyingTo"
               @send="handleSendMessage"
               @typing="handleTyping"
+              @clear-reply="replyingTo = null"
             />
           </footer>
         </div>
@@ -210,6 +230,17 @@
       @create="handleCreateConversation"
     />
   </div>
+
+  <!-- Search Modal -->
+  <MessageSearchModal
+    v-if="showSearchModal"
+    :conversation-id="store.activeConversationId"
+    @close="showSearchModal = false"
+    @navigate="onNavigateToResult"
+  />
+
+  <ImageLightbox v-if="lightboxUrl" :src="lightboxUrl" @close="lightboxUrl = null" />
+  <NotificationToasts />
 </template>
 
 <script setup>
@@ -232,6 +263,11 @@ import MessageBubble from './messaging/MessageBubble.vue'
 import MessageInput from './messaging/MessageInput.vue'
 import ErrorToast from './messaging/ErrorToast.vue'
 import NewConversationModal from './messaging/NewConversationModal.vue'
+import MessageSearchModal from './messaging/MessageSearchModal.vue'
+import NotificationToasts from './messaging/NotificationToasts.vue'
+import ImageLightbox from './messaging/ImageLightbox.vue'
+import VirtualList from './messaging/VirtualList.vue'
+import { useToasts } from '../composables/useToasts'
 
 // Store
 const store = useEnhancedMessagingStore()
@@ -241,6 +277,14 @@ const searchQuery = ref('')
 const showNewConversationModal = ref(false)
 const messagesContainer = ref(null)
 const searchTimeout = ref(null)
+const replyingTo = ref(null)
+const showSearchModal = ref(false)
+const highlightMessageId = ref(null)
+const selectedMessageIds = computed(() => Array.from(store.selectedMessages))
+const lightboxUrl = ref(null)
+const virtualListRef = ref(null)
+
+const { toasts, success: toastSuccess, error: toastError } = useToasts()
 
 // Computed properties
 const typingUsers = computed(() => {
@@ -292,9 +336,34 @@ const toggleFilter = (filterType) => {
 
 const handleSendMessage = async (messageData) => {
   if (!store.activeConversationId) return
-  
+
   try {
-    await store.sendMessage(store.activeConversationId, messageData)
+    // If replying, attach reply_to_id to each sent message
+    const replyId = replyingTo.value?.id || null
+    if (replyingTo.value) replyingTo.value = null
+
+    const files = Array.isArray(messageData.files) ? messageData.files : []
+    const text = (messageData.content || '').trim()
+
+    // 1) If text exists, send as a standalone text message
+    if (text) {
+      await store.sendMessage(store.activeConversationId, {
+        content: text,
+        type: 'text',
+        reply_to_id: replyId
+      })
+    }
+
+    // 2) Send each file as its own message
+    for (const f of files) {
+      await store.sendMessage(store.activeConversationId, {
+        content: '',
+        file: f.file || f,
+        // type is inferred in store from MIME
+        reply_to_id: replyId
+      })
+    }
+
     await nextTick()
     scrollToBottom()
   } catch (error) {
@@ -303,10 +372,8 @@ const handleSendMessage = async (messageData) => {
 }
 
 const handleTyping = (isTyping) => {
-  // Implement typing indicator logic
   if (store.activeConversationId) {
-    // Send typing status to server
-    // This would be implemented with your real-time system
+    store.sendTypingStatus(store.activeConversationId, isTyping)
   }
 }
 
@@ -315,23 +382,85 @@ const handleMessageClick = (message) => {
 }
 
 const handleReply = (message) => {
-  // Implement reply functionality
-  console.log('Reply to message:', message)
+  replyingTo.value = message
 }
 
 const loadMoreMessages = async () => {
   if (!store.activeConversationId || store.loading.messages) return
   
   try {
-    const currentScrollHeight = messagesContainer.value.scrollHeight
+    const el = virtualListRef.value?.container
+    const prevHeight = el ? el.scrollHeight : 0
     await store.fetchMessages(store.activeConversationId, getCurrentPage() + 1)
     
     // Maintain scroll position after loading older messages
     await nextTick()
-    const newScrollHeight = messagesContainer.value.scrollHeight
-    messagesContainer.value.scrollTop = newScrollHeight - currentScrollHeight
+    if (el) {
+      const newHeight = el.scrollHeight
+      el.scrollTop = newHeight - prevHeight
+    }
   } catch (error) {
     console.error('Failed to load more messages:', error)
+  }
+}
+
+const handleReact = async (message, emoji) => {
+  try {
+    await store.addReaction(message.id, emoji)
+  } catch (e) {
+    console.error('Failed to react:', e)
+  }
+}
+
+const handleDelete = async (message) => {
+  try {
+    await store.deleteMessage(message.id)
+  } catch (e) {
+    console.error('Failed to delete message:', e)
+  }
+}
+
+const handleEdit = async (message, newContent) => {
+  try {
+    await store.editMessage(message.id, newContent)
+    toastSuccess('Message edited')
+  } catch (e) {
+    console.error('Failed to edit message:', e)
+    toastError('Failed to edit message')
+  }
+}
+
+const openLightbox = (url) => {
+  lightboxUrl.value = url
+}
+
+const bulkMarkRead = async () => {
+  if (!store.activeConversationId) return
+  const ids = selectedMessageIds.value
+  if (ids.length === 0) return
+  try {
+    await store.markMessagesAsRead(store.activeConversationId, ids)
+    store.clearSelectedMessages()
+    toastSuccess('Marked selected as read')
+  } catch (e) {
+    console.error('Failed to mark messages read:', e)
+    toastError('Failed to mark selected as read')
+  }
+}
+
+const bulkDelete = async () => {
+  if (!store.activeConversationId) return
+  const ids = selectedMessageIds.value
+  if (ids.length === 0) return
+  try {
+    for (const id of ids) {
+      await store.deleteMessage(id)
+    }
+    store.clearSelectedMessages()
+    toastSuccess('Deleted selected messages')
+  } catch (e) {
+    console.error('Failed to delete selected:', e)
+    toastError('Failed to delete selected')
   }
 }
 
@@ -351,8 +480,9 @@ const handleScroll = () => {
 }
 
 const scrollToBottom = () => {
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  const el = virtualListRef.value?.container
+  if (el) {
+    el.scrollTop = el.scrollHeight
   }
 }
 
@@ -363,13 +493,58 @@ const formatTypingUsers = (userIds) => {
   return 'several people are typing...'
 }
 
-const handleCreateConversation = async (conversationData) => {
+const formatLastSeen = (ts) => {
+  if (!ts) return 'Offline'
+  const date = new Date(ts)
+  const now = new Date()
+  const diffMs = now - date
+  const minutes = Math.floor(diffMs / 60000)
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours} hr${hours>1?'s':''} ago`
+  const days = Math.floor(hours / 24)
+  return `${days} day${days>1?'s':''} ago`
+}
+
+const getOtherUserLastSeen = () => {
+  const other = store.activeConversation?.other_user
+  if (!other) return null
+  const cached = store.users.get(other.id)
+  return cached?.last_seen || other.last_seen || null
+}
+
+const handleCreateConversation = async (createdConversation) => {
   try {
-    const newConversation = await store.createConversation(conversationData)
+    // Modal already created the conversation via API and emitted it here
+    store.upsertConversation(createdConversation)
     showNewConversationModal.value = false
-    selectConversation(newConversation.id)
+    selectConversation(createdConversation.id)
   } catch (error) {
-    console.error('Failed to create conversation:', error)
+    console.error('Failed to handle created conversation:', error)
+  }
+}
+
+// Global keyboard shortcuts
+const keyHandler = (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault()
+    showSearchModal.value = true
+    return
+  }
+  if (e.key === 'Escape') {
+    if (showSearchModal.value) {
+      showSearchModal.value = false
+      return
+    }
+    if (selectedMessageIds.value.length > 0) {
+      store.clearSelectedMessages()
+      return
+    }
+    if (replyingTo.value) {
+      replyingTo.value = null
+      return
+    }
   }
 }
 
@@ -380,9 +555,54 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to initialize messaging:', error)
   }
+  window.addEventListener('keydown', keyHandler)
+})
+
+const ensureMessageLoaded = async (conversationId, messageId, maxPages = 20) => {
+  let found = !!(store.getConversationMessages(conversationId) || []).find(m => m.id === messageId)
+  let pagesTried = 0
+  while (!found && pagesTried < maxPages) {
+    const pagination = store.pagination.get(conversationId)
+    const currentPage = pagination ? pagination.current_page : 1
+    if (!pagination || !pagination.has_more_pages) break
+    await store.fetchMessages(conversationId, currentPage + 1)
+    found = !!(store.getConversationMessages(conversationId) || []).find(m => m.id === messageId)
+    pagesTried++
+  }
+  return found
+}
+
+const scrollToMessage = async (messageId) => {
+  await nextTick()
+  const el = document.getElementById(`message-${messageId}`)
+  if (el && messagesContainer.value) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+}
+
+const onNavigateToResult = async (result) => {
+  try {
+    const convId = result?.conversation?.id || result?.conversation_id
+    const msgId = result?.id
+    if (convId) {
+      await selectConversation(convId)
+      if (msgId) {
+        const available = await ensureMessageLoaded(convId, msgId)
+        if (available) {
+          highlightMessageId.value = msgId
+          await scrollToMessage(msgId)
+          setTimeout(() => { highlightMessageId.value = null }, 2500)
+        }
+      }
+    }
+    showSearchModal.value = false
+  } catch (e) {
+    console.error('Failed to navigate to result:', e)
+  }
 })
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', keyHandler)
   store.cleanup()
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value)

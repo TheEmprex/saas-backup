@@ -14,6 +14,7 @@
             </div>
 
             @include('theme::partials.menus.app')
+            @include('theme::partials.enable-push-button')
 
         </div>
     </x-container>

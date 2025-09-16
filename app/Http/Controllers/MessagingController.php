@@ -188,9 +188,12 @@ class MessagingController extends Controller
         $validator = Validator::make($request->all(), [
             'conversation_id' => 'nullable|exists:conversations,id',
             'recipient_id' => 'nullable|exists:users,id',
-            'content' => 'required_without:file|string',
-            'message_type' => 'in:text,image,video,audio,file,call',
-            'file' => 'nullable|file|max:50000', // 50MB max
+            'content' => 'nullable|string',
+            'message_type' => 'nullable|in:text,image,video,audio,file,call,attachment',
+            // Support multiple attachments (up to 3 files)
+            'file' => 'nullable|file|max:50000',
+            'files' => 'nullable|array|max:3',
+            'files.*' => 'file|max:50000',
             'reply_to_id' => 'nullable|exists:messages,id',
         ]);
 
@@ -199,7 +202,7 @@ class MessagingController extends Controller
         }
 
         $user = Auth::user();
-        $messageType = $request->get('message_type', 'text');
+        $inputType = $request->get('message_type', 'text');
 
         // Handle conversation creation or retrieval
         if ($request->conversation_id) {
@@ -207,83 +210,111 @@ class MessagingController extends Controller
             if (!$conversation->hasParticipant($user->id)) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-        } else if ($request->recipient_id) {
-            $conversation = Conversation::findOrCreateBetweenUsers($user->id, $request->recipient_id);
+        } elseif ($request->recipient_id) {
+            $conversation = Conversation::findOrCreateBetweenUsers($user->id, (int) $request->recipient_id);
         } else {
             return response()->json(['error' => 'Either conversation_id or recipient_id is required'], 422);
         }
 
-        // Handle file upload
-        $fileUrl = null;
-        $fileName = null;
-        $fileSize = null;
+        $created = [];
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $fileName = $file->getClientOriginalName();
-            $fileSize = $file->getSize();
-            
-            // Determine message type based on file if not specified
-            if ($messageType === 'text') {
-                $mimeType = $file->getMimeType();
-                if (str_starts_with($mimeType, 'image/')) {
-                    $messageType = 'image';
-                } elseif (str_starts_with($mimeType, 'video/')) {
-                    $messageType = 'video';
-                } elseif (str_starts_with($mimeType, 'audio/')) {
-                    $messageType = 'audio';
-                } else {
-                    $messageType = 'file';
-                }
-            }
+        // Helper to determine type from file mime
+        $determineType = function ($mime, $fallback = 'file') {
+            if (str_starts_with($mime, 'image/')) return 'image';
+            if (str_starts_with($mime, 'video/')) return 'video';
+            if (str_starts_with($mime, 'audio/')) return 'audio';
+            return $fallback;
+        };
 
-            $path = $file->store('messages/' . $conversation->id, 'public');
-            $fileUrl = Storage::url($path);
+        // Create a text message first if provided
+        $content = trim((string) $request->get('content', ''));
+        if ($content !== '') {
+            $textMessage = Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id' => $user->id,
+                'content' => $content,
+                'message_type' => 'text',
+                'read_by' => [$user->id],
+                'reply_to_id' => $request->reply_to_id,
+            ]);
+            $created[] = $textMessage;
+            // Broadcast immediately
+            broadcast(new MessageSent($textMessage->fresh(['sender']), $user));
         }
 
-        // Create the message
-        $message = Message::create([
-            'conversation_id' => $conversation->id,
-            'sender_id' => $user->id,
-            'content' => $request->content,
-            'message_type' => $messageType,
-            'file_url' => $fileUrl,
-            'file_name' => $fileName,
-            'file_size' => $fileSize,
-            'reply_to_id' => $request->reply_to_id,
-            'read_by' => [$user->id], // Mark as read by sender
-        ]);
+        // Handle files[] (multiple) or single file
+        $files = [];
+        if ($request->hasFile('files')) {
+            $files = $request->file('files');
+        } elseif ($request->hasFile('file')) {
+            $files = [$request->file('file')];
+        }
 
-        // Update conversation
-        $conversation->updateLastMessage($message);
+        foreach ($files as $file) {
+            if (!$file) { continue; }
+            $path = $file->store('messages/' . $conversation->id, 'public');
+            $messageType = $inputType === 'attachment' || $inputType === 'text'
+                ? $determineType($file->getMimeType())
+                : $inputType;
+
+            $fileMessage = Message::create([
+                'conversation_id' => $conversation->id,
+                'sender_id' => $user->id,
+                'content' => $content !== '' ? null : $request->get('content'),
+                'message_type' => $messageType,
+                'file_url' => Storage::url($path),
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'read_by' => [$user->id],
+                'reply_to_id' => $request->reply_to_id,
+            ]);
+            $created[] = $fileMessage;
+            broadcast(new MessageSent($fileMessage->fresh(['sender']), $user));
+        }
+
+        // Update conversation with the last created message (if any)
+        if (!empty($created)) {
+            $conversation->updateLastMessage(end($created));
+        }
 
         // Stop typing indicator
         TypingIndicator::stopTyping($conversation->id, $user->id);
 
-        // Broadcast the message
-        broadcast(new MessageSent($message, $user));
+        // Choose a response message: prefer the text message else the last attachment
+        $respMessage = null;
+        foreach ($created as $msg) {
+            if (($msg->message_type ?? $msg->type) === 'text') { $respMessage = $msg; break; }
+        }
+        if (!$respMessage && !empty($created)) {
+            $respMessage = end($created);
+        }
+
+        if (!$respMessage) {
+            // Nothing created (e.g., empty content and no files)
+            return response()->json(['error' => 'Nothing to send'], 422);
+        }
 
         return response()->json([
             'message' => [
-                'id' => $message->id,
-                'conversation_id' => $message->conversation_id,
-                'content' => $message->content,
-                'message_type' => $message->message_type,
-                'file_url' => $message->file_url,
-                'file_name' => $message->file_name,
-                'file_size' => $message->file_size,
-                'formatted_file_size' => $message->formatted_file_size,
-                'sender_id' => $message->sender_id,
+                'id' => $respMessage->id,
+                'conversation_id' => $respMessage->conversation_id,
+                'content' => $respMessage->content,
+                'message_type' => $respMessage->message_type ?? $respMessage->type,
+                'file_url' => $respMessage->file_url ?? null,
+                'file_name' => $respMessage->file_name ?? null,
+                'file_size' => $respMessage->file_size ?? null,
+                'formatted_file_size' => $respMessage->formatted_file_size ?? null,
+                'sender_id' => $respMessage->sender_id ?? $respMessage->user_id,
                 'sender_name' => $user->name,
                 'sender_avatar' => $user->avatar ? asset('storage/' . $user->avatar) : asset('images/default-avatar.png'),
                 'is_mine' => true,
-                'is_read' => $message->is_read,
-                'read_by' => $message->read_by,
+                'is_read' => (bool) ($respMessage->is_read ?? false),
+                'read_by' => $respMessage->read_by ?? [],
                 'reply_to' => null,
-                'reactions' => $message->reactions,
-                'metadata' => $message->metadata,
-                'created_at' => $message->created_at->toISOString(),
-                'updated_at' => $message->updated_at->toISOString(),
+                'reactions' => $respMessage->reactions ?? [],
+                'metadata' => $respMessage->metadata ?? null,
+                'created_at' => $respMessage->created_at->toISOString(),
+                'updated_at' => $respMessage->updated_at->toISOString(),
             ]
         ], 201);
     }
@@ -319,7 +350,13 @@ class MessagingController extends Controller
      */
     public function updateTyping(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Accept both is_typing and typing for compatibility with frontend
+        $data = $request->all();
+        if (!array_key_exists('is_typing', $data) && array_key_exists('typing', $data)) {
+            $data['is_typing'] = (bool) $data['typing'];
+        }
+
+        $validator = Validator::make($data, [
             'conversation_id' => 'required|exists:conversations,id',
             'is_typing' => 'required|boolean',
         ]);
@@ -329,8 +366,8 @@ class MessagingController extends Controller
         }
 
         $user = Auth::user();
-        $conversationId = $request->conversation_id;
-        $isTyping = $request->is_typing;
+        $conversationId = (int) $data['conversation_id'];
+        $isTyping = (bool) $data['is_typing'];
 
         $conversation = Conversation::findOrFail($conversationId);
         if (!$conversation->hasParticipant($user->id)) {
@@ -441,19 +478,21 @@ class MessagingController extends Controller
      */
     public function searchUsers(Request $request)
     {
-        $query = $request->get('q', '');
-        $user = Auth::user();
+        $query = $request->get('q', $request->get('query', ''));
+        $authUser = Auth::user();
 
         if (strlen($query) < 2) {
-            return response()->json(['users' => []]);
+            return response()->json(['data' => []]);
         }
 
-        $users = User::where('id', '!=', $user->id)
+        $users = User::where('id', '!=', $authUser->id)
+            ->whereNotNull('email_verified_at')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
                   ->orWhere('email', 'LIKE', "%{$query}%")
                   ->orWhere('username', 'LIKE', "%{$query}%");
             })
+            ->orderBy('name')
             ->limit(20)
             ->get()
             ->map(function ($foundUser) {
@@ -465,9 +504,16 @@ class MessagingController extends Controller
                     'avatar' => $foundUser->avatar ? asset('storage/' . $foundUser->avatar) : asset('images/default-avatar.png'),
                     'is_online' => UserOnlineStatus::isOnline($foundUser->id),
                 ];
-            });
+            })
+            ->values();
 
-        return response()->json(['users' => $users]);
+        // Provide both keys for broad frontend compatibility
+        // - data: array for UIs that expect (data.data || data || [])
+        // - users: array for UIs that expect data.users
+        return response()->json([
+            'data' => $users,
+            'users' => $users,
+        ]);
     }
 
     /**
@@ -498,6 +544,61 @@ class MessagingController extends Controller
         return response()->json([
             'success' => true,
             'reactions' => $message->fresh()->reactions
+        ]);
+    }
+
+    /**
+     * Update message content (inline edit)
+     */
+    public function updateMessage(Request $request, $messageId)
+    {
+        $validator = Validator::make($request->all(), [
+            'content' => 'required|string|min:1|max:5000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = Auth::user();
+        $message = Message::findOrFail($messageId);
+
+        // Only the sender can edit their message, within policy (optionally time-boxable)
+        if ((int)($message->sender_id ?? $message->user_id) !== (int)$user->id) {
+            return response()->json(['error' => 'You can only edit your own messages'], 403);
+        }
+
+        // Prevent edits to file-only messages without text content if desired
+        // Allow editing text content for text messages or caption-like content.
+        $message->content = $request->input('content');
+        $message->is_edited = true;
+        $message->edited_at = now();
+        $message->save();
+
+        $message->refresh(['sender']);
+
+        return response()->json([
+            'message' => [
+                'id' => $message->id,
+                'conversation_id' => $message->conversation_id,
+                'content' => $message->content,
+                'message_type' => $message->message_type ?? $message->type,
+                'file_url' => $message->file_url ?? null,
+                'file_name' => $message->file_name ?? null,
+                'file_size' => $message->file_size ?? null,
+                'formatted_file_size' => $message->formatted_file_size ?? null,
+                'sender_id' => $message->sender_id ?? $message->user_id,
+                'sender_name' => $message->sender?->name ?? $user->name,
+                'sender_avatar' => $user->avatar ? asset('storage/' . $user->avatar) : asset('images/default-avatar.png'),
+                'is_mine' => true,
+                'is_read' => (bool) ($message->is_read ?? false),
+                'read_by' => $message->read_by ?? [],
+                'reactions' => $message->reactions ?? [],
+                'metadata' => $message->metadata ?? null,
+                'created_at' => $message->created_at->toISOString(),
+                'updated_at' => $message->updated_at->toISOString(),
+                'edited_at' => $message->edited_at?->toISOString(),
+            ]
         ]);
     }
 

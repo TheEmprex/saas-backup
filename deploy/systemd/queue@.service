@@ -1,0 +1,18 @@
+[Unit]
+Description=Laravel Queue Worker %i
+After=redis-server.service network.target
+
+[Service]
+User={{DEPLOY_USER}}
+Group=www-data
+Restart=always
+ExecStart={{PHP_BIN}} {{WORKING_DIR}}/artisan queue:work --sleep=3 --tries=3 --timeout=90
+WorkingDirectory={{WORKING_DIR}}
+Environment=APP_ENV=production
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=laravel-queue-%i
+
+[Install]
+WantedBy=multi-user.target
+

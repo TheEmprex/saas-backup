@@ -401,13 +401,26 @@ document.addEventListener('alpine:init', () => {
             this.loading = false;
         },
 
+        formatMessage(msg) {
+            return {
+                id: msg.id,
+                content: msg.content,
+                type: msg.type || msg.message_type || 'text',
+                message_type: msg.message_type || msg.type || 'text',
+                created_at: msg.created_at,
+                is_mine: !!msg.is_mine || (msg.sender_id && (msg.sender_id === (this.currentUserId || 0))),
+                sender_id: msg.sender_id,
+                sender_name: msg.sender_name || (msg.sender && msg.sender.name) || 'User',
+                attachments: msg.file_url ? [{ url: msg.file_url, name: msg.file_name || 'file', size: msg.file_size || 0, path: msg.file_url }] : (msg.attachments || []),
+                reactions: msg.reactions || [],
+                reply_to: msg.reply_to || null
+            };
+        },
+
         async loadConversations() {
             try {
-                const response = await fetch('/messages/conversations');
-                if (!response.ok) throw new Error('Failed to load conversations');
-                
-                const data = await response.json();
-                this.conversations = data.conversations || [];
+                const { data } = await window.apiFetch('/messages/conversations');
+                this.conversations = data?.conversations || data?.data || data || [];
             } catch (error) {
                 console.error('Error loading conversations:', error);
                 this.showNotification('Failed to load conversations', 'error');
@@ -427,17 +440,15 @@ document.addEventListener('alpine:init', () => {
             
             this.loadingMessages = true;
             try {
-                const response = await fetch(`/messages/conversations/${this.selectedConversation.id}/messages?page=${this.currentPage}`);
-                if (!response.ok) throw new Error('Failed to load messages');
-                
-                const data = await response.json();
+                const { data } = await window.apiFetch(`/messages/conversations/${this.selectedConversation.id}/messages?page=${this.currentPage}`);
+                const list = (data?.messages || data?.data || []);
                 if (this.currentPage === 1) {
-                    this.messages = data.data || [];
+                    this.messages = list.map(m => this.formatMessage(m));
                 } else {
-                    this.messages = [...(data.data || []), ...this.messages];
+                    this.messages = [...list.map(m => this.formatMessage(m)), ...this.messages];
                 }
                 
-                this.hasMoreMessages = data.pagination?.has_more || false;
+                this.hasMoreMessages = (data?.pagination && typeof data.pagination.has_more !== 'undefined') ? !!data.pagination.has_more : (list.length > 0);
                 
                 this.$nextTick(() => {
                     if (this.currentPage === 1) {
@@ -471,36 +482,26 @@ document.addEventListener('alpine:init', () => {
             }
             
             // Add files
-            this.selectedFiles.forEach((file, index) => {
-                formData.append(`attachments[${index}]`, file);
+            this.selectedFiles.forEach((file) => {
+                formData.append('files[]', file);
             });
             
             try {
-                const response = await fetch('/messages/send', {
+                const { data } = await window.apiFetch('/messages/send', {
                     method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    }
+                    body: formData
                 });
+                const created = this.formatMessage(data?.message || data);
+                this.messages.push(created);
+                this.newMessage = '';
+                this.selectedFiles = [];
+                this.scrollToBottom();
                 
-                if (!response.ok) throw new Error('Failed to send message');
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    this.messages.push(data.data);
-                    this.newMessage = '';
-                    this.selectedFiles = [];
-                    this.scrollToBottom();
-                    
-                    // Update conversation in list
-                    const convIndex = this.conversations.findIndex(c => c.id === this.selectedConversation.id);
-                    if (convIndex !== -1) {
-                        this.conversations[convIndex].last_message = data.data;
-                        this.conversations[convIndex].last_activity = data.data.created_at;
-                    }
+                // Update conversation in list
+                const convIndex = this.conversations.findIndex(c => c.id === this.selectedConversation.id);
+                if (convIndex !== -1) {
+                    this.conversations[convIndex].last_message = created;
+                    this.conversations[convIndex].last_activity = created.created_at || new Date().toISOString();
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
@@ -516,11 +517,8 @@ document.addEventListener('alpine:init', () => {
             }
             
             try {
-                const response = await fetch(`/messages/search-users?query=${encodeURIComponent(this.searchQuery)}`);
-                if (!response.ok) throw new Error('Search failed');
-                
-                const data = await response.json();
-                this.searchResults = data.data || [];
+                const { data } = await window.apiFetch(`/messages/search-users?q=${encodeURIComponent(this.searchQuery)}`);
+                this.searchResults = (data?.data || data || []);
             } catch (error) {
                 console.error('Search error:', error);
                 this.searchResults = [];
@@ -529,20 +527,13 @@ document.addEventListener('alpine:init', () => {
 
         async startConversation(user) {
             try {
-                const response = await fetch('/messages/send', {
+                await window.apiFetch('/messages/send', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        user_id: user.id,
+                    body: {
+                        recipient_id: user.id,
                         content: 'Hello! 👋'
-                    })
+                    }
                 });
-                
-                if (!response.ok) throw new Error('Failed to start conversation');
                 
                 await this.loadConversations();
                 this.searchQuery = '';
@@ -561,18 +552,10 @@ document.addEventListener('alpine:init', () => {
 
         async toggleReaction(messageId, emoji) {
             try {
-                const response = await fetch(`/messages/messages/${messageId}/reaction`, {
+                await window.apiFetch(`/messages/messages/${messageId}/reaction`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ emoji })
+                    body: { emoji }
                 });
-                
-                if (!response.ok) throw new Error('Failed to toggle reaction');
-                
                 // Update message reactions in UI
                 const messageIndex = this.messages.findIndex(m => m.id === messageId);
                 if (messageIndex !== -1) {
@@ -617,17 +600,12 @@ document.addEventListener('alpine:init', () => {
             if (!this.selectedConversation) return;
             
             try {
-                await fetch('/messages/typing', {
+                await window.apiFetch('/messages/typing', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
+                    body: {
                         conversation_id: this.selectedConversation.id,
                         is_typing: isTyping
-                    })
+                    }
                 });
             } catch (error) {
                 console.error('Error updating typing status:', error);

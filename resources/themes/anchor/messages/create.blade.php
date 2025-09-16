@@ -75,8 +75,9 @@
             @endif
 
             <!-- Message Form -->
-            <form action="{{ route('messages.web.store', $recipient->id) }}" method="POST" class="space-y-6">
-                @csrf
+<form action="{{ route('messages.send') }}" method="POST" class="space-y-6">
+@csrf
+                <input type="hidden" name="recipient_id" value="{{ $recipient->id }}">
                 
                 @if(isset($job) && $job)
                     <input type="hidden" name="job_post_id" value="{{ $job->id }}">

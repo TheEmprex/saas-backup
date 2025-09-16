@@ -899,6 +899,8 @@ const response = await this.apiCall(`/api/conversations/${this.selectedConversat
             }
         }
         
+        // Always send cookies with same-origin requests
+        options.credentials = 'same-origin';
         const response = await fetch(url, options);
         
         if (!response.ok) {

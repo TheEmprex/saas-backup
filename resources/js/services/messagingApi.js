@@ -1,12 +1,20 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: '/api/marketplace',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   }
 });
+
+// Attach Bearer token if available (Wave auth API)
+try {
+  const API_TOKEN = localStorage.getItem('api_token')
+  if (API_TOKEN) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${API_TOKEN}`
+  }
+} catch (_) {}
 
 // Add CSRF token to requests
 api.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

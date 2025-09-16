@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Marketplace API Test</title>
+    <x-favicon />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>

@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('messages.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+<form action="{{ route('messages.send') }}" method="POST" enctype="multipart/form-data" class="p-6">
                 @csrf
                 
                 @if(isset($job) && $job)
@@ -47,7 +47,7 @@
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">To</label>
                     @if(isset($user))
-                        <input type="hidden" name="conversation_id" value="{{ $user->id }}">
+<input type="hidden" name="recipient_id" value="{{ $user->id }}">
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                             <div class="flex items-center">
                                 <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
@@ -60,7 +60,7 @@
                             </div>
                         </div>
                     @else
-                        <select name="conversation_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+<select name="recipient_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                             <option value="">Select a user...</option>
                             @foreach($users as $availableUser)
                                 <option value="{{ $availableUser->id }}">
@@ -119,12 +119,12 @@
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-3">Attachment (Optional)</label>
                     <div class="relative">
-                        <input type="file" name="attachment" id="attachment" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif">
+<input type="file" name="files[]" id="attachment" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" multiple>
                         <label for="attachment" class="flex items-center justify-center w-full px-4 py-3 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
                             <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
                             </svg>
-                            <span class="text-gray-500" id="attachment-label">Choose a file or drag it here</span>
+<span class="text-gray-500" id="attachment-label">Choose file(s) or drag them here</span>
                         </label>
                     </div>
                     <p class="text-xs text-gray-500 mt-2">Max file size: 10MB. Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG, GIF</p>
@@ -150,15 +150,15 @@
 <script>
 // File attachment handling
 document.getElementById('attachment').addEventListener('change', function(e) {
-    const file = e.target.files[0];
+    const files = Array.from(e.target.files || []);
     const label = document.getElementById('attachment-label');
     
-    if (file) {
-        label.textContent = file.name;
+    if (files.length > 0) {
+        label.textContent = files.length === 1 ? files[0].name : `${files.length} files selected`;
         label.parentElement.classList.add('border-blue-400', 'bg-blue-50');
         label.classList.add('text-blue-600');
     } else {
-        label.textContent = 'Choose a file or drag it here';
+        label.textContent = 'Choose file(s) or drag them here';
         label.parentElement.classList.remove('border-blue-400', 'bg-blue-50');
         label.classList.remove('text-blue-600');
     }

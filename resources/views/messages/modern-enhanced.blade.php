@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Messages - {{ config('app.name', 'Laravel') }}</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <x-favicon />
     
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    @vite(['resources/themes/anchor/assets/css/app.css', 'resources/js/app.js'])
     
     <!-- Custom Styles -->
     <style>
@@ -181,7 +181,7 @@
                     <div 
                         @click="selectConversation(conversation)"
                         :class="{
-                            'bg-blue-50 border-r-2 border-blue-500': selectedConversation?.id === conversation.id,
+                            'bg-primary-50 border-r-2 border-primary-500': selectedConversation?.id === conversation.id,
                             'hover:bg-gray-50': selectedConversation?.id !== conversation.id
                         }"
                         class="p-4 border-b border-gray-100 cursor-pointer transition-colors">
@@ -208,7 +208,7 @@
                                     <div class="flex items-center space-x-1">
                                         <!-- Unread count -->
                                         <template x-if="conversation.unread_count > 0">
-                                            <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-blue-500 rounded-full" 
+                                            <span class="inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-primary-500 rounded-full" 
                                                   x-text="conversation.unread_count"></span>
                                         </template>
                                         
@@ -218,7 +218,7 @@
                                                 <svg x-show="conversation.last_message?.status === 'sent'" class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                                 </svg>
-                                                <svg x-show="conversation.last_message?.status === 'delivered'" class="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg x-show="conversation.last_message?.status === 'delivered'" class="w-4 h-4 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                                 </svg>
                                                 <svg x-show="conversation.last_message?.status === 'read'" class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -332,7 +332,7 @@
                                 <button 
                                     @click="loadMoreMessages()"
                                     :disabled="loadingMessages"
-                                    class="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50">
+                                    class="text-sm text-primary-600 hover:text-primary-800 disabled:opacity-50">
                                     <span x-show="!loadingMessages">Load older messages</span>
                                     <span x-show="loadingMessages">Loading...</span>
                                 </button>
@@ -356,7 +356,7 @@
                                     
                                     <div 
                                         :class="{
-                                            'bg-blue-500 text-white': message.is_mine,
+                                            'bg-primary-500 text-white': message.is_mine,
                                             'bg-white text-gray-900 border border-gray-200': !message.is_mine
                                         }"
                                         class="px-4 py-2 rounded-2xl shadow-sm">
@@ -388,9 +388,28 @@
                                             </div>
                                         </template>
                                         
-                                        <!-- Text content -->
-                                        <template x-if="message.content">
-                                            <p class="text-sm" x-html="formatMessageContent(message.content)"></p>
+                                        <!-- Inline editing: text content or editor -->
+                                        <template x-if="editingMessageId !== message.id">
+                                            <div>
+                                                <template x-if="message.content">
+                                                    <p class="text-sm" x-html="formatMessageContent(message.content)"></p>
+                                                </template>
+                                                <template x-if="message.is_mine">
+                                                    <div class="mt-1 flex items-center gap-2">
+                                                        <button @click="startEdit(message)" class="text-xs opacity-75 hover:opacity-100 underline">Edit</button>
+                                                        <span x-show="message.edited_at" class="text-[10px] opacity-60">(edited)</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template x-if="editingMessageId === message.id">
+                                            <div class="mt-1">
+                                                <textarea x-model="editContent" rows="2" class="w-full text-sm px-2 py-1 rounded border focus:ring-2 focus:ring-blue-500"></textarea>
+                                                <div class="mt-1 flex items-center gap-2">
+                                                    <button @click="saveEdit(message)" class="text-xs bg-blue-600 text-white px-2 py-1 rounded">Save</button>
+                                                    <button @click="cancelEdit()" class="text-xs text-gray-700 px-2 py-1">Cancel</button>
+                                                </div>
+                                            </div>
                                         </template>
                                         
                                         <!-- Message reactions -->
@@ -465,7 +484,7 @@
                     <div class="p-4 bg-white border-t border-gray-200">
                         <!-- Reply indicator -->
                         <template x-if="replyingTo">
-                            <div class="mb-3 p-2 bg-gray-100 rounded-lg border-l-4 border-blue-500">
+                            <div class="mb-3 p-2 bg-gray-100 rounded-lg border-l-4 border-primary-500">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-xs text-gray-600">Replying to <span x-text="replyingTo.sender_name"></span></p>
@@ -480,24 +499,36 @@
                             </div>
                         </template>
                         
-                        <!-- File upload preview -->
-                        <template x-if="selectedFile">
-                            <div class="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        <div>
-                                            <p class="text-sm font-medium" x-text="selectedFile.name"></p>
-                                            <p class="text-xs text-gray-600" x-text="formatFileSize(selectedFile.size)"></p>
+                            <!-- Files upload preview (multiple) -->
+                        <template x-if="selectedFiles && selectedFiles.length">
+                            <div class="mb-3 p-2 bg-primary-50 rounded-lg border border-primary-200">
+                                <div class="space-y-2">
+                                    <template x-for="(file, idx) in selectedFiles" :key="idx">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-2 min-w-0">
+                                                <template x-if="file.type && file.type.startsWith('image/')">
+                                                    <img :src="URL.createObjectURL(file)" alt="preview" class="w-10 h-10 rounded object-cover" />
+                                                </template>
+                                                <template x-if="!file.type || !file.type.startsWith('image/')">
+                                                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                </template>
+                                                <div class="min-w-0">
+                                                    <p class="text-sm font-medium truncate" x-text="file.name"></p>
+                                                    <p class="text-xs text-gray-600" x-text="formatFileSize(file.size)"></p>
+                                                </div>
+                                            </div>
+                                            <button @click="selectedFiles.splice(idx,1)" class="p-1 hover:bg-primary-100 rounded" title="Remove">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
                                         </div>
+                                    </template>
+                                    <div class="flex justify-end">
+                                        <button @click="clearSelectedFile()" class="text-xs text-primary-700 hover:underline">Clear all</button>
                                     </div>
-                                    <button @click="clearSelectedFile()" class="p-1 hover:bg-blue-100 rounded">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
                                 </div>
                             </div>
                         </template>
@@ -541,7 +572,7 @@
                                 @click="sendMessage()"
                                 :disabled="!canSendMessage"
                                 :class="{
-                                    'bg-blue-500 hover:bg-blue-600 text-white': canSendMessage,
+                                    'bg-primary-500 hover:bg-primary-600 text-white': canSendMessage,
                                     'bg-gray-300 text-gray-500 cursor-not-allowed': !canSendMessage
                                 }"
                                 class="p-3 rounded-full transition-colors">
@@ -646,7 +677,7 @@
                 searchedUsers: [],
                 showNewConversation: false,
                 showEmojiPicker: false,
-                selectedFile: null,
+                selectedFiles: [],
                 replyingTo: null,
                 hoveredMessage: null,
                 
@@ -675,14 +706,19 @@
                 },
                 
                 get canSendMessage() {
-                    return (this.messageInput.trim() || this.selectedFile) && !this.sendingMessage;
+                    return (this.messageInput.trim() || (this.selectedFiles && this.selectedFiles.length > 0)) && !this.sendingMessage;
                 },
                 
                 // Initialization
-                init() {
+                async init() {
                     console.log('🚀 Messaging app initialized');
                     this.setupEventListeners();
                     this.startOnlineStatusUpdates();
+                    
+                    // If no conversations were preloaded by the server, fetch them now
+                    if (!this.conversations || this.conversations.length === 0) {
+                        await this.loadConversations();
+                    }
                     
                     // Auto-select first conversation if available
                     if (this.conversations.length > 0) {
@@ -698,6 +734,17 @@
                 },
                 
                 // Conversation management
+                async loadConversations() {
+                    try {
+                        const { data } = await window.apiFetch('/messages/conversations');
+                        const list = data?.conversations || data?.data || data || [];
+                        this.conversations = Array.isArray(list) ? list : [];
+                    } catch (e) {
+                        console.error('Failed to load conversations:', e);
+                        this.conversations = [];
+                    }
+                },
+                
                 async selectConversation(conversation) {
                     this.selectedConversation = conversation;
                     this.messages = [];
@@ -715,22 +762,14 @@
                     this.loadingMessages = true;
                     
                     try {
-                        const response = await fetch(`/messages/conversations/${this.selectedConversation.id}/messages?page=${this.currentPage}`, {
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            }
-                        });
-                        
-                        const data = await response.json();
-                        
+                        const { data } = await window.apiFetch(`/messages/conversations/${this.selectedConversation.id}/messages?page=${this.currentPage}`);
+                        const list = data?.messages || data?.data || [];
                         if (this.currentPage === 1) {
-                            this.messages = data.messages || [];
+                            this.messages = list;
                         } else {
-                            this.messages = [...(data.messages || []), ...this.messages];
+                            this.messages = [...list, ...this.messages];
                         }
-                        
-                        this.hasMoreMessages = data.pagination?.has_more || false;
+                        this.hasMoreMessages = (data?.pagination && typeof data.pagination.has_more !== 'undefined') ? !!data.pagination.has_more : (list.length > 0);
                     } catch (error) {
                         console.error('Failed to load messages:', error);
                     } finally {
@@ -758,11 +797,11 @@
                     
                     this.sendingMessage = true;
                     const content = this.messageInput.trim();
-                    const file = this.selectedFile;
+                    const files = this.selectedFiles;
                     
                     // Clear input immediately for better UX
                     this.messageInput = '';
-                    this.selectedFile = null;
+                    this.selectedFiles = [];
                     this.replyingTo = null;
                     this.stopTyping();
                     
@@ -774,7 +813,7 @@
                         sender_name: 'You',
                         created_at: new Date().toISOString(),
                         status: 'sending',
-                        message_type: file ? this.getFileType(file) : 'text'
+                        message_type: (files && files.length) ? this.getFileType(files[0]) : 'text'
                     };
                     
                     this.messages.push(optimisticMessage);
@@ -784,28 +823,20 @@
                         const formData = new FormData();
                         formData.append('conversation_id', this.selectedConversation.id);
                         if (content) formData.append('content', content);
-                        if (file) formData.append('file', file);
+                        if (files && files.length) {
+                            for (const f of files) formData.append('files[]', f);
+                        }
                         if (this.replyingTo) formData.append('reply_to_id', this.replyingTo.id);
                         
-                        const response = await fetch('/messages/send', {
+                        const { data } = await window.apiFetch('/messages/send', {
                             method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                'Accept': 'application/json'
-                            },
                             body: formData
                         });
                         
-                        const data = await response.json();
-                        
-                        if (response.ok) {
-                            // Replace optimistic message with real one
-                            const index = this.messages.findIndex(m => m.id === optimisticMessage.id);
-                            if (index !== -1) {
-                                this.messages[index] = data.message;
-                            }
-                        } else {
-                            throw new Error(data.message || 'Failed to send message');
+                        const created = data?.message || data;
+                        const index = this.messages.findIndex(m => m.id === optimisticMessage.id);
+                        if (index !== -1) {
+                            this.messages[index] = created;
                         }
                     } catch (error) {
                         console.error('Failed to send message:', error);
@@ -841,16 +872,12 @@
                     if (!this.selectedConversation) return;
                     
                     try {
-                        await fetch('/messages/typing', {
+                        await window.apiFetch('/messages/typing', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
+                            body: {
                                 conversation_id: this.selectedConversation.id,
                                 is_typing: true
-                            })
+                            }
                         });
                     } catch (error) {
                         console.error('Failed to update typing status:', error);
@@ -861,16 +888,12 @@
                     if (!this.selectedConversation) return;
                     
                     try {
-                        await fetch('/messages/typing', {
+                        await window.apiFetch('/messages/typing', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
+                            body: {
                                 conversation_id: this.selectedConversation.id,
                                 is_typing: false
-                            })
+                            }
                         });
                     } catch (error) {
                         console.error('Failed to update typing status:', error);
@@ -885,15 +908,8 @@
                     }
                     
                     try {
-                        const response = await fetch(`/messages/search-users?q=${encodeURIComponent(this.userSearchQuery)}`, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        });
-                        
-                        const data = await response.json();
-                        this.searchedUsers = data.users || [];
+                        const { data } = await window.apiFetch(`/messages/search-users?q=${encodeURIComponent(this.userSearchQuery)}`);
+                        this.searchedUsers = data?.users || data?.data || data || [];
                     } catch (error) {
                         console.error('Failed to search users:', error);
                     }
@@ -932,14 +948,14 @@
                 
                 // File handling
                 handleFileSelect(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        this.selectedFile = file;
+                    const files = Array.from(event.target.files || []);
+                    if (files.length) {
+                        this.selectedFiles = files.slice(0, 5); // limit client-side for UX
                     }
                 },
                 
                 clearSelectedFile() {
-                    this.selectedFile = null;
+                    this.selectedFiles = [];
                     this.$refs.fileInput.value = '';
                 },
                 
@@ -951,31 +967,58 @@
                     return 'file';
                 },
                 
+                // Inline editing state
+                editingMessageId: null,
+                editContent: '',
+
                 // Message reactions
                 async toggleReaction(messageId, emoji) {
                     try {
-                        const response = await fetch(`/messages/messages/${messageId}/reaction`, {
+                        const { data } = await window.apiFetch(`/messages/messages/${messageId}/reaction`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({ emoji })
+                            body: { emoji }
                         });
-                        
-                        const data = await response.json();
-                        
-                        if (response.ok) {
-                            const message = this.messages.find(m => m.id === messageId);
-                            if (message) {
-                                message.reactions = data.reactions;
-                            }
+                        const message = this.messages.find(m => m.id === messageId);
+                        if (message && data) {
+                            message.reactions = data.reactions || data;
                         }
                     } catch (error) {
                         console.error('Failed to toggle reaction:', error);
                     }
                 },
                 
+                // Edit handlers
+                startEdit(message) {
+                    this.editingMessageId = message.id;
+                    this.editContent = message.content || '';
+                    this.$nextTick(() => {
+                        const ta = this.$el.querySelector('textarea');
+                        if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+                    });
+                },
+                cancelEdit() {
+                    this.editingMessageId = null;
+                    this.editContent = '';
+                },
+                async saveEdit(message) {
+                    const newContent = (this.editContent || '').trim();
+                    if (!newContent) return;
+                    try {
+                        const { data } = await window.apiFetch(`/messages/messages/${message.id}`, {
+                            method: 'PATCH',
+                            body: { content: newContent }
+                        });
+                        const updated = data?.message || data;
+                        const idx = this.messages.findIndex(m => m.id === message.id);
+                        if (idx !== -1) {
+                            this.messages[idx] = { ...this.messages[idx], ...updated, edited_at: updated.edited_at || new Date().toISOString(), is_mine: true };
+                        }
+                        this.cancelEdit();
+                    } catch (e) {
+                        console.error('Failed to update message', e);
+                    }
+                },
+
                 // Utility functions
                 formatTime(timestamp) {
                     const date = new Date(timestamp);
@@ -1013,7 +1056,7 @@
                     // Basic formatting - you can extend this
                     return content
                         .replace(/\n/g, '<br>')
-                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-500 underline">$1</a>');
+                        .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-primary-500 underline">$1</a>');
                 },
                 
                 getLastMessagePreview(conversation) {
@@ -1063,22 +1106,10 @@
                 },
                 
                 async markConversationAsRead(conversationId) {
-                    try {
-                        // Mark conversation as read in UI immediately
-                        const conversation = this.conversations.find(c => c.id === conversationId);
-                        if (conversation) {
-                            conversation.unread_count = 0;
-                        }
-                        
-                        // Update server
-                        await fetch(`/messages/conversations/${conversationId}/mark-read`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        });
-                    } catch (error) {
-                        console.error('Failed to mark conversation as read:', error);
+                    // Server marks messages as read in getMessages(); just update UI count here
+                    const conversation = this.conversations.find(c => c.id === conversationId);
+                    if (conversation) {
+                        conversation.unread_count = 0;
                     }
                 },
                 
@@ -1095,15 +1126,11 @@
                 
                 async updateOnlineStatus() {
                     try {
-                        await fetch('/messages/status', {
+                        await window.apiFetch('/messages/status', {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
+                            body: {
                                 is_online: true
-                            })
+                            }
                         });
                     } catch (error) {
                         console.error('Failed to update online status:', error);

@@ -99,7 +99,7 @@
                 </div>
                 <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
                     @forelse($conversations as $conversation)
-                    <a href="{{ route('messages.web.show', $conversation->id) }}" 
+<a href="{{ route('messages.conversation', $conversation->id) }}"
                        class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <div class="flex items-center space-x-3">
                             <div class="relative">

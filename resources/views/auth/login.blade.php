@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - OnlyVerified | Premium Talent Platform</title>
+<title>Login - OnlyVerified | Premium Talent Platform</title>
+    <x-favicon />
     @vite(['resources/themes/anchor/assets/css/app.css', 'resources/themes/anchor/assets/js/app.js'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +12,15 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .gradient-bg { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            min-height: 100vh;
+        }
+        /* Debug styles */
+        @media (min-width: 768px) {
+            .gradient-bg {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                display: flex !important;
+            }
         }
         .glass-effect {
             background: rgba(255, 255, 255, 0.1);
@@ -43,18 +52,45 @@
             transform: translateY(-2px) !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
         }
+        
+        /* Remove any unwanted borders or underlines on buttons */
+        a.no-underline, a.no-underline:hover, a.no-underline:focus, a.no-underline:active {
+            text-decoration: none !important;
+        }
+        
+        /* Button styling enhancements */
+        .button-enhanced {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .button-enhanced::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .button-enhanced:hover::before {
+            left: 100%;
+        }
     </style>
 </head>
-<body class="h-full bg-gray-50">
+<body class="h-full bg-gray-50 auth-page">
     <div class="min-h-full flex">
         <!-- Left Panel - Branding -->
-        <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 gradient-bg">
+        <div class="hidden md:flex md:flex-1 md:flex-col md:justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 gradient-bg relative overflow-hidden">
             <div class="mx-auto w-full max-w-sm lg:w-96 text-white">
                 <div class="fade-in">
                     <!-- Logo -->
                     <div class="flex items-center mb-12">
                         <div class="flex items-center">
-                            <img src="{{ asset('images/onlyverified-logo.svg') }}" alt="OnlyVerified" class="h-16 w-auto filter brightness-0 invert">
+                            <img src="{{ asset('images/onlyverified-logo.svg') }}" alt="OnlyVerified" class="h-16 w-auto filter brightness-0 invert" onError="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display:none; color: white; font-size: 24px; font-weight: bold;">OnlyVerified</div>
                         </div>
                         <div class="ml-4">
                             <p class="text-white/80 text-sm">Premium Talent Platform</p>
@@ -109,7 +145,7 @@
         </div>
 
         <!-- Right Panel - Login Form -->
-        <div class="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-28 bg-white">
+        <div class="flex-1 md:flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-28 bg-white">
             <div class="mx-auto w-full max-w-md">
                 <div class="fade-in">
                     <div class="text-center mb-8">
@@ -214,7 +250,7 @@
                         <div class="mt-8">
                             <div class="relative">
                                 <div class="absolute inset-0 flex items-center">
-                                    <div class="w-full border-t border-gray-300" />
+                                    <div class="w-full border-t border-gray-300"></div>
                                 </div>
                                 <div class="relative flex justify-center text-sm">
                                     <span class="px-4 bg-white text-gray-500">New to OnlyVerified?</span>
@@ -223,14 +259,12 @@
 
                             <div class="mt-6">
                                 <a href="{{ route('custom.register') }}" 
-                                   class="w-full inline-block relative py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 hover:border-gray-400 hover:shadow-md transform hover:-translate-y-0.5 group cursor-pointer"
-                                   style="z-index: 10; position: relative; display: block; text-decoration: none; text-align: center;">
-                                    <div class="flex items-center justify-center">
-                                        <svg class="h-5 w-5 text-gray-500 mr-2 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                                        </svg>
-                                        Create your premium account
-                                    </div>
+                                   class="w-full inline-flex items-center justify-center py-4 px-6 border-2 border-gray-300 rounded-xl shadow-lg text-base font-semibold text-gray-800 bg-white hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 group no-underline"
+                                   style="text-decoration: none !important;">
+                                    <svg class="h-5 w-5 text-gray-600 mr-2 group-hover:text-indigo-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                    </svg>
+                                    Create your premium account
                                 </a>
                             </div>
                         </div>

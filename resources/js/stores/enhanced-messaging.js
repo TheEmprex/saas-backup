@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
+// Centralize API base for v1 endpoints under marketplace prefix
+const API_BASE = '/api/marketplace/v1'
+
 export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
   state: () => ({
     // Core data
@@ -21,6 +24,7 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
     // Real-time state
     onlineUsers: new Set(),
     typingUsers: new Map(), // conversationId -> Set of user IDs
+    conversationChannels: new Map(), // conversationId -> Echo channel
     
     // Loading states
     loading: {
@@ -203,7 +207,7 @@ export const useEnhancedMessagingStore = defineStore('enhanced-messaging', {
       return this.apiCall(async () => {
         this.loading.conversations = true
         
-const response = await axios.get('/api/conversations')
+const response = await axios.get(`${API_BASE}/conversations`)
         const conversations = (response.data.data?.conversations) || (response.data.conversations) || []
         
         // Store conversations in Map for better performance
@@ -229,27 +233,29 @@ const response = await axios.get('/api/conversations')
       return this.apiCall(async () => {
         this.loading.messages = true
         
-        const response = await axios.get(`/api/conversations/${conversationId}/messages`, {
+const response = await axios.get(`${API_BASE}/conversations/${conversationId}/messages`, {
           params: { page, per_page: 50 }
         })
         
-const apiData = response.data.data || response.data
+        const apiData = response.data.data || response.data
         const { messages, pagination } = apiData
+        
+        const normalized = (messages || []).map((m) => this.normalizeMessage(m))
         
         // Store pagination info
         this.pagination.set(conversationId, pagination)
         
         if (page === 1) {
           // Replace messages
-          this.messages.set(conversationId, messages)
+          this.messages.set(conversationId, normalized)
         } else {
           // Prepend older messages
           const existing = this.messages.get(conversationId) || []
-          this.messages.set(conversationId, [...messages, ...existing])
+          this.messages.set(conversationId, [...normalized, ...existing])
         }
         
         // Cache individual messages
-        messages.forEach(message => {
+        normalized.forEach(message => {
           this.messageCache.set(message.id, message)
           
           // Cache sender data
@@ -258,7 +264,7 @@ const apiData = response.data.data || response.data
           }
         })
         
-        return messages
+        return normalized
       }, `messages-${conversationId}`).finally(() => {
         this.loading.messages = false
       })
@@ -268,18 +274,48 @@ const apiData = response.data.data || response.data
       return this.apiCall(async () => {
         this.loading.sending = true
         
-        // Create optimistic message
+        // Determine file and type
+        let fileObj = null
+        if (messageData.file) {
+          fileObj = messageData.file
+        } else if (Array.isArray(messageData.files) && messageData.files.length > 0) {
+          const first = messageData.files[0]
+          fileObj = first.file || first
+        }
+        
+        let derivedType = messageData.type || 'text'
+        if (!derivedType || derivedType === 'mixed') {
+          if (fileObj && typeof fileObj.type === 'string') {
+            if (fileObj.type.startsWith('image/')) derivedType = 'image'
+            else if (fileObj.type.startsWith('audio/')) derivedType = 'voice'
+            else derivedType = 'file'
+          }
+        }
+        
+        // Create optimistic message in UI-friendly shape
         const optimisticMessage = {
           id: `temp-${Date.now()}`,
           conversation_id: conversationId,
-          content: messageData.content,
-          message_type: messageData.type || 'text',
+          content: messageData.content || '',
+          type: derivedType,
           sender_id: window.authUser?.id,
-          sender: window.authUser,
+          sender: window.authUser || null,
           created_at: new Date().toISOString(),
           is_mine: true,
           sending: true,
-          ...messageData
+          status: 'sending',
+          reply_to_id: messageData.reply_to_id || null,
+        }
+        
+        // Best-effort preview for images
+        if (derivedType === 'image' && Array.isArray(messageData.files) && messageData.files[0]?.preview) {
+          optimisticMessage.file_url = messageData.files[0].preview
+          optimisticMessage.file_name = messageData.files[0].name
+          optimisticMessage.file_size = messageData.files[0].size
+        } else if (derivedType === 'file' && Array.isArray(messageData.files) && messageData.files[0]) {
+          const f = messageData.files[0]
+          optimisticMessage.file_name = f.name
+          optimisticMessage.file_size = f.size
         }
         
         // Add to local state immediately
@@ -289,18 +325,18 @@ const apiData = response.data.data || response.data
           // Prepare form data for file uploads
           const formData = new FormData()
           formData.append('content', messageData.content || '')
-          formData.append('message_type', messageData.type || 'text')
+          formData.append('type', derivedType)
           
-          if (messageData.file) {
-            formData.append('file', messageData.file)
+          if (fileObj) {
+            formData.append('file', fileObj)
           }
           
           if (messageData.reply_to_id) {
             formData.append('reply_to_id', messageData.reply_to_id)
           }
           
-          const response = await axios.post(
-            `/api/conversations/${conversationId}/messages`,
+const response = await axios.post(
+            `${API_BASE}/conversations/${conversationId}/messages`,
             formData,
             {
               headers: {
@@ -309,15 +345,16 @@ const apiData = response.data.data || response.data
             }
           )
           
-const serverMessage = response.data.message || response.data.data || response.data
+          const serverMessage = response.data.message || response.data.data || response.data
+          const normalized = this.normalizeMessage(serverMessage)
           
           // Replace optimistic message with server response
-          this.replaceMessage(conversationId, optimisticMessage.id, serverMessage)
+          this.replaceMessage(conversationId, optimisticMessage.id, normalized)
           
           // Update conversation last message
-          this.updateConversationLastMessage(conversationId, serverMessage)
+          this.updateConversationLastMessage(conversationId, normalized)
           
-          return serverMessage
+          return normalized
           
         } catch (error) {
           // Remove optimistic message on error
@@ -331,7 +368,7 @@ const serverMessage = response.data.message || response.data.data || response.da
 
     async markAsRead(conversationId) {
       return this.apiCall(async () => {
-        await axios.post(`/api/conversations/${conversationId}/read`)
+await axios.patch(`${API_BASE}/conversations/${conversationId}/messages/read`, { mark_all: true })
         
         // Update local state
         const conversation = this.conversations.get(conversationId)
@@ -350,6 +387,21 @@ const serverMessage = response.data.message || response.data.data || response.da
       }, `read-${conversationId}`)
     },
 
+    async markMessagesAsRead(conversationId, messageIds = []) {
+      if (!Array.isArray(messageIds) || messageIds.length === 0) return
+      return this.apiCall(async () => {
+await axios.patch(`${API_BASE}/conversations/${conversationId}/messages/read`, { message_ids: messageIds })
+        // Update local state for specific messages
+        const messages = this.messages.get(conversationId) || []
+        messages.forEach(m => {
+          if (messageIds.includes(m.id)) {
+            m.is_read_by_me = true
+          }
+        })
+        this.messages.set(conversationId, messages)
+      }, `read-some-${conversationId}`)
+    },
+
     // Message management helpers
     addMessageToConversation(conversationId, message) {
       const messages = this.messages.get(conversationId) || []
@@ -358,6 +410,29 @@ const serverMessage = response.data.message || response.data.data || response.da
       
       // Cache the message
       this.messageCache.set(message.id, message)
+    },
+
+    normalizeMessage(serverMessage) {
+      // Accept both v1-shaped and legacy-shaped messages and normalize for UI
+      const m = { ...serverMessage }
+      
+      // Flatten file info
+      if (serverMessage.file && typeof serverMessage.file === 'object') {
+        m.file_url = serverMessage.file.path
+        m.file_name = serverMessage.file.name
+        m.file_size = serverMessage.file.size
+        m.file_type = serverMessage.file.type
+      }
+      
+      // Ensure sender_id for UI checks
+      if (!m.sender_id && serverMessage.sender && serverMessage.sender.id) {
+        m.sender_id = serverMessage.sender.id
+      }
+      
+      // Keep reactions as-is if present
+      m.reactions = serverMessage.reactions || m.reactions || []
+      
+      return m
     },
     
     replaceMessage(conversationId, oldMessageId, newMessage) {
@@ -392,12 +467,45 @@ const serverMessage = response.data.message || response.data.data || response.da
       }
     },
 
+    // Add or update a conversation in local state
+    upsertConversation(conversation) {
+      if (!conversation || !conversation.id) return
+      this.conversations.set(conversation.id, {
+        ...conversation,
+        last_fetched: Date.now(),
+      })
+      if (conversation.other_user) {
+        this.users.set(conversation.other_user.id, conversation.other_user)
+      }
+    },
+
+    async editMessage(messageId, newContent) {
+      return this.apiCall(async () => {
+const response = await axios.patch(`${API_BASE}/messages/${messageId}`, { content: newContent })
+        const serverMessage = response.data.message || response.data.data || response.data
+        const normalized = this.normalizeMessage(serverMessage)
+
+        // Update cache
+        this.messageCache.set(normalized.id, normalized)
+        // Update in conversation messages
+        for (const [cid, msgs] of this.messages.entries()) {
+          const idx = (msgs || []).findIndex(m => m.id === normalized.id)
+          if (idx !== -1) {
+            msgs.splice(idx, 1, normalized)
+            this.messages.set(cid, msgs)
+            break
+          }
+        }
+        return normalized
+      }, `edit-${messageId}`)
+    },
+
     // Real-time methods
 initializeRealTime() {
       if (window.Echo) {
         window.Echo.private(`user.${window.authUser?.id}`)
           .listen('.message.sent', (event) => {
-            this.handleNewMessage(event.message)
+            this.handleNewMessage(this.normalizeMessage(event.message))
           })
           .listen('.message.read', (event) => {
             this.handleMessageRead(event)
@@ -436,6 +544,60 @@ handleMessageRead(event) {
         this.messageCache.set(event.message_id, cachedMessage)
       }
     },
+
+    connectToConversationChannel(conversationId) {
+      if (!window.Echo || !conversationId) return
+      if (this.conversationChannels.has(conversationId)) return
+
+      const channelName = `conversation.${conversationId}`
+      const channel = window.Echo.private(channelName)
+
+      // Typing whispers
+      channel.listenForWhisper('typing', (event) => {
+        if (!event?.user?.id) return
+        if (event.user.id === window.authUser?.id) return
+        this.handleTypingStatus(conversationId, event.user, true)
+        setTimeout(() => {
+          this.handleTypingStatus(conversationId, event.user, false)
+        }, 3000)
+      })
+
+      channel.listenForWhisper('stop-typing', (event) => {
+        if (!event?.user?.id) return
+        this.handleTypingStatus(conversationId, event.user, false)
+      })
+
+      // Optional: read receipts on channel
+      channel.listen('.message.read', (event) => {
+        this.handleMessageRead(event)
+      })
+
+      this.conversationChannels.set(conversationId, channel)
+    },
+
+    leaveConversationChannel(conversationId) {
+      if (!conversationId) return
+      const channel = this.conversationChannels.get(conversationId)
+      if (channel && window.Echo) {
+        window.Echo.leave(`conversation.${conversationId}`)
+      }
+      this.conversationChannels.delete(conversationId)
+    },
+
+    sendTypingStatus(conversationId, isTyping) {
+      const hasChannel = this.conversationChannels.has(conversationId)
+      if (!hasChannel) {
+        this.connectToConversationChannel(conversationId)
+      }
+      const channel = this.conversationChannels.get(conversationId)
+      if (!channel) return
+      const payload = { user: window.authUser, conversationId }
+      if (isTyping) {
+        channel.whisper('typing', payload)
+      } else {
+        channel.whisper('stop-typing', payload)
+      }
+    },
     
     handleUserOnlineStatus(user, isOnline) {
       if (isOnline) {
@@ -465,7 +627,7 @@ handleMessageRead(event) {
     // Utility methods
     async fetchOnlineUsers() {
       return this.apiCall(async () => {
-const response = await axios.get('/api/users/online')
+const response = await axios.get('/api/marketplace/users/online')
         const users = response.data.online_users || []
         
         users.forEach(user => {
@@ -526,7 +688,7 @@ const response = await axios.get('/api/users/online')
     
     async attemptReconnection() {
       try {
-        await axios.get('/api/health')
+await axios.get(`${API_BASE}/system/health`)
         this.isConnected = true
         this.reconnectAttempts = 0
         this.clearError('connection')
@@ -538,6 +700,11 @@ const response = await axios.get('/api/users/online')
     // UI state management
     setActiveConversation(conversationId) {
       this.activeConversationId = conversationId
+      
+      // Join real-time channel for this conversation
+      if (conversationId) {
+        this.connectToConversationChannel(conversationId)
+      }
       
       // Mark as read when opened
       if (conversationId) {
@@ -565,12 +732,63 @@ const response = await axios.get('/api/users/online')
       this.filters = { ...this.filters, ...filters }
     },
 
+    // Reaction and deletion helpers
+    async addReaction(messageId, emoji) {
+      return this.apiCall(async () => {
+const response = await axios.post(`${API_BASE}/messages/${messageId}/reactions`, { emoji })
+        const reactions = response.data.reactions || response.data.data?.reactions || []
+        this.updateMessageReactions(messageId, reactions)
+        return reactions
+      }, `reaction-${messageId}`)
+    },
+
+    async deleteMessage(messageId) {
+      return this.apiCall(async () => {
+await axios.delete(`${API_BASE}/messages/${messageId}`)
+        // Find the conversation containing this message
+        let convId = null
+        for (const [cid, msgs] of this.messages.entries()) {
+          if ((msgs || []).some(m => m.id === messageId)) {
+            convId = cid
+            break
+          }
+        }
+        if (convId) {
+          this.removeMessage(convId, messageId)
+        }
+      }, `delete-${messageId}`)
+    },
+
+    updateMessageReactions(messageId, reactions) {
+      // Update cache
+      const cached = this.messageCache.get(messageId)
+      if (cached) {
+        cached.reactions = reactions
+        this.messageCache.set(messageId, cached)
+      }
+      // Update in conversation lists
+      for (const [cid, msgs] of this.messages.entries()) {
+        const idx = (msgs || []).findIndex(m => m.id === messageId)
+        if (idx !== -1) {
+          const updated = { ...msgs[idx], reactions }
+          msgs.splice(idx, 1, updated)
+          this.messages.set(cid, msgs)
+          break
+        }
+      }
+    },
+
     // Cleanup
     cleanup() {
       // Close WebSocket connections
       if (window.Echo) {
         window.Echo.leaveChannel(`user.${window.authUser?.id}`)
+        // Leave all conversation channels
+        for (const cid of this.conversationChannels.keys()) {
+          window.Echo.leave(`conversation.${cid}`)
+        }
       }
+      this.conversationChannels.clear()
       
       // Clear sensitive data
       this.conversations.clear()

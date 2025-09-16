@@ -61,7 +61,7 @@
     </div>
 
     <!-- Main Input Area -->
-    <div class="flex items-end space-x-3 p-4">
+<div class="flex items-end space-x-3 p-4" @dragover.prevent @drop.prevent="onDropFiles">
       <!-- Attachment button -->
       <div class="flex-shrink-0">
         <button
@@ -332,6 +332,11 @@ const sendMessage = async () => {
   attachedFiles.value = []
   clearReply()
   adjustTextareaHeight()
+
+  // Clear draft
+  try {
+    localStorage.removeItem(`ov-draft-${props.conversationId}`)
+  } catch (e) {}
   
   // Stop typing indicator
   if (isTyping.value) {
@@ -513,8 +518,37 @@ const cleanupRecording = () => {
 
 // Lifecycle
 onMounted(() => {
+  // Restore draft per conversation
+  const draftKey = `ov-draft-${props.conversationId}`
+  const existing = localStorage.getItem(draftKey)
+  if (existing) {
+    messageText.value = existing
+    adjustTextareaHeight()
+  }
+
+  // Persist draft on input
+  const saveDraft = () => {
+    try {
+      if (messageText.value?.trim()) {
+        localStorage.setItem(draftKey, messageText.value)
+      } else {
+        localStorage.removeItem(draftKey)
+      }
+    } catch (e) {}
+  }
+  // Save on input and every 1s debounced
+  const observer = new MutationObserver(saveDraft)
+  observer.observe(messageTextarea.value, { characterData: true, subtree: true, childList: true })
+
+  // Save also on unload
+  window.addEventListener('beforeunload', saveDraft)
+
   // Focus textarea
   messageTextarea.value?.focus()
+
+  // Store in ref for cleanup
+  messageTextarea.value._ovDraftObserver = observer
+  messageTextarea.value._ovDraftKey = draftKey
 })
 
 onUnmounted(() => {
@@ -533,6 +567,12 @@ onUnmounted(() => {
       URL.revokeObjectURL(file.preview)
     }
   })
+
+  // Disconnect draft observer
+  const ta = messageTextarea.value
+  if (ta && ta._ovDraftObserver) {
+    ta._ovDraftObserver.disconnect()
+  }
 })
 
 // Custom directive for click outside
@@ -547,6 +587,13 @@ const vClickOutside = {
   },
   unmounted(el) {
     document.removeEventListener('click', el._clickOutsideHandler)
+  }
+}
+// Handle drop into input area
+const onDropFiles = async (event) => {
+  const files = Array.from(event.dataTransfer?.files || [])
+  for (const f of files) {
+    await addFileToAttachments(f)
   }
 }
 </script>

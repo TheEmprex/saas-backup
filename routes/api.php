@@ -90,6 +90,15 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'marketplace'], function (
         Route::get('system/health', [\App\Http\Controllers\Api\V1\SystemController::class, 'health']);
         Route::get('system/metrics', [\App\Http\Controllers\Api\V1\SystemController::class, 'metrics']);
         Route::get('system/logs', [\App\Http\Controllers\Api\V1\SystemController::class, 'logs']);
+
+        // Web Push Subscriptions
+        Route::post('webpush/subscriptions', [\App\Http\Controllers\Api\V1\WebPushSubscriptionController::class, 'store']);
+        Route::delete('webpush/subscriptions', [\App\Http\Controllers\Api\V1\WebPushSubscriptionController::class, 'destroy']);
+        Route::post('webpush/test', [\App\Http\Controllers\Api\V1\WebPushSubscriptionController::class, 'test']);
+
+        // Notification preferences
+        Route::get('notifications/preferences', [\App\Http\Controllers\Api\V1\NotificationPreferencesController::class, 'show']);
+        Route::put('notifications/preferences', [\App\Http\Controllers\Api\V1\NotificationPreferencesController::class, 'update']);
     });
     
     // Legacy routes (for backward compatibility)
@@ -114,7 +123,10 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'marketplace'], function (
     Route::get('files/{conversationId}/{filename}', [FileUploadController::class, 'getFile']);
     Route::delete('files/delete', [FileUploadController::class, 'deleteFile']);
     
-    // Message folder routes - consolidated
+// Online users for messaging store
+Route::middleware('auth:api')->get('users/online', [\App\Http\Controllers\Api\V1\UserController::class, 'getOnlineUsers']);
+
+// Message folder routes - consolidated
     Route::prefix('message-folders')->group(function () {
         Route::get('/', [MessageFolderController::class, 'apiIndex']);
         Route::post('/', [MessageFolderController::class, 'apiStore']);
@@ -123,6 +135,9 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'marketplace'], function (
         Route::patch('/{folder}', [MessageFolderController::class, 'update']);
         Route::delete('/{folder}', [MessageFolderController::class, 'apiDestroy']);
         Route::get('/{folder}/messages', [MessageFolderController::class, 'messages']);
+        Route::get('/{folder}/conversations', [MessageFolderController::class, 'conversations']);
+        Route::post('/{folder}/conversations', [MessageFolderController::class, 'addConversation']);
+        Route::delete('/{folder}/conversations/{conversationId}', [MessageFolderController::class, 'removeConversation']);
         Route::post('/{folder}/move', [MessageFolderController::class, 'moveMessages']);
         Route::post('/reorder', [MessageFolderController::class, 'reorder']);
     });

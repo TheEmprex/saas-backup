@@ -142,7 +142,8 @@ class User extends WaveUser implements MustVerifyEmail
         'user_type_locked_at' => 'datetime',
         'availability_hours' => 'array',
         'available_for_work' => 'boolean',
-        'hourly_rate' => 'decimal:2',
+'hourly_rate' => 'decimal:2',
+        'dashboard_preferences' => 'array',
     ];
 
     /**
@@ -383,7 +384,15 @@ class User extends WaveUser implements MustVerifyEmail
      */
     public function receivedRatings()
     {
-        return $this->hasMany(Rating::class, 'rated_id');
+        return $this->hasMany(ShiftReview::class, 'chatter_id');
+    }
+
+    /**
+     * Web push subscriptions for this user.
+     */
+    public function webPushSubscriptions()
+    {
+        return $this->hasMany(\App\Models\WebPushSubscription::class);
     }
     
     // Review methods are now provided by the ReviewHelper trait

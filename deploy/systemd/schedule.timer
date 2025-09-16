@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Laravel schedule:run every minute
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+Unit=schedule.service
+
+[Install]
+WantedBy=timers.target

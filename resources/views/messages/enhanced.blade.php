@@ -214,7 +214,7 @@ app.mount('#enhanced-messaging-app')
 <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
 
 <!-- PWA manifest for enhanced mobile experience -->
-<link rel="manifest" href="/messaging-manifest.json">
+<link rel="manifest" href="/build/manifest.webmanifest">
 <meta name="theme-color" content="#3b82f6">
 
 <!-- iOS specific meta tags -->
@@ -273,13 +273,27 @@ window.addEventListener('unhandledrejection', (event) => {
 <script>
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-                console.log('SW registered: ', registration)
+        // Avoid duplicate registration if already registered elsewhere
+        if (navigator.serviceWorker.getRegistration) {
+            navigator.serviceWorker.getRegistration('/build/').then((existing) => {
+                if (!existing) {
+                    navigator.serviceWorker.register('/build/sw.js', { scope: '/build/' })
+                        .then((registration) => {
+                            console.log('SW registered: ', registration)
+                        })
+                        .catch((registrationError) => {
+                            console.log('SW registration failed: ', registrationError)
+                        })
+                } else {
+                    console.log('SW already registered for /build/ scope')
+                }
+            }).catch((err) => {
+                console.warn('SW getRegistration check failed', err)
+                navigator.serviceWorker.register('/build/sw.js', { scope: '/build/' })
             })
-            .catch((registrationError) => {
-                console.log('SW registration failed: ', registrationError)
-            })
+        } else {
+            navigator.serviceWorker.register('/build/sw.js', { scope: '/build/' })
+        }
     })
 }
 </script>

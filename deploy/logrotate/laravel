@@ -1,0 +1,11 @@
+# Rotate Laravel logs
+/var/www/saas/storage/logs/*.log {
+  daily
+  missingok
+  rotate 14
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}
+

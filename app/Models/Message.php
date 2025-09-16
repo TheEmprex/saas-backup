@@ -11,27 +11,62 @@ class Message extends Model
 {
     use SoftDeletes;
 
+    // Support both legacy and new fields to maintain compatibility with v1 API and realtime UI
     protected $fillable = [
         'conversation_id',
+        // sender/user columns
+        'sender_id',
         'user_id',
+        // content/type columns
         'content',
         'type',
+        'message_type',
+        // reply/references
         'reply_to_id',
+        // file columns (both variants)
+        'file_url',
+        'file_name',
+        'file_size',
+        'file_type',
+        'file_path',
+        // state/status
+        'status',
+        'local_id',
+        'is_read',
         'is_edited',
-        'edited_at',
         'is_deleted',
+        'edited_at',
         'deleted_at',
+        'delivered_at',
+        'read_at',
+        'call_duration',
+        'is_system',
+        'thread_id',
+        // reactions/reads/attachments/metadata
+        'reactions',
+        'read_by',
         'attachments',
-        'metadata'
+        'metadata',
     ];
 
     protected $casts = [
+        // flags
         'is_edited' => 'boolean',
         'is_deleted' => 'boolean',
+        'is_read' => 'boolean',
+        'is_system' => 'boolean',
+        // arrays
         'attachments' => 'array',
         'metadata' => 'array',
+        'read_by' => 'array',
+        'reactions' => 'array',
+        // dates
         'edited_at' => 'datetime',
         'deleted_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'read_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $dates = [
@@ -39,6 +74,8 @@ class Message extends Model
         'updated_at',
         'deleted_at',
         'edited_at',
+        'delivered_at',
+        'read_at',
     ];
 
     /**
@@ -50,19 +87,21 @@ class Message extends Model
     }
 
     /**
-     * Get the user who sent this message
+     * Get the user who sent this message (legacy relation)
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        // Prefer sender_id if present, otherwise fall back to user_id
+        $foreignKey = $this->getAttribute('sender_id') !== null ? 'sender_id' : 'user_id';
+        return $this->belongsTo(User::class, $foreignKey);
     }
 
     /**
-     * Get the user who sent this message (alias)
+     * Sender relation (explicit for new UI)
      */
     public function sender(): BelongsTo
     {
-        return $this->user();
+        return $this->belongsTo(User::class, 'sender_id');
     }
 
     /**
@@ -103,6 +142,10 @@ class Message extends Model
     public function markAsReadBy($userId)
     {
         $readBy = $this->read_by ?? [];
+        if (!is_array($readBy)) {
+            $decoded = json_decode((string) $this->read_by, true);
+            $readBy = is_array($decoded) ? $decoded : [];
+        }
         if (!in_array($userId, $readBy)) {
             $readBy[] = $userId;
             $this->update(['read_by' => $readBy]);
@@ -110,10 +153,16 @@ class Message extends Model
         
         // If it's a direct conversation and both participants have read it
         $conversation = $this->conversation;
-        if ($conversation->conversation_type === 'direct') {
-            $participants = [$conversation->user1_id, $conversation->user2_id];
-            if (count(array_intersect($readBy, $participants)) === 2) {
-                $this->update(['is_read' => true]);
+        if ($conversation) {
+            $isDirect = ($conversation->conversation_type ?? null) === 'direct' || ($conversation->type ?? null) === 'private';
+            if ($isDirect) {
+                $participants = array_values(array_filter([
+                    $conversation->user1_id ?? null,
+                    $conversation->user2_id ?? null,
+                ], fn ($v) => !is_null($v)));
+                if (count($participants) >= 2 && count(array_intersect($readBy, $participants)) === 2) {
+                    $this->update(['is_read' => true]);
+                }
             }
         }
     }
@@ -123,20 +172,29 @@ class Message extends Model
      */
     public function isReadBy($userId): bool
     {
-        return in_array($userId, $this->read_by ?? []);
+        $readBy = $this->read_by ?? [];
+        if (!is_array($readBy)) {
+            $decoded = json_decode((string) $this->read_by, true);
+            $readBy = is_array($decoded) ? $decoded : [];
+        }
+        return in_array($userId, $readBy);
     }
 
     /**
-     * Add reaction to message
+     * Add reaction to message (JSON aggregation variant)
      */
     public function addReaction($emoji, $userId)
     {
         $reactions = $this->reactions ?? [];
+        if (!is_array($reactions)) {
+            $decoded = json_decode((string) $this->reactions, true);
+            $reactions = is_array($decoded) ? $decoded : [];
+        }
         
         // Find existing reaction with this emoji
         $reactionIndex = null;
         foreach ($reactions as $index => $reaction) {
-            if ($reaction['emoji'] === $emoji) {
+            if (($reaction['emoji'] ?? null) === $emoji) {
                 $reactionIndex = $index;
                 break;
             }
@@ -180,13 +238,13 @@ class Message extends Model
             return null;
         }
 
-        $bytes = $this->file_size;
+        $bytes = (int) $this->file_size;
         $units = ['B', 'KB', 'MB', 'GB'];
-        
-        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
-            $bytes /= 1024;
+        $i = 0;
+        while ($bytes > 1024 && $i < count($units) - 1) {
+            $bytes = $bytes / 1024;
+            $i++;
         }
-        
         return round($bytes, 2) . ' ' . $units[$i];
     }
 
@@ -195,7 +253,8 @@ class Message extends Model
      */
     public function isFileMessage(): bool
     {
-        return in_array($this->message_type, ['file', 'image', 'video', 'audio']);
+        $type = $this->message_type ?? $this->type;
+        return in_array($type, ['file', 'image', 'video', 'audio']);
     }
 
     /**
@@ -203,7 +262,8 @@ class Message extends Model
      */
     public function getPreviewTextAttribute(): string
     {
-        switch ($this->message_type) {
+        $type = $this->message_type ?? $this->type;
+        switch ($type) {
             case 'image':
                 return '📷 Image';
             case 'video':
@@ -213,14 +273,14 @@ class Message extends Model
             case 'file':
                 return '📎 File';
             case 'call':
-                return '📞 ' . $this->content;
+                return '📞 ' . ($this->content ?? 'Call');
             default:
                 return $this->content ?? '';
         }
     }
     
     /**
-     * Get reactions for this message
+     * Reactions relation (table-backed variant)
      */
     public function reactions(): HasMany
     {
@@ -228,7 +288,7 @@ class Message extends Model
     }
     
     /**
-     * Get mentions for this message
+     * Mentions relation
      */
     public function mentions(): HasMany
     {
@@ -236,7 +296,7 @@ class Message extends Model
     }
     
     /**
-     * Get grouped reactions for this message
+     * Grouped reactions accessor (table-backed)
      */
     public function getGroupedReactionsAttribute()
     {
@@ -244,7 +304,7 @@ class Message extends Model
     }
     
     /**
-     * Toggle reaction on this message
+     * Toggle reaction on this message (table-backed)
      */
     public function toggleReaction($emoji, $userId)
     {
@@ -256,13 +316,12 @@ class Message extends Model
         if ($existing) {
             $existing->delete();
             return 'removed';
-        } else {
-            $this->reactions()->create([
-                'user_id' => $userId,
-                'emoji' => $emoji
-            ]);
-            return 'added';
         }
+        $this->reactions()->create([
+            'user_id' => $userId,
+            'emoji' => $emoji
+        ]);
+        return 'added';
     }
     
     /**
@@ -286,19 +345,18 @@ class Message extends Model
      */
     public function isEncrypted(): bool
     {
-        return $this->conversation->encryption_key !== null;
+        return (bool) ($this->conversation->encryption_key ?? false);
     }
     
     /**
-     * Get decrypted content if encrypted
+     * Get decrypted content if encrypted (placeholder)
      */
     public function getDecryptedContent($userKey = null): string
     {
         if (!$this->isEncrypted()) {
-            return $this->content;
+            return (string) ($this->content ?? '');
         }
-        
         // TODO: Implement encryption/decryption logic
-        return $this->content;
+        return (string) ($this->content ?? '');
     }
 }

@@ -108,9 +108,9 @@
 
 @guest
     <div class="hidden relative z-30 flex-shrink-0 justify-center items-center space-x-3 h-full text-sm md:flex">
-        <x-button href="{{ route('login') }}" tag="a" class="text-sm" color="secondary">Login</x-button>
-        <x-button href="{{ route('register') }}" tag="a" class="text-sm">Sign Up</x-button>
+        <x-button href="{{ route('custom.login') }}" tag="a" class="text-sm" color="secondary">Login</x-button>
+        <x-button href="{{ route('custom.register') }}" tag="a" class="text-sm">Sign Up</x-button>
     </div>
 @else
-    <x-button href="{{ route('login') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0">View Dashboard</x-button>
+    <x-button href="{{ route('dashboard') }}" tag="a" class="text-sm" class="relative z-20 flex-shrink-0">View Dashboard</x-button>
 @endguest

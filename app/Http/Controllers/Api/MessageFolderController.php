@@ -7,10 +7,12 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MessageFolder;
 use App\Models\Message;
+use App\Models\Conversation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class MessageFolderController extends Controller
 {
@@ -209,6 +211,100 @@ class MessageFolderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Folder order updated successfully',
+        ]);
+    }
+
+    /**
+     * List conversation IDs assigned to this folder
+     */
+    public function conversations(MessageFolder $folder): JsonResponse
+    {
+        if ($folder->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $ids = DB::table('conversation_folder')
+            ->where('message_folder_id', $folder->id)
+            ->pluck('conversation_id')
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'conversation_ids' => $ids,
+            ],
+        ]);
+    }
+
+    /**
+     * Add a conversation to a folder
+     */
+    public function addConversation(Request $request, MessageFolder $folder): JsonResponse
+    {
+        if ($folder->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'conversation_id' => 'required|integer|exists:conversations,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $conversation = Conversation::findOrFail((int) $request->conversation_id);
+        $userId = Auth::id();
+        if (!$conversation->hasParticipant($userId)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized conversation',
+            ], 403);
+        }
+
+        DB::table('conversation_folder')->updateOrInsert([
+            'message_folder_id' => $folder->id,
+            'conversation_id' => $conversation->id,
+        ], [
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Conversation added to folder',
+        ]);
+    }
+
+    /**
+     * Remove a conversation from a folder
+     */
+    public function removeConversation(MessageFolder $folder, int $conversationId): JsonResponse
+    {
+        if ($folder->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 403);
+        }
+
+        DB::table('conversation_folder')
+            ->where('message_folder_id', $folder->id)
+            ->where('conversation_id', $conversationId)
+            ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Conversation removed from folder',
         ]);
     }
 }

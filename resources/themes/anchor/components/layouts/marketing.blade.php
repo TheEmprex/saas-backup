@@ -11,7 +11,7 @@
         }
     </script>
 </head>
-<body x-data class="flex flex-col min-h-screen overflow-x-hidden bg-white dark:bg-gray-900 @if($bodyClass ?? false){{ $bodyClass }}@endif" x-cloak>
+<body x-data data-no-page-transitions class="flex flex-col min-h-screen overflow-x-hidden bg-white dark:bg-gray-900 @if($bodyClass ?? false){{ $bodyClass }}@endif" x-cloak>
 
     <x-marketing.elements.header />
 

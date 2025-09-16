@@ -211,6 +211,68 @@ export function usePWA() {
         window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     }
 
+    // Push subscription helpers
+    const subscribeToPush = async () => {
+        try {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return { ok: false, reason: 'unsupported' }
+
+            const reg = await navigator.serviceWorker.getRegistration('/build/') || await navigator.serviceWorker.ready
+            const existing = await reg.pushManager.getSubscription()
+            if (existing) return { ok: true, existing: true }
+
+            const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY
+            if (!vapidPublicKey) return { ok: false, reason: 'missing_vapid' }
+            const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey)
+            const subscription = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })
+
+            // Send to backend
+            const body = {
+                endpoint: subscription.endpoint,
+                auth: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth')))),
+                p256dh: btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh')))),
+                ua: navigator.userAgent,
+            }
+            await fetch('/api/marketplace/v1/webpush/subscriptions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify(body)
+            })
+
+            return { ok: true }
+        } catch (e) {
+            console.error('subscribeToPush error', e)
+            return { ok: false, error: e }
+        }
+    }
+
+    const unsubscribeFromPush = async () => {
+        try {
+            const reg = await navigator.serviceWorker.getRegistration('/build/') || await navigator.serviceWorker.ready
+            const existing = await reg.pushManager.getSubscription()
+            if (!existing) return { ok: true }
+            const endpoint = existing.endpoint
+            await existing.unsubscribe()
+            await fetch('/api/marketplace/v1/webpush/subscriptions', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify({ endpoint })
+            })
+            return { ok: true }
+        } catch (e) {
+            console.error('unsubscribeFromPush error', e)
+            return { ok: false, error: e }
+        }
+    }
+
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+        const rawData = window.atob(base64)
+        const outputArray = new Uint8Array(rawData.length)
+        for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
+        return outputArray
+    }
+
     return {
         // Installation
         isInstallable,
@@ -226,6 +288,8 @@ export function usePWA() {
         // Notifications
         requestNotificationPermission,
         showNotification,
+        subscribeToPush,
+        unsubscribeFromPush,
         
         // Sharing
         canShare,

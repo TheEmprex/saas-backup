@@ -33,6 +33,12 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
                 return false;
             }
 
+            // Allow access for explicitly authorized emails via env (comma-separated)
+            $allowedEmails = array_filter(array_map('trim', explode(',', (string) env('HORIZON_ADMINS', ''))));
+            if (!empty($allowedEmails) && in_array($user->email, $allowedEmails, true)) {
+                return true;
+            }
+
             if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
                 return true;
             }

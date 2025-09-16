@@ -41,6 +41,9 @@ use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\TypingTestController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\Api\MessageFolderController;
+use App\Http\Controllers\Settings\NotificationSettingsController;
+use App\Http\Controllers\Settings\AppearanceController;
 
 // Wave routes first
 Wave::routes();
@@ -196,6 +199,22 @@ Route::get('/platform/tools', [MarketplaceController::class, 'tools'])->name('pl
 Route::get('/platform/automation', [MarketplaceController::class, 'automation'])->name('platform.automation');
 Route::get('/platform/integrations', [MarketplaceController::class, 'integrations'])->name('platform.integrations');
 Route::get('/platform/api', [MarketplaceController::class, 'api'])->name('platform.api');
+
+// Settings routes (UI)
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/settings/notifications', [NotificationSettingsController::class, 'edit'])->name('settings.notifications.edit');
+    Route::put('/settings/notifications', [NotificationSettingsController::class, 'update'])->name('settings.notifications.update');
+
+    Route::get('/settings/appearance', [AppearanceController::class, 'edit'])->name('settings.appearance.edit');
+    Route::put('/settings/appearance', [AppearanceController::class, 'update'])->name('settings.appearance.update');
+    Route::post('/settings/theme', [AppearanceController::class, 'updateTheme'])->name('settings.theme');
+
+    // Saved replies/snippets placeholder view
+    Route::get('/settings/snippets', function () { return view('settings.snippets'); })->name('settings.snippets');
+});
+
+// PWA offline page
+Route::view('/pwa/offline', 'pwa.offline')->name('pwa.offline');
 
 // Static pages
 Route::get('/about', function () {
@@ -402,156 +421,98 @@ Route::middleware(['auth'])
         Route::get('/conversations/{conversation}', [MailController::class, 'show'])->name('show');
     });
 
-// Test ReviewContest with relations
-Route::get('/test-review-contest-relations', function () {
-    if (!auth()->check()) {
-        return 'Not logged in. <a href="/login-max">Login first</a>';
-    }
-    
-    try {
-        // Test with relations like in the controller
-        $contests = App\Models\ReviewContest::with(['rating', 'reviewedBy'])
-            ->where('contested_by', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get();
-        return 'Found ' . $contests->count() . ' contests with relations for user ' . auth()->id();
-    } catch (Exception $e) {
-        return 'Relations Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
-    }
-});
-
-// Test contests route without any middleware
-Route::get('/contests-direct', function () {
-    if (!auth()->check()) {
-        return 'Not logged in. <a href="/login-max">Login first</a>';
-    }
-    
-    try {
-        // Simulate the exact controller logic
-        $contests = App\Models\ReviewContest::with(['rating', 'reviewedBy'])
-            ->where('contested_by', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        return view('theme::ratings.contests.index', compact('contests'));
-    } catch (Exception $e) {
-        return 'Direct Route Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
-    }
-});
-
-// Simple contests route with basic HTML output
-Route::get('/contests-simple', function () {
-    if (!auth()->check()) {
-        return 'Not logged in. <a href="/login-max">Login first</a>';
-    }
-    
-    try {
-        $contests = App\Models\ReviewContest::with(['rating', 'reviewedBy'])
-            ->where('contested_by', auth()->id())
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $html = '<h1>My Review Contests</h1>';
-        $html .= '<p>Found ' . $contests->count() . ' contests for user ' . auth()->id() . '</p>';
-        
-        if ($contests->count() > 0) {
-            $html .= '<ul>';
-            foreach ($contests as $contest) {
-                $html .= '<li>';
-                $html .= 'Contest ID: ' . $contest->id . ' | ';
-                $html .= 'Status: ' . $contest->status . ' | ';
-                $html .= 'Created: ' . $contest->created_at->format('Y-m-d H:i:s');
-                if ($contest->rating) {
-                    $html .= ' | Rating by: ' . ($contest->rating->rater ? $contest->rating->rater->name : 'Unknown');
-                }
-                $html .= '</li>';
-            }
-            $html .= '</ul>';
-        } else {
-            $html .= '<p>No contests found.</p>';
+// Local-only: test and debug routes guarded from production
+if (app()->environment('local')) {
+    // Test ReviewContest with relations
+    Route::get('/test-review-contest-relations', function () {
+        if (!auth()->check()) {
+            return 'Not logged in. <a href="/login-max">Login first</a>';
         }
         
-        $html .= '<br><a href="/ratings">← Back to Ratings</a>';
+        try {
+            // Test with relations like in the controller
+            $contests = App\Models\ReviewContest::with(['rating', 'reviewedBy'])
+                ->where('contested_by', auth()->id())
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return 'Found ' . $contests->count() . ' contests with relations for user ' . auth()->id();
+        } catch (Exception $e) {
+            return 'Relations Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
+        }
+    });
+
+    // Test contests route without any middleware
+    Route::get('/contests-direct', function () {
+        if (!auth()->check()) {
+            return 'Not logged in. <a href="/login-max">Login first</a>';
+        }
         
-        return $html;
-    } catch (Exception $e) {
-        return 'Simple Route Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
-    }
-});
+        try {
+            // Simulate the exact controller logic
+            $contests = App\Models\ReviewContest::with(['rating', 'reviewedBy'])
+                ->where('contested_by', auth()->id())
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
 
-// Login as Test User (user who has given reviews)
-Route::get('/login-test', function () {
-    $user = App\Models\User::find(2);
-    if ($user) {
-        Auth::login($user);
-        return redirect()->route('profile.show')->with('success', 'Logged in as Test User');
-    }
-    return 'Test User not found';
-});
+            return view('theme::ratings.contests.index', compact('contests'));
+        } catch (Exception $e) {
+            return 'Direct Route Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
+        }
+    });
 
-// Debug route for training access
-Route::get('/training-debug', function () {
-    // Find or create a chatter user
-    $chatterType = App\Models\UserType::firstOrCreate(['name' => 'chatter']);
-    $user = App\Models\User::firstOrCreate(
-        ['email' => 'chatter@test.com'],
-        [
-            'name' => 'Test Chatter',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'user_type_id' => $chatterType->id
-        ]
-    );
-    
-    Auth::login($user);
-    
-    // Get training data like the controller does
-    $modules = App\Models\TrainingModule::active()->ordered()->withCount('tests')->get();
-    $userProgress = App\Models\UserTrainingProgress::where('user_id', $user->id)->get()->keyBy('training_module_id');
-    $totalModulesCount = $modules->count();
-    $completedModulesCount = $userProgress->where('status', 'completed')->count();
-    
-    $output = '<h1>Training Debug Info</h1>';
-    $output .= '<p>Logged in as: ' . $user->name . ' (' . $user->email . ')</p>';
-    $output .= '<p>User Type: ' . ($user->userType ? $user->userType->name : 'None') . '</p>';
-    $output .= '<p>Email Verified: ' . ($user->hasVerifiedEmail() ? 'Yes' : 'No') . '</p>';
-    $output .= '<p>Total Modules: ' . $totalModulesCount . '</p>';
-    $output .= '<p>Completed Modules: ' . $completedModulesCount . '</p>';
-    $output .= '<p>User Progress Records: ' . $userProgress->count() . '</p>';
-    $output .= '<h2>Available Modules:</h2><ul>';
-    
-    foreach ($modules as $module) {
-        $progress = $userProgress->get($module->id);
-        $status = $progress ? $progress->status : 'not_started';
-        $output .= '<li>' . $module->title . ' - Status: ' . $status . ' - Tests: ' . $module->tests_count . '</li>';
-    }
-    $output .= '</ul>';
-    $output .= '<p><a href="/training">Go to Training Page</a></p>';
-    
-    return $output;
-});
+    // Simple contests route with basic HTML output
+    Route::get('/contests-simple', function () {
+        if (!auth()->check()) {
+            return 'Not logged in. <a href="/login-max">Login first</a>';
+        }
+        
+        try {
+            $contests = App\Models\ReviewContest::with(['rating', 'reviewedBy'])
+                ->where('contested_by', auth()->id())
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-// Login as chatter for easy testing
-Route::get('/login-chatter', function () {
-    $chatterType = App\Models\UserType::firstOrCreate(['name' => 'chatter']);
-    $user = App\Models\User::firstOrCreate(
-        ['email' => 'chatter@test.com'],
-        [
-            'name' => 'Test Chatter',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-            'user_type_id' => $chatterType->id
-        ]
-    );
-    
-    Auth::login($user);
-    return redirect('/training-debug')->with('success', 'Logged in as chatter');
-});
+            $html = '<h1>My Review Contests</h1>';
+            $html .= '<p>Found ' . $contests->count() . ' contests for user ' . auth()->id() . '</p>';
+            
+            if ($contests->count() > 0) {
+                $html .= '<ul>';
+                foreach ($contests as $contest) {
+                    $html .= '<li>';
+                    $html .= 'Contest ID: ' . $contest->id . ' | ';
+                    $html .= 'Status: ' . $contest->status . ' | ';
+                    $html .= 'Created: ' . $contest->created_at->format('Y-m-d H:i:s');
+                    if ($contest->rating) {
+                        $html .= ' | Rating by: ' . ($contest->rating->rater ? $contest->rating->rater->name : 'Unknown');
+                    }
+                    $html .= '</li>';
+                }
+                $html .= '</ul>';
+            } else {
+                $html .= '<p>No contests found.</p>';
+            }
+            
+            $html .= '<br><a href="/ratings">← Back to Ratings</a>';
+            
+            return $html;
+        } catch (Exception $e) {
+            return 'Simple Route Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
+        }
+    });
 
-// Simple training display - working version
-Route::get('/training-simple', function () {
-    try {
-        // Auto login as chatter
+    // Login as Test User (user who has given reviews)
+    Route::get('/login-test', function () {
+        $user = App\Models\User::find(2);
+        if ($user) {
+            Auth::login($user);
+            return redirect()->route('profile.show')->with('success', 'Logged in as Test User');
+        }
+        return 'Test User not found';
+    });
+
+    // Debug route for training access
+    Route::get('/training-debug', function () {
+        // Find or create a chatter user
         $chatterType = App\Models\UserType::firstOrCreate(['name' => 'chatter']);
         $user = App\Models\User::firstOrCreate(
             ['email' => 'chatter@test.com'],
@@ -562,85 +523,88 @@ Route::get('/training-simple', function () {
                 'user_type_id' => $chatterType->id
             ]
         );
+        
         Auth::login($user);
         
-        // Get basic training data
-        $modules = App\Models\TrainingModule::where('is_active', true)->orderBy('order')->get();
-        $userProgress = App\Models\UserTrainingProgress::where('user_id', $user->id)->get();
+        // Get training data like the controller does
+        $modules = App\Models\TrainingModule::active()->ordered()->withCount('tests')->get();
+        $userProgress = App\Models\UserTrainingProgress::where('user_id', $user->id)->get()->keyBy('training_module_id');
+        $totalModulesCount = $modules->count();
+        $completedModulesCount = $userProgress->where('status', 'completed')->count();
         
-        $html = '<!DOCTYPE html><html><head><title>Training Modules</title><style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .module { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff; }
-        .module h3 { color: #333; margin-top: 0; }
-        .module p { color: #666; line-height: 1.6; }
-        .meta { font-size: 14px; color: #888; margin: 10px 0; }
-        .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
-        .btn:hover { background: #0056b3; }
-        .status { padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
-        .status.completed { background: #d4edda; color: #155724; }
-        .status.in-progress { background: #fff3cd; color: #856404; }
-        .status.not-started { background: #f8d7da; color: #721c24; }
-        </style></head><body>';
-        
-        $html .= '<div class="container">';
-        $html .= '<h1>🎓 Training Modules</h1>';
-        $html .= '<p>Welcome, <strong>' . $user->name . '</strong>! Complete all training modules to unlock your profile visibility.</p>';
-        $html .= '<hr>';
+        $output = '<h1>Training Debug Info</h1>';
+        $output .= '<p>Logged in as: ' . $user->name . ' (' . $user->email . ')</p>';
+        $output .= '<p>User Type: ' . ($user->userType ? $user->userType->name : 'None') . '</p>';
+        $output .= '<p>Email Verified: ' . ($user->hasVerifiedEmail() ? 'Yes' : 'No') . '</p>';
+        $output .= '<p>Total Modules: ' . $totalModulesCount . '</p>';
+        $output .= '<p>Completed Modules: ' . $completedModulesCount . '</p>';
+        $output .= '<p>User Progress Records: ' . $userProgress->count() . '</p>';
+        $output .= '<h2>Available Modules:</h2><ul>';
         
         foreach ($modules as $module) {
-            $progress = $userProgress->where('training_module_id', $module->id)->first();
+            $progress = $userProgress->get($module->id);
             $status = $progress ? $progress->status : 'not_started';
             $statusClass = str_replace('_', '-', $status);
             
-            $html .= '<div class="module">';
-            $html .= '<div style="display: flex; justify-content: space-between; align-items: start;">';
-            $html .= '<div><h3>' . $module->title . '</h3></div>';
-            $html .= '<span class="status ' . $statusClass . '">' . ucfirst(str_replace('_', ' ', $status)) . '</span>';
-            $html .= '</div>';
-            $html .= '<p>' . $module->description . '</p>';
-            $html .= '<div class="meta">';
+            $output .= '<div class="module">';
+            $output .= '<div style="display: flex; justify-content: space-between; align-items: start;">';
+            $output .= '<div><h3>' . $module->title . '</h3></div>';
+            $output .= '<span class="status ' . $statusClass . '">' . ucfirst(str_replace('_', ' ', $status)) . '</span>';
+            $output .= '</div>';
+            $output .= '<p>' . $module->description . '</p>';
+            $output .= '<div class="meta">';
             if ($module->duration_minutes) {
-                $html .= '⏱️ ' . $module->duration_minutes . ' minutes • ';
+                $output .= '⏱️ ' . $module->duration_minutes . ' minutes • ';
             }
             $testsCount = App\Models\TrainingTest::where('training_module_id', $module->id)->count();
-            $html .= '📝 ' . $testsCount . ' test' . ($testsCount != 1 ? 's' : '') . ' available';
-            $html .= '</div>';
-            $html .= '<a href="/training/module/' . $module->id . '" class="btn">View Module</a>';
-            $html .= '</div>';
+            $output .= '📝 ' . $testsCount . ' test' . ($testsCount != 1 ? 's' : '') . ' available';
+            $output .= '</div>';
+            $output .= '<a href="/training/module/' . $module->id . '" class="btn">View Module</a>';
+            $output .= '</div>';
         }
         
-        $html .= '<div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;">';
-        $html .= '<h3>📊 Your Progress</h3>';
+        $output .= '<div style="margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;">';
+        $output .= '<h3>📊 Your Progress</h3>';
         $completed = $userProgress->where('status', 'completed')->count();
         $total = $modules->count();
-        $html .= '<p>Completed: <strong>' . $completed . '/' . $total . '</strong> modules</p>';
+        $output .= '<p>Completed: <strong>' . $completed . '/' . $total . '</strong> modules</p>';
         $percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
-        $html .= '<div style="background: #dee2e6; height: 20px; border-radius: 10px; overflow: hidden;">';
-        $html .= '<div style="background: #28a745; height: 100%; width: ' . $percentage . '%; transition: width 0.3s;"></div>';
-        $html .= '</div>';
-        $html .= '<p style="margin-top: 10px; font-size: 14px; color: #666;">Progress: ' . $percentage . '%</p>';
-        $html .= '</div>';
+        $output .= '<div style=\"background: #dee2e6; height: 20px; border-radius: 10px; overflow: hidden;\">';
+        $output .= '<div style=\"background: #28a745; height: 100%; width: ' . $percentage . '%; transition: width 0.3s;\"></div>';
+        $output .= '</div>';
+        $output .= '<p style=\"margin-top: 10px; font-size: 14px; color: #666;\">Progress: ' . $percentage . '%</p>';
+        $output .= '</div>';
         
-        $html .= '<div style="margin-top: 20px; text-align: center;">';
-        $html .= '<a href="/training" class="btn" style="background: #6c757d;">Go to Official Training Page</a>';
-        $html .= '</div>';
+        $output .= '<div style=\"margin-top: 20px; text-align: center;\">';
+        $output .= '<a href=\"/training\" class=\"btn\" style=\"background: #6c757d;\">Go to Official Training Page</a>';
+        $output .= '</div>';
         
-        $html .= '</div></body></html>';
+        $output .= '</div></body></html>';
         
-        return $html;
-        
-    } catch (Exception $e) {
-        return '<h1>Error</h1><p>' . $e->getMessage() . '</p><pre>' . $e->getTraceAsString() . '</pre>';
-    }
-});
+        return $output;
+    });
 
-// Developer-only training test routes (local only)
-if (app()->environment('local')) {
-    // Training buttons test route
-    Route::get('/training-buttons-test', function () {
+    // Login as chatter for easy testing
+    Route::get('/login-chatter', function () {
+        $chatterType = App\Models\UserType::firstOrCreate(['name' => 'chatter']);
+        $user = App\Models\User::firstOrCreate(
+            ['email' => 'chatter@test.com'],
+            [
+                'name' => 'Test Chatter',
+                'password' => Hash::make('password'),
+                'email_verified_at' => now(),
+                'user_type_id' => $chatterType->id
+            ]
+        );
+        
+        Auth::login($user);
+        return redirect('/training-debug')->with('success', 'Logged in as chatter');
+    });
+
+    // Simple training display - working version
+    Route::get('/training-simple', function () {
         try {
-            // Find or create a chatter user and login
+            // Auto login as chatter
             $chatterType = App\Models\UserType::firstOrCreate(['name' => 'chatter']);
             $user = App\Models\User::firstOrCreate(
                 ['email' => 'chatter@test.com'],
@@ -651,82 +615,79 @@ if (app()->environment('local')) {
                     'user_type_id' => $chatterType->id
                 ]
             );
-            
             Auth::login($user);
             
-            // Get training data
-            $modules = App\Models\TrainingModule::active()->ordered()->withCount('tests')->get();
+            // Get basic training data
+            $modules = App\Models\TrainingModule::where('is_active', true)->orderBy('order')->get();
+            $userProgress = App\Models\UserTrainingProgress::where('user_id', $user->id)->get();
             
-            // Create a simple HTML page with buttons
-            $html = '<!DOCTYPE html><html><head><title>Training Buttons Test</title>';
-            $html .= '<meta name="csrf-token" content="' . csrf_token() . '">';
-            $html .= '<style>'
-                . 'body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }'
-                . '.container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }'
-                . '.module { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; }'
-                . '.btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; margin: 10px 5px; }'
-                . '.btn:hover { background: #0056b3; }'
-                . '.btn-success { background: #28a745; }'
-                . '.btn-warning { background: #ffc107; color: #212529; }'
-                . '.btn-secondary { background: #6c757d; }'
-                . '#result { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 5px; }'
-                . '</style></head><body>';
+            $html = '<!DOCTYPE html><html><head><title>Training Modules</title><style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .module { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+            .module h3 { color: #333; margin-top: 0; }
+            .module p { color: #666; line-height: 1.6; }
+            .meta { font-size: 14px; color: #888; margin: 10px 0; }
+            .btn { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
+            .btn:hover { background: #0056b3; }
+            .status { padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }
+            .status.completed { background: #d4edda; color: #155724; }
+            .status.in-progress { background: #fff3cd; color: #856404; }
+            .status.not-started { background: #f8d7da; color: #721c24; }
+            </style></head><body>';
             
-            $html .= '<div class="container">';
-            $html .= '<h1>🧪 Training Buttons Test</h1>';
-            $html .= '<p>Logged in as: <strong>' . $user->name . '</strong> (' . $user->email . ')</p>';
-            $html .= '<p>Total modules: ' . $modules->count() . '</p>';
+            $html .= '<div class=\"container\">';
+            $html .= '<h1>🎓 Training Modules</h1>';
+            $html .= '<p>Welcome, <strong>' . $user->name . '</strong>! Complete all training modules to unlock your profile visibility.</p>';
             $html .= '<hr>';
             
             foreach ($modules as $module) {
-                $html .= '<div class="module">';
-                $html .= '<h3>' . $module->title . '</h3>';
-                $html .= '<p>' . $module->description . '</p>';
-                $html .= '<div>';
-                $html .= '<a href="/training/module/' . $module->id . '" class="btn">View Module (Direct Link)</a>';
-                $html .= '<button onclick="testModuleButton(' . $module->id . ')" class="btn btn-success">Test Button</button>';
-                $html .= '<button onclick="testCompleteModule(' . $module->id . ')" class="btn btn-warning">Test Complete</button>';
+                $progress = $userProgress->where('training_module_id', $module->id)->first();
+                $status = $progress ? $progress->status : 'not_started';
+                $statusClass = str_replace('_', '-', $status);
+                
+                $html .= '<div class=\"module\">';
+                $html .= '<div style=\"display: flex; justify-content: space-between; align-items: start;\">';
+                $html .= '<div><h3>' . $module->title . '</h3></div>';
+                $html .= '<span class=\"status ' . $statusClass . '\">' . ucfirst(str_replace('_', ' ', $status)) . '</span>';
                 $html .= '</div>';
+                $html .= '<p>' . $module->description . '</p>';
+                $html .= '<div class=\"meta\">';
+                if ($module->duration_minutes) {
+                    $html .= '⏱️ ' . $module->duration_minutes . ' minutes • ';
+                }
+                $testsCount = App\Models\TrainingTest::where('training_module_id', $module->id)->count();
+                $html .= '📝 ' . $testsCount . ' test' . ($testsCount != 1 ? 's' : '') . ' available';
+                $html .= '</div>';
+                $html .= '<a href=\"/training/module/' . $module->id . '\" class=\"btn\">View Module</a>';
                 $html .= '</div>';
             }
             
-            $html .= '<div id="result"></div>';
-            $html .= '<hr>';
-            $html .= '<p><a href="/training" class="btn btn-secondary">Go to Real Training Page</a></p>';
+            $html .= '<div style=\"margin-top: 30px; padding: 20px; background: #e9ecef; border-radius: 8px;\">';
+            $html .= '<h3>📊 Your Progress</h3>';
+            $completed = $userProgress->where('status', 'completed')->count();
+            $total = $modules->count();
+            $html .= '<p>Completed: <strong>' . $completed . '/' . $total . '</strong> modules</p>';
+            $percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
+            $html .= '<div style=\"background: #dee2e6; height: 20px; border-radius: 10px; overflow: hidden;\">';
+            $html .= '<div style=\"background: #28a745; height: 100%; width: ' . $percentage . '%; transition: width 0.3s;\"></div>';
+            $html .= '</div>';
+            $html .= '<p style=\"margin-top: 10px; font-size: 14px; color: #666;\">Progress: ' . $percentage . '%</p>';
+            $html .= '</div>';
             
-            $html .= '<script>'
-                . 'function testModuleButton(moduleId) {'
-                    . 'document.getElementById("result").innerHTML = "Testing module " + moduleId + "...";'
-                    . 'window.location.href = "/training/module/" + moduleId;'
-                . '}'
-                . 'function testCompleteModule(moduleId) {'
-                    . 'const csrfToken = document.querySelector("meta[name=\"csrf-token\"]").getAttribute("content");'
-                    . 'document.getElementById("result").innerHTML = "Testing complete for module " + moduleId + "...";'
-                    . 'fetch("/training/module/" + moduleId + "/complete", {'
-                        . 'method: "POST",'
-                        . 'headers: {'
-                            . '"Content-Type": "application/json",'
-                            . '"X-CSRF-TOKEN": csrfToken'
-                        . '}'
-                    . '})'
-                    . '.then(response => response.json())'
-                    . '.then(data => {'
-                        . 'document.getElementById("result").innerHTML = "Result: " + JSON.stringify(data, null, 2);'
-                    . '})'
-                    . '.catch(error => {'
-                        . 'document.getElementById("result").innerHTML = "Error: " + error.toString();'
-                    . '});'
-                . '}'
-                . '</script>';
+            $html .= '<div style=\"margin-top: 20px; text-align: center;\">';
+            $html .= '<a href=\"/training\" class=\"btn\" style=\"background: #6c757d;\">Go to Official Training Page</a>';
+            $html .= '</div>';
             
             $html .= '</div></body></html>';
             
             return $html;
             
         } catch (Exception $e) {
-            return 'Training Buttons Test Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
+            return '<h1>Error</h1><p>' . $e->getMessage() . '</p><pre>' . $e->getTraceAsString() . '</pre>';
         }
     });
+}
 
     // Training bypass route - no middleware
     Route::get('/training-bypass', function () {
@@ -782,7 +743,6 @@ if (app()->environment('local')) {
             return 'Training Bypass Error: ' . $e->getMessage() . '<br><br>Trace: <pre>' . $e->getTraceAsString() . '</pre>';
         }
     });
-}
 
 // Developer-only: Debug profile route
 if (app()->environment('local')) {
@@ -842,6 +802,11 @@ Route::get('/pricing', [SubscriptionController::class, 'plans'])->name('pricing'
 Route::post('/stripe/webhook', [StripeWebhookController::class, 'handle'])
     ->name('stripe.webhook')
     ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
+// Simple health check route for load balancers/monitoring
+Route::get('/health', function () {
+    return response()->json(['ok' => true, 'time' => now()->toIso8601String()]);
+});
 
 // Subscription routes - public pricing page is above
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -924,15 +889,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
 });
 
-// Primary Real-time Messaging System
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/messages', function () {
-        return view('messages.realtime');
-    })->name('messages');
-    Route::any('/messages/{any?}', function () { 
-        return redirect()->route('messages'); 
-    })->where('any', '.*');
-});
 
 // Messaging System Routes - Consolidated and Fixed
 Route::middleware(['auth', 'verified'])->prefix('messages')->name('messages.')->group(function () {
@@ -996,6 +952,9 @@ if (app()->environment('local')) {
     Route::get('/search-users', [App\Http\Controllers\MessagingController::class, 'searchUsers'])->name('search-users');
     Route::post('/messages/{messageId}/reaction', [App\Http\Controllers\MessagingController::class, 'addReaction'])->name('message.reaction');
     
+    // Inline edit message
+    Route::patch('/messages/{messageId}', [App\Http\Controllers\MessagingController::class, 'updateMessage'])->name('message.update');
+    
     // Additional messaging views
     Route::get('/conversations/{id}', function ($id) {
         return view('messages.app', ['conversationId' => $id]);
@@ -1034,6 +993,9 @@ if (app()->environment('local')) {
     Route::get('/api/users/{user}/availability', [UserTimezoneAvailabilityController::class, 'getAvailabilityInTimezone'])->name('api.users.availability');
     Route::get('/api/availability/bulk-timezone', [UserTimezoneAvailabilityController::class, 'getBulkAvailability'])->name('api.availability.bulk-timezone');
     Route::get('/api/users/search-availability', [UserTimezoneAvailabilityController::class, 'searchByAvailability'])->name('api.users.search-availability');
+
+    // Legacy web routes compatibility: redirect any /messages/web/* to realtime UI
+    Route::any('/web/{any?}', function () { return redirect()->route('messages.index'); })->where('any', '.*');
     
     // Timezone availability browser for agencies
     Route::get('/marketplace/timezone-availability', function() {
@@ -1047,6 +1009,22 @@ if (app()->environment('local')) {
     Route::get('/api/webrtc/incoming-calls', [\App\Http\Controllers\WebRTCController::class, 'checkIncomingCalls'])->name('webrtc.incoming-calls');
     Route::post('/api/webrtc/respond-call', [\App\Http\Controllers\WebRTCController::class, 'respondToCall'])->name('webrtc.respond-call');
     Route::post('/api/webrtc/end-call', [\App\Http\Controllers\WebRTCController::class, 'endCall'])->name('webrtc.end-call');
+
+    // Session-authenticated Folder API for Messaging UI (no JWT needed)
+    Route::prefix('api/message-folders')->group(function () {
+        Route::get('/', [MessageFolderController::class, 'apiIndex']);
+        Route::post('/', [MessageFolderController::class, 'apiStore']);
+        Route::get('/{folder}', [MessageFolderController::class, 'apiShow']);
+        Route::put('/{folder}', [MessageFolderController::class, 'apiUpdate']);
+        Route::patch('/{folder}', [MessageFolderController::class, 'apiUpdate']);
+        Route::delete('/{folder}', [MessageFolderController::class, 'apiDestroy']);
+        Route::get('/{folder}/messages', [MessageFolderController::class, 'messages']);
+        Route::get('/{folder}/conversations', [MessageFolderController::class, 'conversations']);
+        Route::post('/{folder}/conversations', [MessageFolderController::class, 'addConversation']);
+        Route::delete('/{folder}/conversations/{conversationId}', [MessageFolderController::class, 'removeConversation']);
+        Route::post('/{folder}/move', [MessageFolderController::class, 'moveMessages']);
+        Route::post('/reorder', [MessageFolderController::class, 'reorder']);
+    });
 });
 
 // KYC routes - separate from messaging

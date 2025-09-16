@@ -135,10 +135,14 @@ class ConversationController extends Controller
             return response()->json([]);
         }
         
-        $users = User::where('name', 'LIKE', "%{$query}%")
-            ->orWhere('email', 'LIKE', "%{$query}%")
-            ->where('id', '!=', auth()->id())
+        $users = User::where('id', '!=', auth()->id())
+            ->whereNotNull('email_verified_at')
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%")
+                  ->orWhere('email', 'LIKE', "%{$query}%");
+            })
             ->select('id', 'name', 'email')
+            ->orderBy('name')
             ->limit(20)
             ->get();
             

@@ -27,10 +27,11 @@ class CustomAuthController extends Controller
         $credentials = $request->only('email', 'password');
         $remember = $request->has('remember');
 
-        if (Auth::attempt($credentials, $remember)) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
-        }
+            if (Auth::attempt($credentials, $remember)) {
+                $request->session()->regenerate();
+                // Use a safe fallback that always exists
+                return redirect()->intended(route('marketplace.index'));
+            }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',

@@ -234,11 +234,13 @@ const handleSearch = () => {
     errorMessage.value = ''
 
     try {
-      const response = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery.value)}`, {
+const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('api_token') : null
+      const response = await fetch(`/api/marketplace/v1/users/search?q=${encodeURIComponent(searchQuery.value)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         credentials: 'same-origin'
       })
@@ -294,11 +296,13 @@ const createConversation = async () => {
       type: isGroupConversation.value ? 'group' : 'direct'
     }
 
-    const response = await fetch('/api/v1/conversations', {
+const token = (typeof localStorage !== 'undefined') ? localStorage.getItem('api_token') : null
+    const response = await fetch('/api/marketplace/v1/conversations', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       credentials: 'same-origin',
       body: JSON.stringify(conversationData)

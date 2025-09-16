@@ -648,10 +648,10 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="messageForm" action="{{ route('marketplace.messages.store') }}" method="POST" enctype="multipart/form-data">
+<form id="messageForm" action="{{ route('messages.send') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
-                    <input type="hidden" name="conversation_id" id="recipientId">
+<input type="hidden" name="recipient_id" id="recipientId">
                     
                     <!-- Recipient Display -->
                     <div class="mb-3">
@@ -678,7 +678,7 @@
                             <i class="ti ti-paperclip me-1"></i>
                             Attachment (Optional)
                         </label>
-                        <input type="file" name="attachment" id="messageAttachment" class="form-control" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip">
+<input type="file" name="files[]" id="messageAttachment" class="form-control" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.zip" multiple>
                         <div class="form-text">Supported formats: PDF, DOC, DOCX, TXT, JPG, PNG, GIF, ZIP. Max size: 10MB</div>
                     </div>
                     

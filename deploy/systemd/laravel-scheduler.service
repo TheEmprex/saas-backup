@@ -1,0 +1,14 @@
+[Unit]
+Description=Laravel Scheduler
+
+[Service]
+Type=oneshot
+User={{DEPLOY_USER}}
+Group=www-data
+ExecStart={{PHP_BIN}} {{WORKING_DIR}}/artisan schedule:run
+WorkingDirectory={{WORKING_DIR}}
+Environment=APP_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+

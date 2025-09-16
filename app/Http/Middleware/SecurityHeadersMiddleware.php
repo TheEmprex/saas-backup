@@ -45,8 +45,28 @@ class SecurityHeadersMiddleware
         if (app()->environment('production')) {
             $response->headers->set('Content-Security-Policy', $csp);
         } else {
-            // More lenient CSP for development
-            $devCsp = str_replace("'unsafe-eval'", "'unsafe-eval' 'unsafe-inline'", $csp);
+            // More lenient CSP for development + allow Vite dev server (HMR)
+            $devCsp = implode('; ', [
+                "default-src 'self'",
+                // Allow inline/eval for local dev + Vite client from localhost:5174
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5174 http://127.0.0.1:5174 https://js.stripe.com https://checkout.stripe.com",
+                // Allow styles from Vite dev server and Google Fonts
+                "style-src 'self' 'unsafe-inline' http://localhost:5174 http://127.0.0.1:5174 https://fonts.googleapis.com",
+                // Fonts
+                "font-src 'self' https://fonts.gstatic.com",
+                // Images
+                "img-src 'self' data: https: blob:",
+                // Allow HMR websocket + Stripe endpoints + local Reverb (8080)
+                "connect-src 'self' http://localhost:5174 http://127.0.0.1:5174 ws://localhost:5174 ws://127.0.0.1:5174 http://localhost:8080 http://127.0.0.1:8080 ws://localhost:8080 ws://127.0.0.1:8080 https://api.stripe.com https://checkout.stripe.com wss:",
+                // Frames
+                "frame-src https://js.stripe.com https://checkout.stripe.com",
+                "object-src 'none'",
+                "base-uri 'self'",
+                "form-action 'self'",
+                // In dev, allow being framed by self only to avoid breaking some tooling
+                "frame-ancestors 'self'",
+                "upgrade-insecure-requests"
+            ]);
             $response->headers->set('Content-Security-Policy', $devCsp);
         }
         

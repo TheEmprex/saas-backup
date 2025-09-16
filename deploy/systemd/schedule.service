@@ -1,0 +1,13 @@
+[Unit]
+Description=Laravel schedule runner
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/onlyverified
+ExecStart=/usr/bin/php /var/www/onlyverified/artisan schedule:run
+
+[Install]
+WantedBy=multi-user.target

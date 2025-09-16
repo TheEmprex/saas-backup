@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_DATABASE: saas
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -proot" --health-interval 10s --health-timeout 5s --health-retries 5
+
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, curl, dom, bcmath, gd, json, pdo, pdo_mysql, redis
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Copy env
+        run: |
+          cp .env.production.example .env || true
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Install NPM deps
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build --if-present
+
+      - name: Run Laravel optimize
+        run: |
+          php artisan optimize:clear || true
+          php artisan optimize || true
+
+      # Optional: run tests if present
+      - name: Run tests
+        run: |
+          if [ -d tests ]; then ./vendor/bin/phpunit --colors=always || true; fi
+

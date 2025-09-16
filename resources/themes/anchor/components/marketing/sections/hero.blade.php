@@ -9,7 +9,7 @@
                     Connect with verified OnlyFans chatters, VAs, and agencies<span class="hidden sm:inline"> on the premium marketplace</span>.
                 </p>
                 <div class="flex flex-col items-center justify-center gap-3 mx-auto mt-8 md:gap-2 lg:justify-start md:ml-0 md:flex-row">
-                    <x-button href="{{ route('register') }}" tag="a" size="lg" class="w-full lg:w-auto">Join OnlyVerified</x-button>
+                    <x-button href="{{ route('custom.register') }}" tag="a" size="lg" class="w-full lg:w-auto">Join OnlyVerified</x-button>
                     <x-button href="{{ route('marketplace.index') }}" tag="a" size="lg" color="secondary" class="w-full lg:w-auto">Browse Talent</x-button>
                 </div>
             </div>

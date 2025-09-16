@@ -6,12 +6,12 @@
     "
     class="relative z-50 w-screen md:w-auto" x-cloak>
     {{-- Backdrop for mobile --}}
-    <div x-show="sidebarOpen" @click="sidebarOpen=false" class="fixed top-0 right-0 z-50 w-screen h-screen duration-300 ease-out bg-black/20 dark:bg-white/10"></div>
+    <div x-show="sidebarOpen" @click="sidebarOpen=false" class="fixed top-0 right-0 z-50 w-screen h-screen duration-300 ease-out bg-black/20 dark:bg-white/10 lg:hidden"></div>
     
     {{-- Sidebar --}} 
     <div :class="{ '-translate-x-full': !sidebarOpen }"
-        class="fixed top-0 left-0 flex items-stretch -translate-x-full overflow-hidden lg:translate-x-0 z-50 h-dvh md:h-screen transition-[width,transform] duration-150 ease-out bg-zinc-50 dark:bg-zinc-800 w-64 group navbar-never-black @if(config('wave.dev_bar')){{ 'pb-10' }}@endif">
-        <div class="flex flex-col justify-between w-full overflow-auto md:h-full h-svh pt-4 pb-2.5">
+        class="fixed top-0 left-0 flex items-stretch -translate-x-full overflow-hidden lg:translate-x-0 z-50 h-dvh md:h-screen transition-[width,transform] duration-150 ease-out bg-zinc-50 dark:bg-zinc-800 w-64 group navbar-never-black @if(config('wave.dev_bar')){{ 'pb-10' }}@endif" data-ov-sidebar>
+        <div class="flex flex-col justify-between w-full overflow-auto md:h-full h-svh pt-4 pb-2.5" data-ov-sidebar-scroll>
             <div class="relative flex flex-col">
                 <button x-on:click="sidebarOpen=false" class="flex items-center justify-center flex-shrink-0 w-10 h-10 ml-4 rounded-md lg:hidden text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 dark:hover:bg-zinc-700/70 hover:bg-gray-200/70">
                     <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
@@ -34,21 +34,21 @@
                     <!-- Main Navigation -->
                     <div class="w-full">
                         <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Main</div>
-                        <x-app.sidebar-link href="{{ route('dashboard') }}" icon="phosphor-house" :active="Request::is('dashboard')">Dashboard</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('dashboard') }}" icon="phosphor-house" :active="Request::is('dashboard')" data-no-transition>Dashboard</x-app.sidebar-link>
                     </div>
                     
                     <!-- Marketplace Section -->
                     <div class="w-full">
                         <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">Marketplace</div>
                         <div class="space-y-1">
-                            <x-app.sidebar-link href="{{ route('marketplace.jobs.index') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/jobs*')">Browse Jobs</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('marketplace.profiles') }}" icon="phosphor-users" :active="Request::is('marketplace/profiles*')">Find Talent</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('messages.index') }}" icon="phosphor-chat-circle" :active="Request::is('messages*')">Messages</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('marketplace.jobs.index') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/jobs*')" data-ov-direction="right">Browse Jobs</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('marketplace.profiles') }}" icon="phosphor-users" :active="Request::is('marketplace/profiles*')" data-ov-direction="right">Find Talent</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('messages.index') }}" icon="phosphor-chat-circle" :active="Request::is('messages*')" data-ov-direction="right">Messages</x-app.sidebar-link>
                             @if(auth()->check())
                                 @if(auth()->user()->isChatter())
-                                    <x-app.sidebar-link href="{{ route('chatter.tests') }}" icon="phosphor-check-circle" :active="Request::is('chatter/tests')">Take Tests</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('chatter.tests') }}" icon="phosphor-check-circle" :active="Request::is('chatter/tests')" data-ov-direction="right">Take Tests</x-app.sidebar-link>
                                 @else
-                                    <x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')">Post Job</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')" data-ov-direction="right">Post Job</x-app.sidebar-link>
                                 @endif
                             @else
                                 <x-app.sidebar-link href="{{ route('marketplace.jobs.create') }}" icon="phosphor-plus-circle" :active="Request::is('marketplace/jobs/create')">Post Job</x-app.sidebar-link>
@@ -60,11 +60,11 @@
                     <div class="w-full">
                         <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">My Activity</div>
                         <div class="space-y-1">
-                            <x-app.sidebar-link href="{{ route('marketplace.my-jobs') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/my-jobs')">My Jobs</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('marketplace.my-applications') }}" icon="phosphor-file-text" :active="Request::is('marketplace/my-applications')">My Applications</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('contracts.index') }}" icon="phosphor-file-text" :active="Request::is('contracts*')">My Contracts</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('profile.show') }}" icon="phosphor-user" :active="Request::is('profile')">My Profile</x-app.sidebar-link>
-                            <x-app.sidebar-link href="{{ route('ratings.index') }}" icon="phosphor-star" :active="Request::is('ratings*')">Reviews</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('marketplace.my-jobs') }}" icon="phosphor-briefcase" :active="Request::is('marketplace/my-jobs')" data-ov-direction="left">My Jobs</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('marketplace.my-applications') }}" icon="phosphor-file-text" :active="Request::is('marketplace/my-applications')" data-ov-direction="left">My Applications</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('contracts.index') }}" icon="phosphor-file-text" :active="Request::is('contracts*')" data-ov-direction="left">My Contracts</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('profile.show') }}" icon="phosphor-user" :active="Request::is('profile')" data-ov-direction="left">My Profile</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('ratings.index') }}" icon="phosphor-star" :active="Request::is('ratings*')" data-ov-direction="left">Reviews</x-app.sidebar-link>
                         </div>
                     </div>
                     
@@ -73,8 +73,8 @@
                         <div class="w-full">
                             <div class="px-2 mb-2 text-xs font-bold uppercase tracking-wide text-red-500 dark:text-red-400">Admin</div>
                             <div class="space-y-1">
-                                <x-app.sidebar-link href="{{ route('filament.admin.pages.dashboard') }}" icon="phosphor-shield-star" :active="Request::is('admin') || Request::is('admin/login')">Filament Admin</x-app.sidebar-link>
-                                <x-app.sidebar-link href="{{ route('admin.dashboard') }}" icon="phosphor-gauge" :active="Request::is('admin/dashboard')">Custom Admin Dashboard</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('filament.admin.pages.dashboard') }}" icon="phosphor-shield-star" :active="Request::is('admin') || Request::is('admin/login')" data-no-transition>Filament Admin</x-app.sidebar-link>
+<x-app.sidebar-link href="{{ route('admin.dashboard') }}" icon="phosphor-gauge" :active="Request::is('admin/dashboard')" data-no-transition>Custom Admin Dashboard</x-app.sidebar-link>
                             </div>
                         </div>
                     @endif

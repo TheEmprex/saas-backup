@@ -1,0 +1,21 @@
+[Unit]
+Description=Laravel Horizon Queue Manager
+After=redis-server.service network-online.target
+Wants=network-online.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+RestartSec=5
+ExecStart=/usr/bin/php /var/www/onlyverified/artisan horizon
+ExecStop=/usr/bin/php /var/www/onlyverified/artisan horizon:terminate
+WorkingDirectory=/var/www/onlyverified
+Environment=APP_ENV=production
+Environment=APP_DEBUG=false
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
