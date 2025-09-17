@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\EmploymentContract;
 use App\Models\ShiftReview;
 use App\Models\WorkShift;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AgencyManagementController extends Controller
 {
@@ -15,7 +16,7 @@ class AgencyManagementController extends Controller
         $agency = auth()->user();
         $employees = $agency->activeEmployees()->with('chatter')->get();
 
-        return view('agency.employees.index', compact('employees'));
+        return view('agency.employees.index', ['employees' => $employees]);
     }
 
     public function terminateContract(EmploymentContract $contract, Request $request)
@@ -24,7 +25,7 @@ class AgencyManagementController extends Controller
             'termination_reason' => 'required|string|max:255',
         ]);
 
-        if ($contract->agency_id !== auth()->id() || !$contract->isActive()) {
+        if ($contract->agency_id !== auth()->id() || ! $contract->isActive()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -45,11 +46,11 @@ class AgencyManagementController extends Controller
             'review_comment' => 'nullable|string',
         ]);
 
-        if ($shift->agency_id !== auth()->id() || !$shift->isCompleted()) {
+        if ($shift->agency_id !== auth()->id() || ! $shift->isCompleted()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $review = ShiftReview::create([
+        ShiftReview::create([
             'work_shift_id' => $shift->id,
             'employment_contract_id' => $shift->employment_contract_id,
             'reviewer_id' => auth()->id(),

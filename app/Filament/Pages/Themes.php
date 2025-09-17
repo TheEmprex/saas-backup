@@ -34,7 +34,7 @@ class Themes extends Page
     public function activate(string $theme_folder): void
     {
 
-        $theme = Theme::where('folder', '=', $theme_folder)->first();
+        $theme = Theme::query()->where('folder', '=', $theme_folder)->first();
 
         if (isset($theme->id)) {
             $this->deactivateThemes();
@@ -65,7 +65,7 @@ class Themes extends Page
 
     public function deleteTheme($theme_folder): void
     {
-        $theme = Theme::where('folder', '=', $theme_folder)->first();
+        $theme = Theme::query()->where('folder', '=', $theme_folder)->first();
 
         if (! isset($theme)) {
             Notification::make()
@@ -134,7 +134,7 @@ class Themes extends Page
 
         foreach ($themes as $theme) {
             if (isset($theme->folder)) {
-                $theme_exists = Theme::where('folder', '=', $theme->folder)->first();
+                $theme_exists = Theme::query()->where('folder', '=', $theme->folder)->first();
 
                 // If the theme does not exist in the database, then update it.
                 if (! isset($theme_exists->id)) {

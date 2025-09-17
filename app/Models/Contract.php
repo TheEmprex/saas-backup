@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -60,7 +62,7 @@ class Contract extends Model
             'date' => now()->toDateString(),
             'created_at' => now()->toISOString(),
         ];
-        
+
         $this->update([
             'earnings_log' => $earnings,
             'total_earned' => $this->total_earned + $amount,
@@ -72,9 +74,9 @@ class Contract extends Model
     public function getFormattedRateAttribute(): string
     {
         return match ($this->contract_type) {
-            'hourly' => '$' . number_format($this->rate, 2) . '/hr',
-            'fixed' => '$' . number_format($this->rate, 2),
-            'commission' => number_format($this->commission_percentage, 1) . '%',
+            'hourly' => '$'.number_format($this->rate, 2).'/hr',
+            'fixed' => '$'.number_format($this->rate, 2),
+            'commission' => number_format($this->commission_percentage, 1).'%',
             default => 'N/A',
         };
     }
@@ -93,22 +95,22 @@ class Contract extends Model
     public function removeEarning(int $index): bool
     {
         $earnings = $this->earnings_log ?? [];
-        
-        if (!isset($earnings[$index])) {
+
+        if (! isset($earnings[$index])) {
             return false;
         }
-        
+
         $removedEarning = $earnings[$index];
         unset($earnings[$index]);
         $earnings = array_values($earnings); // Reindex array
-        
+
         $this->update([
             'earnings_log' => $earnings,
             'total_earned' => $this->total_earned - $removedEarning['amount'],
             'hours_worked' => $this->hours_worked - ($removedEarning['hours'] ?? 0),
             'last_activity_at' => now(),
         ]);
-        
+
         return true;
     }
 
@@ -118,24 +120,26 @@ class Contract extends Model
         if ($this->status !== 'completed') {
             return false;
         }
-        
+
         // User must be either employer or contractor
         if ($this->employer_id !== $user->id && $this->contractor_id !== $user->id) {
             return false;
         }
-        
+
         // Check if user has already reviewed this contract
-        return !$this->reviews()->where('reviewer_id', $user->id)->exists();
+        return ! $this->reviews()->where('reviewer_id', $user->id)->exists();
     }
 
     public function getOtherParty(User $user): ?User
     {
         if ($this->employer_id === $user->id) {
             return $this->contractor;
-        } elseif ($this->contractor_id === $user->id) {
+        }
+
+        if ($this->contractor_id === $user->id) {
             return $this->employer;
         }
-        
+
         return null;
     }
 

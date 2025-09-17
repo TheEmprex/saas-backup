@@ -9,9 +9,9 @@ use Illuminate\Support\Str;
 
 class PluginAutoloader
 {
-    public static function register()
+    public static function register(): void
     {
-        spl_autoload_register(function ($class) {
+        spl_autoload_register(function ($class): void {
             $prefix = 'Wave\\Plugins\\';
             $base_dir = resource_path('plugins/');
 

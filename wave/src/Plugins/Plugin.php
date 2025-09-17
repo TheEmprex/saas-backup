@@ -16,13 +16,13 @@ abstract class Plugin extends ServiceProvider
     }
 
     // Provide default implementations
-    public function register()
+    public function register(): void
     {
         // Default register logic, if any
         // Can be overridden by specific plugins
     }
 
-    public function boot()
+    public function boot(): void
     {
         // Default boot logic, if any
         // Can be overridden by specific plugins
@@ -31,7 +31,7 @@ abstract class Plugin extends ServiceProvider
     // You can add additional methods that plugins should implement
     abstract public function getPluginInfo(): array;
 
-    public function postActivation()
+    public function postActivation(): void
     {
         // Default implementation (empty)
     }

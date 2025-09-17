@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('notifications', function (Blueprint $table): void {
             $table->uuid('id')->primary(); // Using UUID for the primary key
             $table->string('type'); // Type of the notification
             $table->morphs('notifiable'); // Polymorphic relation columns (notifiable_id and notifiable_type)

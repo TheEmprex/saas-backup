@@ -12,6 +12,6 @@ class Category extends Model
 
     public function posts()
     {
-        return $this->hasMany('Wave\Post');
+        return $this->hasMany(\Wave\Post::class);
     }
 }

@@ -8,14 +8,12 @@ use Illuminate\Support\ServiceProvider;
 
 class PluginServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
-        $this->app->singleton(PluginManager::class, function ($app) {
-            return new PluginManager($app);
-        });
+        $this->app->singleton(PluginManager::class, fn ($app) => new PluginManager($app));
     }
 
-    public function boot()
+    public function boot(): void
     {
         $pluginManager = $this->app->make(PluginManager::class);
         $pluginManager->loadPlugins();

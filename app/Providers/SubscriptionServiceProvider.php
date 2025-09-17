@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Models\User;
 use App\Services\SubscriptionService;
+use Illuminate\Support\ServiceProvider;
 
 class SubscriptionServiceProvider extends ServiceProvider
 {
@@ -13,9 +15,7 @@ class SubscriptionServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(SubscriptionService::class, function ($app) {
-            return new SubscriptionService();
-        });
+        $this->app->singleton(SubscriptionService::class, fn ($app) => new SubscriptionService());
     }
 
     /**
@@ -24,12 +24,13 @@ class SubscriptionServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Assign free plan to new users
-        User::created(function (User $user) {
+        User::created(function (User $user): void {
             $subscriptionService = app(SubscriptionService::class);
-            
+
             // Wait for the user type to be set, then assign free plan
-            dispatch(function () use ($user, $subscriptionService) {
+            dispatch(function () use ($user, $subscriptionService): void {
                 $user->refresh();
+
                 if ($user->userType) {
                     $subscriptionService->assignFreePlan($user);
                 }

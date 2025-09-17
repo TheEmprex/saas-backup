@@ -26,7 +26,7 @@ trait HasProfileKeyValues
             $keyValue = new ProfileKeyValue();
             $keyValue->key = $key;
             $keyValue->keyvalue_id = $this->id;
-            $keyValue->keyvalue_type = getMorphAlias(get_class($this)) ?? get_class($this);
+            $keyValue->keyvalue_type = getMorphAlias($this::class) ?? $this::class;
             $keyValue->type = $type;
         }
 

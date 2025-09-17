@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('contracts', function (Blueprint $table) {
+        Schema::create('contracts', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('employer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('contractor_id')->constrained('users')->onDelete('cascade');
@@ -27,15 +26,12 @@ return new class extends Migration
             $table->json('earnings_log')->nullable(); // store earning entries
             $table->timestamp('last_activity_at')->nullable();
             $table->timestamps();
-            
+
             $table->index(['employer_id', 'contractor_id']);
             $table->index(['status']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('contracts');

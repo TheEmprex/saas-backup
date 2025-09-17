@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\UserType;
+use Illuminate\Database\Seeder;
 
 class UserTypesSeeder extends Seeder
 {
@@ -24,9 +25,9 @@ class UserTypesSeeder extends Seeder
                     'typing_speed',
                     'english_proficiency',
                     'experience_agencies',
-                    'availability'
+                    'availability',
                 ],
-                'active' => true
+                'active' => true,
             ],
             [
                 'name' => 'ofm_agency',
@@ -37,9 +38,9 @@ class UserTypesSeeder extends Seeder
                     'company_name',
                     'company_description',
                     'results_screenshots',
-                    'payment_accounts'
+                    'payment_accounts',
                 ],
-                'active' => true
+                'active' => true,
             ],
             [
                 'name' => 'chatting_agency',
@@ -51,10 +52,10 @@ class UserTypesSeeder extends Seeder
                     'company_description',
                     'team_members',
                     'portfolio',
-                    'past_clients'
+                    'past_clients',
                 ],
-                'active' => true
-            ]
+                'active' => true,
+            ],
         ];
 
         foreach ($userTypes as $userType) {

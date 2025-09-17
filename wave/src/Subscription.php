@@ -49,10 +49,10 @@ class Subscription extends Model
      */
     public function user()
     {
-        return $this->belongsTo(config('wave.user_model', 'App\Models\User'), 'billable_id');
+        return $this->belongsTo(config('wave.user_model', \App\Models\User::class), 'billable_id');
     }
 
-    public function cancel()
+    public function cancel(): void
     {
         $this->status = 'cancelled';
         $this->save();

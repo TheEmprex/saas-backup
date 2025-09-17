@@ -12,6 +12,6 @@ class Changelog extends Model
 
     public function users()
     {
-        return $this->belongsToMany('Wave\User');
+        return $this->belongsToMany(\Wave\User::class);
     }
 }

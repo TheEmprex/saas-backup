@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('forms', function (Blueprint $table) {
+        Schema::create('forms', function (Blueprint $table): void {
             $table->id();
             $table->string('name'); // Name of the form for identification
             $table->string('slug')->unique(); // Unique slug for the form URL
@@ -19,7 +19,7 @@ return new class() extends Migration
             $table->timestamps(); // Timestamps for created_at and updated_at
         });
 
-        Schema::create('form_entries', function (Blueprint $table) {
+        Schema::create('form_entries', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('form_id')->constrained()->onDelete('cascade'); // Foreign key linking to the forms table
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Foreign key linking to the users table

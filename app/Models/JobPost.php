@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -45,7 +47,7 @@ class JobPost extends Model
         'views',
         'benefits',
         'expected_hours_per_week',
-        'duration_months'
+        'duration_months',
     ];
 
     protected $casts = [
@@ -64,7 +66,7 @@ class JobPost extends Model
         'payment_completed_at' => 'datetime',
         'start_date' => 'date',
         'end_date' => 'date',
-        'expires_at' => 'datetime'
+        'expires_at' => 'datetime',
     ];
 
     /**

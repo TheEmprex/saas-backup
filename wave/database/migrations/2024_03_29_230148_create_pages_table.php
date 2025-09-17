@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('pages', function (Blueprint $table) {
+        Schema::create('pages', function (Blueprint $table): void {
             $table->increments('id'); // Auto-incrementing UNSIGNED INTEGER (primary key)
             $table->unsignedBigInteger('author_id'); // UNSIGNED INTEGER for the foreign key to users table
             $table->string('title', 191); // VARCHAR equivalent column

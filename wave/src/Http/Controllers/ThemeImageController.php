@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Response;
 
 class ThemeImageController extends Controller
 {
-    public function show($theme_name)
+    public function show(string $theme_name)
     {
         $path = config('themes.folder').'/'.$theme_name.'/theme.jpg';
 

@@ -1,18 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use App\Models\User;
-use App\Models\UserType;
-use App\Models\JobPost;
 use App\Models\JobApplication;
+use App\Models\JobPost;
+use App\Models\KycVerification;
 use App\Models\Message;
 use App\Models\Rating;
+use App\Models\User;
 use App\Models\UserProfile;
-use App\Models\KycVerification;
+use App\Models\UserType;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class MarketplaceSeeder extends Seeder
 {
@@ -44,7 +45,7 @@ class MarketplaceSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::where('name', 'Manager')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Manager')->first()->id,
                 'role' => 'admin',
             ],
             [
@@ -52,47 +53,47 @@ class MarketplaceSeeder extends Seeder
                 'email' => 'sarah@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::where('name', 'Content Creator')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Content Creator')->first()->id,
             ],
             [
                 'name' => 'Mike Chen',
                 'email' => 'mike@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::where('name', 'Manager')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Manager')->first()->id,
             ],
             [
                 'name' => 'Emma Davis',
                 'email' => 'emma@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::where('name', 'Chatter')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Chatter')->first()->id,
             ],
             [
                 'name' => 'ProManagement Agency',
                 'email' => 'agency@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::where('name', 'Agency')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Agency')->first()->id,
             ],
             [
                 'name' => 'Alex Rodriguez',
                 'email' => 'alex@example.com',
                 'password' => Hash::make('password'),
                 'email_verified_at' => now(),
-                'user_type_id' => UserType::where('name', 'Video Editor')->first()->id,
+                'user_type_id' => UserType::query()->where('name', 'Video Editor')->first()->id,
             ],
         ];
 
         foreach ($testUsers as $userData) {
             $role = $userData['role'] ?? 'registered';
             unset($userData['role']);
-            
+
             $user = User::firstOrCreate(
                 ['email' => $userData['email']],
                 $userData
             );
-            
+
             if ($role === 'admin') {
                 $user->assignRole('admin');
             }
@@ -119,7 +120,7 @@ class MarketplaceSeeder extends Seeder
         $this->createRatings();
     }
 
-    private function createUserProfile(User $user)
+    private function createUserProfile(User $user): void
     {
         $profiles = [
             'sarah@example.com' => [
@@ -185,7 +186,7 @@ class MarketplaceSeeder extends Seeder
         );
     }
 
-    private function createKycVerification(User $user)
+    private function createKycVerification(User $user): void
     {
         $statuses = ['pending', 'approved', 'rejected'];
         $status = $statuses[array_rand($statuses)];
@@ -195,25 +196,25 @@ class MarketplaceSeeder extends Seeder
             [
                 'first_name' => explode(' ', $user->name)[0],
                 'last_name' => explode(' ', $user->name)[1] ?? 'User',
-                'date_of_birth' => now()->subYears(rand(20, 40)),
-                'phone_number' => '+1' . rand(1000000000, 9999999999),
+                'date_of_birth' => now()->subYears(random_int(20, 40)),
+                'phone_number' => '+1'.random_int(1000000000, 9999999999),
                 'address' => '123 Main Street',
                 'city' => 'Los Angeles',
                 'state' => 'California',
                 'postal_code' => '90210',
                 'country' => 'US',
                 'id_document_type' => 'passport',
-                'id_document_number' => 'P' . rand(100000000, 999999999),
+                'id_document_number' => 'P'.random_int(100000000, 999999999),
                 'status' => $status,
-                'submitted_at' => now()->subDays(rand(1, 30)),
-                'reviewed_at' => $status !== 'pending' ? now()->subDays(rand(1, 7)) : null,
-                'reviewed_by' => $status !== 'pending' ? User::where('email', 'admin@example.com')->first()->id : null,
+                'submitted_at' => now()->subDays(random_int(1, 30)),
+                'reviewed_at' => $status !== 'pending' ? now()->subDays(random_int(1, 7)) : null,
+                'reviewed_by' => $status !== 'pending' ? User::query()->where('email', 'admin@example.com')->first()->id : null,
                 'rejection_reason' => $status === 'rejected' ? 'Document quality is not sufficient for verification.' : null,
             ]
         );
     }
 
-    private function createJobPosts()
+    private function createJobPosts(): void
     {
         $jobPosts = [
             [
@@ -303,20 +304,21 @@ class MarketplaceSeeder extends Seeder
             $userEmail = $jobData['user_email'];
             unset($jobData['user_email']);
 
-            $user = User::where('email', $userEmail)->first();
+            $user = User::query()->where('email', $userEmail)->first();
+
             if ($user) {
                 $jobData['user_id'] = $user->id;
                 $jobData['status'] = 'active';
                 $jobData['current_applications'] = 0;
-                $jobData['views'] = rand(5, 50);
-                $jobData['start_date'] = now()->addDays(rand(1, 14));
-                $jobData['expires_at'] = now()->addDays(rand(30, 90));
+                $jobData['views'] = random_int(5, 50);
+                $jobData['start_date'] = now()->addDays(random_int(1, 14));
+                $jobData['expires_at'] = now()->addDays(random_int(30, 90));
                 $jobData['tags'] = json_encode(['OnlyFans', 'Remote', 'Adult Content']);
 
                 JobPost::firstOrCreate(
                     [
                         'user_id' => $user->id,
-                        'title' => $jobData['title']
+                        'title' => $jobData['title'],
                     ],
                     $jobData
                 );
@@ -324,20 +326,20 @@ class MarketplaceSeeder extends Seeder
         }
     }
 
-    private function createJobApplications()
+    private function createJobApplications(): void
     {
         $jobs = JobPost::all();
-        $users = User::where('email', '!=', 'admin@example.com')->get();
+        $users = User::query()->where('email', '!=', 'admin@example.com')->get();
 
         foreach ($jobs as $job) {
-            $applicants = $users->where('id', '!=', $job->user_id)->random(rand(1, 3));
+            $applicants = $users->where('id', '!=', $job->user_id)->random(random_int(1, 3));
 
             foreach ($applicants as $applicant) {
                 // Calculate proposed rate based on job rate type
                 $proposedRate = match ($job->rate_type) {
-                    'hourly' => $job->hourly_rate + rand(-5, 15),
-                    'fixed' => $job->fixed_rate + rand(-50, 100),
-                    'commission' => $job->commission_percentage + rand(-5, 5),
+                    'hourly' => $job->hourly_rate + random_int(-5, 15),
+                    'fixed' => $job->fixed_rate + random_int(-50, 100),
+                    'commission' => $job->commission_percentage + random_int(-5, 5),
                     default => 50
                 };
 
@@ -359,9 +361,9 @@ class MarketplaceSeeder extends Seeder
         }
     }
 
-    private function createMessages()
+    private function createMessages(): void
     {
-        $users = User::where('email', '!=', 'admin@example.com')->get();
+        $users = User::query()->where('email', '!=', 'admin@example.com')->get();
 
         for ($i = 0; $i < 20; $i++) {
             $sender = $users->random();
@@ -372,15 +374,15 @@ class MarketplaceSeeder extends Seeder
                 'recipient_id' => $recipient->id,
                 'message_content' => 'Thank you for your application. I would like to discuss this opportunity further.',
                 'message_type' => 'text',
-                'is_read' => rand(0, 1),
-                'created_at' => now()->subDays(rand(1, 30)),
+                'is_read' => random_int(0, 1),
+                'created_at' => now()->subDays(random_int(1, 30)),
             ]);
         }
     }
 
-    private function createRatings()
+    private function createRatings(): void
     {
-        $users = User::where('email', '!=', 'admin@example.com')->get();
+        $users = User::query()->where('email', '!=', 'admin@example.com')->get();
         $jobPosts = JobPost::all();
 
         for ($i = 0; $i < 15; $i++) {
@@ -395,11 +397,11 @@ class MarketplaceSeeder extends Seeder
                     'job_post_id' => $jobPost->id,
                 ],
                 [
-                    'overall_rating' => rand(3, 5),
-                    'communication_rating' => rand(3, 5),
-                    'professionalism_rating' => rand(3, 5),
-                    'timeliness_rating' => rand(3, 5),
-                    'quality_rating' => rand(3, 5),
+                    'overall_rating' => random_int(3, 5),
+                    'communication_rating' => random_int(3, 5),
+                    'professionalism_rating' => random_int(3, 5),
+                    'timeliness_rating' => random_int(3, 5),
+                    'quality_rating' => random_int(3, 5),
                     'review_title' => 'Great Experience',
                     'review_content' => 'Great to work with! Professional and delivered quality work on time.',
                     'is_verified' => true,

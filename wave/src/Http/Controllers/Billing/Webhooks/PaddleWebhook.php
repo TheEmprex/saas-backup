@@ -41,7 +41,7 @@ class PaddleWebhook extends Controller
             return;
         }
 
-        $subscription = Subscription::where('vendor_subscription_id', $subscriptionId)->where('status', 'active')->first();
+        $subscription = Subscription::query()->where('vendor_subscription_id', $subscriptionId)->where('status', 'active')->first();
         $subscription->cancel();
     }
 }

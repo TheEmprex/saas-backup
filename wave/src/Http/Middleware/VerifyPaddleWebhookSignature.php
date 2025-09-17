@@ -16,6 +16,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class VerifyPaddleWebhookSignature
 {
     public const SIGNATURE_HEADER = 'Paddle-Signature';
+
     public const HASH_ALGORITHM_1 = 'h1';
 
     protected ?int $maximumVariance = 5;
@@ -69,12 +70,10 @@ class VerifyPaddleWebhookSignature
      * Validate signature.
      *
      * @param  string  $signature
-     * @return bool
      */
-
     // the signature is not $signature[0] it's $signature
     // the true it's false and false it's true when if ($this->isInvalidSignature($request, $signature)) { throw new AccessDeniedHttpException('Invalid webhook signature.'); }
-    protected function isInvalidSignature(Request $request, $signature)
+    protected function isInvalidSignature(Request $request, $signature): bool
     {
         if (empty($signature)) {
             return true;

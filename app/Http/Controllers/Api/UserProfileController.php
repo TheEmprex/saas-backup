@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\UserProfile;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -23,13 +25,13 @@ class UserProfileController extends Controller
         // Search filters
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('bio', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhere('company_name', 'like', "%{$search}%")
-                  ->orWhere('company_description', 'like', "%{$search}%");
+                    ->orWhereHas('user', function ($userQuery) use ($search): void {
+                        $userQuery->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhere('company_name', 'like', "%{$search}%")
+                    ->orWhere('company_description', 'like', "%{$search}%");
             });
         }
 
@@ -88,7 +90,8 @@ class UserProfileController extends Controller
         }
 
         // Check if user already has a profile
-        $existingProfile = UserProfile::where('user_id', Auth::id())->first();
+        $existingProfile = UserProfile::query()->where('user_id', Auth::id())->first();
+
         if ($existingProfile) {
             return response()->json(['error' => 'Profile already exists'], 409);
         }
@@ -102,6 +105,7 @@ class UserProfileController extends Controller
 
         // Convert arrays to JSON
         $arrayFields = ['availability_hours', 'portfolio_links', 'experience_agencies', 'traffic_sources', 'languages', 'certifications', 'social_media_links'];
+
         foreach ($arrayFields as $field) {
             if (isset($profileData[$field])) {
                 $profileData[$field] = json_encode($profileData[$field]);
@@ -127,11 +131,11 @@ class UserProfileController extends Controller
             'user',
             'user.userType',
             'user.ratingsReceived',
-            'user.jobPosts' => function ($query) {
+            'user.jobPosts' => function ($query): void {
                 $query->where('status', 'active')
-                      ->orderBy('created_at', 'desc')
-                      ->limit(5);
-            }
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5);
+            },
         ]));
     }
 
@@ -170,9 +174,10 @@ class UserProfileController extends Controller
         }
 
         $profileData = $validator->validated();
-        
+
         // Convert arrays to JSON
         $arrayFields = ['availability_hours', 'portfolio_links', 'experience_agencies', 'traffic_sources', 'languages', 'certifications', 'social_media_links'];
+
         foreach ($arrayFields as $field) {
             if (isset($profileData[$field])) {
                 $profileData[$field] = json_encode($profileData[$field]);
@@ -208,7 +213,7 @@ class UserProfileController extends Controller
             ->where('user_id', Auth::id())
             ->first();
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json(['error' => 'Profile not found'], 404);
         }
 
@@ -220,9 +225,9 @@ class UserProfileController extends Controller
      */
     public function updateMe(Request $request)
     {
-        $profile = UserProfile::where('user_id', Auth::id())->first();
+        $profile = UserProfile::query()->where('user_id', Auth::id())->first();
 
-        if (!$profile) {
+        if (! $profile) {
             return response()->json(['error' => 'Profile not found'], 404);
         }
 
@@ -251,9 +256,10 @@ class UserProfileController extends Controller
         }
 
         $profileData = $validator->validated();
-        
+
         // Convert arrays to JSON
         $arrayFields = ['availability_hours', 'portfolio_links', 'experience_agencies', 'traffic_sources', 'languages', 'certifications', 'social_media_links'];
+
         foreach ($arrayFields as $field) {
             if (isset($profileData[$field])) {
                 $profileData[$field] = json_encode($profileData[$field]);

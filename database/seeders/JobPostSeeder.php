@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\JobPost;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class JobPostSeeder extends Seeder
 {
@@ -15,11 +16,11 @@ class JobPostSeeder extends Seeder
     public function run(): void
     {
         $user = User::first();
-        
-        if (!$user) {
+
+        if (! $user) {
             return;
         }
-        
+
         JobPost::create([
             'user_id' => $user->id,
             'title' => 'English Market Chatter - Immediate Start',
@@ -39,7 +40,7 @@ class JobPostSeeder extends Seeder
             'max_applications' => 25,
             'current_applications' => 0,
         ]);
-        
+
         JobPost::create([
             'user_id' => $user->id,
             'title' => 'Spanish Market Chatter - High Commission',
@@ -59,7 +60,7 @@ class JobPostSeeder extends Seeder
             'max_applications' => 15,
             'current_applications' => 0,
         ]);
-        
+
         JobPost::create([
             'user_id' => $user->id,
             'title' => 'Entry Level Chatter - Training Provided',

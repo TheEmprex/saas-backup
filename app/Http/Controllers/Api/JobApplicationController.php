@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -46,7 +48,7 @@ class JobApplicationController extends Controller
         $jobPost = JobPost::findOrFail($request->job_post_id);
 
         // Check if user already applied
-        $existingApplication = JobApplication::where('job_post_id', $jobPost->id)
+        $existingApplication = JobApplication::query()->where('job_post_id', $jobPost->id)
             ->where('user_id', Auth::id())
             ->first();
 
@@ -100,7 +102,7 @@ class JobApplicationController extends Controller
             'jobPost.user',
             'user',
             'user.userType',
-            'user.profile'
+            'user.profile',
         ]));
     }
 
@@ -161,7 +163,7 @@ class JobApplicationController extends Controller
     public function received(Request $request)
     {
         $applications = JobApplication::with(['jobPost', 'user', 'user.userType', 'user.profile'])
-            ->whereHas('jobPost', function ($query) {
+            ->whereHas('jobPost', function ($query): void {
                 $query->where('user_id', Auth::id());
             })
             ->orderBy('created_at', 'desc')
@@ -186,8 +188,8 @@ class JobApplicationController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $applications = JobApplication::whereIn('id', $request->application_ids)
-            ->whereHas('jobPost', function ($query) {
+        $applications = JobApplication::query()->whereIn('id', $request->application_ids)
+            ->whereHas('jobPost', function ($query): void {
                 $query->where('user_id', Auth::id());
             })
             ->get();
@@ -201,8 +203,8 @@ class JobApplicationController extends Controller
             'notes' => $request->notes,
         ];
 
-        JobApplication::whereIn('id', $request->application_ids)
-            ->whereHas('jobPost', function ($query) {
+        JobApplication::query()->whereIn('id', $request->application_ids)
+            ->whereHas('jobPost', function ($query): void {
                 $query->where('user_id', Auth::id());
             })
             ->update($updateData);

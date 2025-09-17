@@ -11,6 +11,7 @@ use Wave\Subscription;
 class CancelExpiredSubscriptions extends Command
 {
     protected $signature = 'subscriptions:cancel-expired';
+
     protected $description = 'Cancel subscriptions that have expired';
 
     public function __construct()
@@ -18,12 +19,12 @@ class CancelExpiredSubscriptions extends Command
         parent::__construct();
     }
 
-    public function handle()
+    public function handle(): void
     {
         $now = Carbon::now();
 
         // Find subscriptions where ends_at is past the current date and status is active
-        $subscriptions = Subscription::where('status', 'active')
+        $subscriptions = Subscription::query()->where('status', 'active')
             ->where('ends_at', '<', $now)
             ->get();
 

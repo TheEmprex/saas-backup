@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Models\KycVerification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class KycController extends Controller
 {
@@ -20,13 +22,13 @@ class KycController extends Controller
         $user = auth()->user();
         $kycVerification = $user->kycVerification;
 
-        return view('theme::kyc.index', compact('kycVerification'));
+        return view('theme::kyc.index', ['kycVerification' => $kycVerification]);
     }
 
     public function create()
     {
         $user = auth()->user();
-        
+
         // Check if user already has a KYC verification
         if ($user->hasKycSubmitted()) {
             return redirect()->route('kyc.index')
@@ -67,7 +69,7 @@ class KycController extends Controller
         $data = $request->only([
             'first_name', 'last_name', 'date_of_birth', 'phone_number',
             'address', 'city', 'state', 'postal_code', 'country',
-            'id_document_type', 'id_document_number'
+            'id_document_type', 'id_document_number',
         ]);
 
         // Handle file uploads
@@ -99,26 +101,19 @@ class KycController extends Controller
     public function show(KycVerification $kyc)
     {
         // Only allow users to view their own KYC or admins
-        if ($kyc->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
+        if ($kyc->user_id !== auth()->id() && ! auth()->user()->hasRole('admin')) {
             abort(403);
         }
 
-        return view('theme::kyc.show', compact('kyc'));
-    }
-
-    private function storeFile($file, $directory)
-    {
-        $fileName = Str::random(40) . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs($directory, $fileName, 'private');
-        return $path;
+        return view('theme::kyc.show', ['kyc' => $kyc]);
     }
 
     public function downloadFile($type, $id)
     {
         $kyc = KycVerification::findOrFail($id);
-        
+
         // Only allow users to download their own files or admins
-        if ($kyc->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
+        if ($kyc->user_id !== auth()->id() && ! auth()->user()->hasRole('admin')) {
             abort(403);
         }
 
@@ -130,10 +125,17 @@ class KycController extends Controller
             default => null
         };
 
-        if (!$filePath || !Storage::disk('private')->exists($filePath)) {
+        if (! $filePath || ! Storage::disk('private')->exists($filePath)) {
             abort(404);
         }
 
         return Storage::disk('private')->download($filePath);
+    }
+
+    private function storeFile($file, string $directory)
+    {
+        $fileName = Str::random(40).'.'.$file->getClientOriginalExtension();
+
+        return $file->storeAs($directory, $fileName, 'private');
     }
 }

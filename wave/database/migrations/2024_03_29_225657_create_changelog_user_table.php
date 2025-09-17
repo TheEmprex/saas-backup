@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('changelog_user', function (Blueprint $table) {
+        Schema::create('changelog_user', function (Blueprint $table): void {
             $table->unsignedInteger('changelog_id');
             $table->unsignedBigInteger('user_id');
 

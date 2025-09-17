@@ -17,9 +17,10 @@ use Wave\User;
 
 class SubscriptionController extends Controller
 {
-    private $paddle_url;
+    private readonly string $paddle_url;
 
     private $vendor_id;
+
     private $api_key;
 
     public function __construct()
@@ -64,7 +65,7 @@ class SubscriptionController extends Controller
             sleep($initialDelay * (2 ** $i));
         }
 
-        if ($transaction) {
+        if ($transaction !== null) {
             // Proceed with processing the transaction
             $plans = Plan::all();
 
@@ -83,9 +84,9 @@ class SubscriptionController extends Controller
                     $customerName = $nameParts[0];
                 }
 
-                if ($guest) {
-                    if (User::where('email', $customerEmail)->exists()) {
-                        $user = User::where('email', $customerEmail)->first();
+                if ($guest !== 0) {
+                    if (User::query()->where('email', $customerEmail)->exists()) {
+                        $user = User::query()->where('email', $customerEmail)->first();
                     } else {
                         $registration = new \Wave\Http\Controllers\Auth\RegisterController();
                         $user_data = [
@@ -100,7 +101,7 @@ class SubscriptionController extends Controller
                     $user = auth()->user();
                 }
 
-                $plan = Plan::where('plan_id', $transaction->items[0]->price->id)->first();
+                $plan = Plan::query()->where('plan_id', $transaction->items[0]->price->id)->first();
 
                 // Update user role based on plan
                 $user->role_id = $plan->role_id;
@@ -140,8 +141,6 @@ class SubscriptionController extends Controller
         if (! $user->latestSubscription) {
             return [];
         }
-
-        $invoices = [];
         $response = Http::withToken($this->api_key)->get($this->paddle_url.'/transactions', [
             'subscription_id' => $user->latestSubscription->subscription_id,
         ]);
@@ -152,7 +151,7 @@ class SubscriptionController extends Controller
 
     }
 
-    public function invoice(Request $request, $transactionId)
+    public function invoice(Request $request, string $transactionId)
     {
 
         $response = Http::withToken($this->api_key)->get($this->paddle_url.'/transactions/'.$transactionId.'/invoice');
@@ -164,12 +163,12 @@ class SubscriptionController extends Controller
 
     public function switchPlans(Request $request)
     {
-        $plan = Plan::where('plan_id', $request->plan_id)->first();
+        $plan = Plan::query()->where('plan_id', $request->plan_id)->first();
 
         if (isset($plan->id)) {
             // Update the user plan with Paddle
             $response = Http::withToken($this->api_key)->patch(
-                $this->paddle_url.'/subscriptions/'.(string) $request->user()->latestSubscription->subscription_id,
+                $this->paddle_url.'/subscriptions/'.$request->user()->latestSubscription->subscription_id,
                 [
                     'items' => [
                         [
@@ -214,7 +213,7 @@ class SubscriptionController extends Controller
         $subscription_id = auth()->user()->latestSubscription->subscription_id;
 
         // Ensure the provided subscription ID matches the user's subscription ID
-        $localSubscription = Subscription::where('subscription_id', $subscription_id)->first();
+        $localSubscription = Subscription::query()->where('subscription_id', $subscription_id)->first();
 
         if (! $localSubscription || auth()->user()->latestSubscription->subscription_id != $subscription_id) {
             return back()->with(['message' => 'Invalid subscription ID.', 'message_type' => 'danger']);
@@ -240,12 +239,13 @@ class SubscriptionController extends Controller
 
                 // Update user's role to "cancelled"
                 $user = User::find($localSubscription->user_id);
-                $cancelledRole = Role::where('name', '=', 'cancelled')->first();
+                $cancelledRole = Role::query()->where('name', '=', 'cancelled')->first();
                 $user->role_id = $cancelledRole->id;
                 $user->save();
 
                 return back()->with(['message' => 'Your subscription has been successfully canceled.', 'message_type' => 'success']);
             }
+
             // Handle any errors that were returned in the response body
             $error = $body['error']['message'] ?? 'Unknown error while canceling the subscription.';
 

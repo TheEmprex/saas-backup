@@ -16,9 +16,9 @@
                                 <p class="text-sm text-gray-500">{{ $job->created_at->diffForHumans() }}</p>
                             </div>
                             <div class="text-right">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                    @if($job->status === 'active') bg-green-100 text-green-800 
-                                    @elseif($job->status === 'draft') bg-yellow-100 text-yellow-800 
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    @if($job->status === 'active') bg-green-100 text-green-800
+                                    @elseif($job->status === 'draft') bg-yellow-100 text-yellow-800
                                     @else bg-gray-100 text-gray-800 @endif">
                                     {{ ucfirst($job->status) }}
                                 </span>
@@ -54,19 +54,19 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
             <div class="space-y-3">
-                <a href="{{ route('filament.admin.resources.job-posts.index') }}" 
+                <a href="{{ route('filament.admin.resources.job-posts.index') }}"
                    class="block w-full bg-blue-500 text-white text-center py-2 px-4 rounded hover:bg-blue-600">
                     Manage Jobs
                 </a>
-                <a href="{{ route('filament.admin.resources.users.index') }}" 
+                <a href="{{ route('filament.admin.resources.users.index') }}"
                    class="block w-full bg-green-500 text-white text-center py-2 px-4 rounded hover:bg-green-600">
                     Manage Users
                 </a>
-                <a href="{{ route('filament.admin.resources.job-applications.index') }}" 
+                <a href="{{ route('filament.admin.resources.job-applications.index') }}"
                    class="block w-full bg-purple-500 text-white text-center py-2 px-4 rounded hover:bg-purple-600">
                     View Applications
                 </a>
-                <a href="{{ route('filament.admin.resources.messages.index') }}" 
+                <a href="{{ route('filament.admin.resources.messages.index') }}"
                    class="block w-full bg-orange-500 text-white text-center py-2 px-4 rounded hover:bg-orange-600">
                     View Messages
                 </a>
@@ -77,8 +77,8 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Revenue Overview</h3>
             @php
-                $featuredJobs = \App\Models\JobPost::where('is_featured', true)->count();
-                $urgentJobs = \App\Models\JobPost::where('is_urgent', true)->count();
+                $featuredJobs = \App\Models\JobPost::query()->where('is_featured', true)->count();
+                $urgentJobs = \App\Models\JobPost::query()->where('is_urgent', true)->count();
                 $potentialRevenue = ($featuredJobs * 10) + ($urgentJobs * 5);
             @endphp
             <div class="space-y-3">

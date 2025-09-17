@@ -24,47 +24,49 @@ use Intervention\Image\ImageManagerStatic;
 use Laravel\Folio\Folio;
 use Livewire\Livewire;
 use Wave\Facades\Wave as WaveFacade;
+use Wave\Http\Middleware\InstallMiddleware;
+use Wave\Http\Middleware\Subscribed;
+use Wave\Http\Middleware\ThemeDemoMiddleware;
+use Wave\Http\Middleware\TokenMiddleware;
+use Wave\Http\Middleware\VerifyPaddleWebhookSignature;
 use Wave\Overrides\Vite;
 use Wave\Plugins\PluginServiceProvider;
 
 class WaveServiceProvider extends ServiceProvider
 {
-    public function register()
+    public function register(): void
     {
 
         $loader = AliasLoader::getInstance();
         $loader->alias('Wave', WaveFacade::class);
 
-        $this->app->singleton('wave', function () {
-            return new Wave();
-        });
+        $this->app->singleton('wave', fn () => new Wave());
 
         $this->loadHelpers();
 
         $this->loadLivewireComponents();
 
-        $this->app->router->aliasMiddleware('paddle-webhook-signature', \Wave\Http\Middleware\VerifyPaddleWebhookSignature::class);
-        $this->app->router->aliasMiddleware('subscribed', \Wave\Http\Middleware\Subscribed::class);
-        $this->app->router->aliasMiddleware('token_api', \Wave\Http\Middleware\TokenMiddleware::class);
+        $this->app->router->aliasMiddleware('paddle-webhook-signature', VerifyPaddleWebhookSignature::class);
+        $this->app->router->aliasMiddleware('subscribed', Subscribed::class);
+        $this->app->router->aliasMiddleware('token_api', TokenMiddleware::class);
 
         if (! $this->hasDBConnection()) {
-            $this->app->router->pushMiddlewareToGroup('web', \Wave\Http\Middleware\InstallMiddleware::class);
+            $this->app->router->pushMiddlewareToGroup('web', InstallMiddleware::class);
         }
 
         if (config('wave.demo')) {
-            $this->app->router->pushMiddlewareToGroup('web', \Wave\Http\Middleware\ThemeDemoMiddleware::class);
+            $this->app->router->pushMiddlewareToGroup('web', ThemeDemoMiddleware::class);
             // Overwrite the Vite asset helper so we can use the demo folder as opposed to the build folder
-            $this->app->singleton(BaseVite::class, function ($app) {
+            $this->app->singleton(BaseVite::class, fn ($app)
                 // Replace the default Vite instance with the custom one
-                return new Vite();
-            });
+                => new Vite());
         }
 
         // Register the PluginServiceProvider
         $this->app->register(PluginServiceProvider::class);
     }
 
-    public function boot(Router $router, Dispatcher $event)
+    public function boot(Router $router, Dispatcher $event): void
     {
 
         Relation::morphMap([
@@ -87,12 +89,12 @@ class WaveServiceProvider extends ServiceProvider
             'warning' => Color::Amber,
         ]);
 
-        Validator::extend('imageable', function ($attribute, $value, $params, $validator) {
+        Validator::extend('imageable', function ($attribute, $value, $params, $validator): bool {
             try {
                 ImageManagerStatic::make($value);
 
                 return true;
-            } catch (Exception $e) {
+            } catch (Exception) {
                 return false;
             }
         });
@@ -134,29 +136,19 @@ class WaveServiceProvider extends ServiceProvider
 
         // app()->afterResolving('blade.compiler', function (BladeCompiler $bladeCompiler) {
         // @admin directives
-        Blade::if('admin', function () {
-            return ! auth()->guest() && auth()->user()->isAdmin();
-        });
+        Blade::if('admin', fn () => ! auth()->guest() && auth()->user()->isAdmin());
 
         // @subscriber directives
-        Blade::if('subscriber', function () {
-            return ! auth()->guest() && auth()->user()->subscriber();
-        });
+        Blade::if('subscriber', fn () => ! auth()->guest() && auth()->user()->subscriber());
 
         // @notsubscriber directives
-        Blade::if('notsubscriber', function () {
-            return ! auth()->guest() && ! auth()->user()->subscriber();
-        });
+        Blade::if('notsubscriber', fn () => ! auth()->guest() && ! auth()->user()->subscriber());
 
         // Subscribed Directives
-        Blade::if('subscribed', function ($plan) {
-            return ! auth()->guest() && auth()->user()->subscribedToPlan($plan);
-        });
+        Blade::if('subscribed', fn ($plan) => ! auth()->guest() && auth()->user()->subscribedToPlan($plan));
 
         // home directives
-        Blade::if('home', function () {
-            return request()->is('/');
-        });
+        Blade::if('home', fn () => request()->is('/'));
 
     }
 
@@ -191,7 +183,7 @@ class WaveServiceProvider extends ServiceProvider
 
             if (isset($theme->id)) {
                 if (Cookie::get('theme')) {
-                    $theme_cookied = \DevDojo\Themes\Models\Theme::where('folder', '=', Cookie::get('theme'))->first();
+                    $theme_cookied = \DevDojo\Themes\Models\Theme::query()->where('folder', '=', Cookie::get('theme'))->first();
 
                     if (isset($theme_cookied->id)) {
                         $theme = $theme_cookied;
@@ -213,7 +205,7 @@ class WaveServiceProvider extends ServiceProvider
 
     protected function getActiveTheme()
     {
-        return \Wave\Theme::where('active', 1)->first();
+        return \Wave\Theme::query()->where('active', 1)->first();
     }
 
     protected function hasDBConnection()
@@ -222,14 +214,14 @@ class WaveServiceProvider extends ServiceProvider
 
         try {
             DB::connection()->getPdo();
-        } catch (Exception $e) {
+        } catch (Exception) {
             $hasDatabaseConnection = false;
         }
 
         return $hasDatabaseConnection;
     }
 
-    private function loadLivewireComponents()
+    private function loadLivewireComponents(): void
     {
         Livewire::component('billing.checkout', \Wave\Http\Livewire\Billing\Checkout::class);
         Livewire::component('billing.update', \Wave\Http\Livewire\Billing\Update::class);

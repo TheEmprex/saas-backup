@@ -1,7 +1,7 @@
 <?php
 /**
  * OnlyFans Management Marketplace - Final Complete Test
- * 
+ *
  * This script demonstrates that all features are working correctly
  * after the recent fixes and improvements.
  */
@@ -51,7 +51,7 @@ echo "   🏷️ User Types: {$userTypeCount}" . PHP_EOL;
 echo PHP_EOL;
 
 echo "🔧 ADMIN ACCESS:" . PHP_EOL;
-$admins = User::whereHas('roles', function($q) {
+$admins = User::query()->whereHas('roles', function($q) {
     $q->where('name', 'admin');
 })->get();
 

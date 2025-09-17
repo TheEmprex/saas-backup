@@ -36,14 +36,14 @@ use Filament\Actions\DeleteAction;
         public $folderName;
 
         public $search;
-        public $searchResults = null;
+        public $searchResults;
 
         public $selectedFile;
         public $destinationFolder;
 
-        public $fileOrFolderCopied = null;
+        public $fileOrFolderCopied;
 
-        public function mount($disk = 'public'){
+        public function mount($disk = 'public'): void{
             $this->record = App\Models\User::first();
             $this->storageURL = $this->storage($disk)->url('/');
             $this->disk = $disk;
@@ -52,13 +52,12 @@ use Filament\Actions\DeleteAction;
         }
 
         #[Computed]
-        public function isRootDirectory()
+        public function isRootDirectory(): bool
         {
-           $rootDir = $this->folder == '/';
-           return $rootDir;
+           return $this->folder == '/';
         }
 
-        public function setSelectedFile($file){
+        public function setSelectedFile($file): void{
             $this->selectedFile = $file;
         }
 
@@ -67,33 +66,33 @@ use Filament\Actions\DeleteAction;
         {
             $folders = $this->storage($this->disk)->directories($this->folder);
 
-            $folders = array_map(function($folder) {
-                return basename($folder);
-            }, $folders);
+            $folders = array_map(fn($folder) => basename($folder), $folders);
 
             sort($folders);
             return $folders;
         }
 
-        private function loadFilesInCurrentFolder(){
+        private function loadFilesInCurrentFolder(): void{
             $this->files = $this->getFilesInDir($this->folder);
         }
 
         public function storage($disk = false){
             // We want to get the class from the Storage facade, this is probably Illuminate\Filesystem\FilesystemManager
-            $storageClass = get_class(\Illuminate\Support\Facades\Storage::getFacadeRoot());
+            $storageClass = \Illuminate\Support\Facades\Storage::getFacadeRoot()::class;
 
             // create a new instance of this object to be used
             $classInstance = new $storageClass(app());
 
             // if the disk is set by default return the disk passed in
-            if($disk) $classInstance = $classInstance->disk($disk);
+            if ($disk) {
+                return $classInstance->disk($disk);
+            }
 
             return $classInstance;
         }
 
         #[Computed]
-        public function breadcrumbsRefresh(){
+        public function breadcrumbsRefresh(): void{
             $crumbs = array_filter(explode('/', trim($this->folder, '/')));
             $breadcrumbs = [];
 
@@ -104,16 +103,19 @@ use Filament\Actions\DeleteAction;
                     $location .= '/' . $crumbs[$depth];
                     $depth++;
                 }
-                array_push($breadcrumbs, (object)[
+                $breadcrumbs[] = (object)[
                     'display' => $crumb,
                     'location' => $location
-                ]);
+                ];
             }
 
             $this->breadcrumbs =  $breadcrumbs;
         }
 
-        private function getFilesInDir($dir){
+        /**
+         * @return (object{name: mixed, original_name: mixed, filename: mixed, type: mixed, url: mixed, relative_path: mixed, size: mixed, last_modified: mixed, thumbnails: array{}} & \stdClass)[]|(object{id: non-empty-string, name: mixed, original_name: mixed, type: 'folder', path: mixed, relative_path: mixed, items: int<0, max>, last_modified: ''} & \stdClass)[]
+         */
+        private function getFilesInDir($dir): array{
             $files = [];
             $thumbnails = [];
             $thumbnail_names = [];
@@ -173,18 +175,14 @@ use Filament\Actions\DeleteAction;
         }
 
 
-        public function goToDirectory($path){
-            if($path == '/'){
-                $this->folder = '/';
-            } else {
-                $this->folder = '/' . $path;
-            }
+        public function goToDirectory(string $path): void{
+            $this->folder = $path == '/' ? '/' : '/' . $path;
             $this->selectedFile=null;
             $this->loadFilesInCurrentFolder();
             $this->breadcrumbsRefresh();
         }
 
-        public function createNewFolder()
+        public function createNewFolder(): void
         {
             // Validate the input
             $this->validate([
@@ -214,11 +212,11 @@ use Filament\Actions\DeleteAction;
             $this->dispatch('close-modal', id: 'create-folder-modal');
         }
 
-        public function refresh(){
+        public function refresh(): void{
             $this->loadFilesInCurrentFolder();
         }
 
-        public function moveFileOrFolder()
+        public function moveFileOrFolder(): void
         {
             // if destination folder is null it is either up one directory .. or the first folder
             if($this->destinationFolder == null){
@@ -267,7 +265,7 @@ use Filament\Actions\DeleteAction;
 
         // Upload functionality
 
-        public function updatedUpload()
+        public function updatedUpload(): void
         {
             $this->validate([
                 'upload' => 'required|file|max:10240', // 10MB Max
@@ -334,7 +332,7 @@ use Filament\Actions\DeleteAction;
             ->icon('heroicon-o-trash')
             ->requiresConfirmation()
             ->modalDescription('Are you sure you want to delete this ' . $file_or_folder . '?')
-            ->action(function () {
+            ->action(function (): void {
                 if (!$this->selectedFile) {
                     Notification::make()
                         ->title('No file selected')
@@ -347,12 +345,12 @@ use Filament\Actions\DeleteAction;
             })->view('wave::media.views.header.delete');
         }
 
-        public function triggerDeleteAction()
+        public function triggerDeleteAction(): void
         {
             $this->mountAction('delete');
         }
 
-        private function deleteFile()
+        private function deleteFile(): void
         {
             $path = $this->stripDoubleSlashesFromString($this->folder . '/' . $this->selectedFile['name']);
 
@@ -374,21 +372,25 @@ use Filament\Actions\DeleteAction;
         }
         // end delete functionality
 
-        private function formatSize($bytes) {
+        private function formatSize($bytes): string {
             if ($bytes < 1024) {
                 return $bytes . ' B';
-            } elseif ($bytes < 1048576) {
+            }
+            if ($bytes < 1048576) {
                 return round($bytes / 1024, 1) . ' KB';
-            } elseif ($bytes < 1073741824) {
+            }
+            if ($bytes < 1073741824) {
                 return round($bytes / 1048576, 1) . ' MB';
-            } elseif ($bytes < 1099511627776) {
+            }
+            if ($bytes < 1099511627776) {
                 return round($bytes / 1073741824, 1) . ' GB';
-            } else {
+            }
+            else {
                 return round($bytes / 1099511627776, 1) . ' TB';
             }
         }
 
-        public function duplicate(){
+        public function duplicate(): void{
 
             $source = $this->storage($this->disk)->path($this->selectedFile['relative_path']);
 
@@ -400,9 +402,9 @@ use Filament\Actions\DeleteAction;
                 } else {
                     File::copy($source, $destination);
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 Notification::make()
-                ->title($e->getMessage())
+                ->title($exception->getMessage())
                 ->danger()
                 ->send();
                 return;
@@ -427,10 +429,10 @@ use Filament\Actions\DeleteAction;
             $destination = $source;
 
             while (File::exists($destination)) {
-                if ($extension) {
-                    $destination = $directory . '/' . $name . " ($counter)." . $extension;
+                if ($extension !== '' && $extension !== '0') {
+                    $destination = $directory . '/' . $name . " ({$counter})." . $extension;
                 } else {
-                    $destination = $directory . '/' . $name . " ($counter)";
+                    $destination = $directory . '/' . $name . " ({$counter})";
                 }
                 $counter++;
             }
@@ -438,15 +440,15 @@ use Filament\Actions\DeleteAction;
             return $destination;
         }
 
-        private function fileOrFolder(){
+        private function fileOrFolder(): string{
             return ($this->selectedFile && $this->selectedFile['type'] === 'folder') ? 'folder' : 'file';
         }
 
-        public function copy(){
+        public function copy(): void{
             $this->fileOrFolderCopied = $this->selectedFile['relative_path'];
         }
 
-        public function paste(){
+        public function paste(): void{
             if (!$this->fileOrFolderCopied) {
                 Notification::make()
                     ->title('No file or folder selected for copying')
@@ -471,9 +473,9 @@ use Filament\Actions\DeleteAction;
                     ->send();
 
                 $this->refresh(); // Refresh the file list
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 Notification::make()
-                    ->title('Error while pasting: ' . $e->getMessage())
+                    ->title('Error while pasting: ' . $exception->getMessage())
                     ->danger()
                     ->send();
             }
@@ -493,16 +495,12 @@ use Filament\Actions\DeleteAction;
             $extension = pathinfo($source, PATHINFO_EXTENSION);
 
             // If the source and destination directories are the same, start with "copy"
-            if ($sourceDirectory === $destinationDirectory) {
-                $newFilename = $filename . ' copy';
-            } else {
-                $newFilename = $filename;
-            }
+            $newFilename = $sourceDirectory === $destinationDirectory ? $filename . ' copy' : $filename;
 
             $counter = 2;
 
             while (true) {
-                $destination = $this->stripDoubleSlashesFromString($destinationDirectory . '/' . $newFilename . ($extension ? '.' . $extension : ''));
+                $destination = $this->stripDoubleSlashesFromString($destinationDirectory . '/' . $newFilename . ($extension !== '' && $extension !== '0' ? '.' . $extension : ''));
 
                 if (!File::exists($destination)) {
                     return $destination;
@@ -519,7 +517,7 @@ use Filament\Actions\DeleteAction;
             }
         }
 
-        public function rename(){
+        public function rename(): void{
             $this->renameFile($this->selectedFile['original_name'], $this->selectedFile['name']);
             $this->loadFilesInCurrentFolder();
         }
@@ -570,9 +568,9 @@ use Filament\Actions\DeleteAction;
                 $selectedFileName = $this->selectedFile['name'];
                 $this->js('window.dispatchEvent(new CustomEvent("set-active-file", { detail: { name: "' . $selectedFileName . '" }}))');
                 return $newPath;
-            } catch (\Exception $e) {
+            } catch (\Exception $exception) {
                 Notification::make()
-                    ->title('An error occurred while renaming the file: ' . $e->getMessage())
+                    ->title('An error occurred while renaming the file: ' . $exception->getMessage())
                     ->danger()
                     ->send();
 
@@ -580,7 +578,7 @@ use Filament\Actions\DeleteAction;
             }
         }
 
-        public function moveSelectedFileIntoFolder($folder){
+        public function moveSelectedFileIntoFolder(array $folder): void{
             $relative_path_to_folder = $folder['relative_path'];
             $sourcePath = $this->stripDoubleSlashesFromString($this->folder . '/' . $this->selectedFile['name']);
             $destinationPath = $this->stripDoubleSlashesFromString($relative_path_to_folder . '/' . $this->selectedFile['name']);
@@ -597,7 +595,7 @@ use Filament\Actions\DeleteAction;
             }
         }
 
-        public function searchStorageForFile()
+        public function searchStorageForFile(): void
         {
             $search = $this->search;
             $minMatchLength = 2;
@@ -627,9 +625,7 @@ use Filament\Actions\DeleteAction;
             }
 
             // Sort results by match score (highest first)
-            usort($results, function($a, $b) {
-                return $b['match_score'] <=> $a['match_score'];
-            });
+            usort($results, fn($a, $b) => $b['match_score'] <=> $a['match_score']);
 
             if (count($results) > 10) {
                 $results = array_slice($results, 0, 10);

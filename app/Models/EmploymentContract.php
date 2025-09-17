@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -86,16 +88,16 @@ class EmploymentContract extends Model
         return $this->status === 'terminated';
     }
 
-    public function updateAverageRating()
+    public function updateAverageRating(): void
     {
         $avgRating = $this->shiftReviews()->avg('overall_rating');
         $this->update(['average_rating' => $avgRating]);
     }
 
-    public function updateTotals()
+    public function updateTotals(): void
     {
         $completedShifts = $this->workShifts()->where('status', 'completed');
-        
+
         $this->update([
             'total_shifts' => $completedShifts->count(),
             'total_hours_worked' => $completedShifts->sum('total_minutes') / 60,

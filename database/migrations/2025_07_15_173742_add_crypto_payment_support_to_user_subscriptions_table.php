@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('user_subscriptions', function (Blueprint $table) {
+        Schema::table('user_subscriptions', function (Blueprint $table): void {
             $table->string('payment_method')->default('card')->after('expires_at');
             $table->string('payment_id')->nullable()->after('payment_method');
             $table->string('crypto_currency')->nullable()->after('payment_id');
@@ -24,12 +23,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('user_subscriptions', function (Blueprint $table) {
+        Schema::table('user_subscriptions', function (Blueprint $table): void {
             $table->dropColumn([
                 'payment_method',
                 'payment_id',
@@ -39,7 +35,7 @@ return new class extends Migration
                 'crypto_transaction_id',
                 'payment_status',
                 'payment_confirmed_at',
-                'payment_metadata'
+                'payment_metadata',
             ]);
         });
     }

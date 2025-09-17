@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\UserType;
+use Illuminate\Database\Seeder;
 
 class UserTypeSeeder extends Seeder
 {
@@ -23,7 +24,7 @@ class UserTypeSeeder extends Seeder
                 'english_proficiency',
                 'experience_level',
                 'availability',
-                'portfolio'
+                'portfolio',
             ]),
             'requires_kyc' => true,
             'active' => true,
@@ -38,7 +39,7 @@ class UserTypeSeeder extends Seeder
                 'business_email',
                 'revenue_screenshots',
                 'payment_proof',
-                'team_size'
+                'team_size',
             ]),
             'requires_kyc' => false,
             'active' => true,
@@ -53,7 +54,7 @@ class UserTypeSeeder extends Seeder
                 'team_list',
                 'portfolio',
                 'client_testimonials',
-                'performance_metrics'
+                'performance_metrics',
             ]),
             'requires_kyc' => false,
             'active' => true,

@@ -14,7 +14,7 @@ use Wave\Subscription;
 
 class StripeWebhook extends Controller
 {
-    public function handler(Request $request)
+    public function handler(Request $request): void
     {
         $payload = $request->getContent();
 
@@ -27,11 +27,11 @@ class StripeWebhook extends Controller
                 $sig_header,
                 config('wave.stripe.webhook_secret')
             );
-        } catch (UnexpectedValueException $e) {
+        } catch (UnexpectedValueException) {
             // Invalid payload
             http_response_code(400);
             exit();
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+        } catch (\Stripe\Exception\SignatureVerificationException) {
             // Invalid signature
             http_response_code(400);
             exit();
@@ -47,13 +47,13 @@ class StripeWebhook extends Controller
         if ($event->type == 'customer.subscription.updated') {
             $stripeSubscription = $event->data->object;
 
-            $subscription = Subscription::where('vendor_subscription_id', $stripeSubscription->id)->first();
+            $subscription = Subscription::query()->where('vendor_subscription_id', $stripeSubscription->id)->first();
 
             if (isset($subscription)) {
                 // Interval should be 'year' or 'month'
                 $subscriptionCycle = $stripeSubscription->plan->interval;
                 $plan_price_column = ($subscriptionCycle == 'year') ? 'yearly_price_id' : 'monthly_price_id';
-                $updatedPlan = Plan::where($plan_price_column, $stripeSubscription->plan->id)->first();
+                $updatedPlan = Plan::query()->where($plan_price_column, $stripeSubscription->plan->id)->first();
 
                 // TODO: Test that this works
                 $subscription->user->switchPlans($updatedPlan);
@@ -76,7 +76,7 @@ class StripeWebhook extends Controller
         if ($event->type == 'customer.subscription.deleted') {
             $stripeSubscription = $event->data->object;
 
-            $subscription = Subscription::where('vendor_subscription_id', $stripeSubscription->id)->first();
+            $subscription = Subscription::query()->where('vendor_subscription_id', $stripeSubscription->id)->first();
 
             if (isset($subscription)) {
                 $subscription->cancel();
@@ -86,9 +86,9 @@ class StripeWebhook extends Controller
         http_response_code(200);
     }
 
-    public function fulfill_checkout($session_id, $event): void
+    public function fulfill_checkout(string $session_id, $event): void
     {
-        $stripe = \Stripe\Stripe::setApiKey(config('wave.stripe.secret_key'));
+        \Stripe\Stripe::setApiKey(config('wave.stripe.secret_key'));
 
         // Make this function safe to run multiple times,
         // even concurrently, with the same session ID
@@ -107,7 +107,7 @@ class StripeWebhook extends Controller
         // to determine if fulfillment should be peformed
         if ($checkout_session->payment_status != 'unpaid') {
 
-            $existingSubscription = Subscription::where('vendor_subscription_id', $checkout_session->subscription)->first();
+            $existingSubscription = Subscription::query()->where('vendor_subscription_id', $checkout_session->subscription)->first();
 
             if ($existingSubscription) {
                 // This is a failsafe to make sure this method doesn't get called multiple times, if existing subscription, return

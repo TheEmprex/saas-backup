@@ -16,7 +16,7 @@ class ThemeDemoMiddleware
      */
     public function handle($request, Closure $next)
     {
-        if (isset($request->theme)) {
+        if (property_exists($request, 'theme') && $request->theme !== null) {
             return redirect('/')->withCookie(cookie('theme', $request->theme, 60, null, null, false, false));
         }
 

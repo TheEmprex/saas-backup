@@ -12,7 +12,7 @@
         #[Computed]
         public function user()
         {
-            return config('wave.user_model')::where('username', '=', $this->username)->with('roles')->firstOrFail();
+            return config('wave.user_model')::query()->where('username', '=', $this->username)->with('roles')->firstOrFail();
         }
     }
 ?>
@@ -27,7 +27,7 @@
                     level="h2"
                     class="mt-5"
                     :title="$this->user->name"
-                    :description="'Currently viewing ' . $this->user->username . '\'s profile'" 
+                    :description="'Currently viewing ' . $this->user->username . '\'s profile'"
                     align="left"
                 />
             @endguest

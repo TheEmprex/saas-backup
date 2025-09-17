@@ -18,8 +18,9 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
 {
-    use HasRoles, Impersonate, Notifiable;
-
+    use HasRoles;
+    use Impersonate;
+    use Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -77,7 +78,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
 
     public function subscribedToPlan($planSlug)
     {
-        $plan = Plan::where('name', $planSlug)->first();
+        $plan = Plan::query()->where('name', $planSlug)->first();
 
         if (! $plan) {
             return false;
@@ -93,7 +94,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
         return Plan::find($latest_subscription->plan_id);
     }
 
-    public function planInterval()
+    public function planInterval(): string
     {
         $latest_subscription = $this->latestSubscription();
 
@@ -110,7 +111,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
         return $this->hasOne(Subscription::class, 'billable_id')->where('status', 'active')->orderBy('created_at', 'desc');
     }
 
-    public function switchPlans(Plan $plan)
+    public function switchPlans(Plan $plan): void
     {
         $this->syncRoles([]);
         $this->assignRole($plan->role->name);
@@ -132,12 +133,12 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
                 $invoices = $stripe->invoices->all(['customer' => $subscription->vendor_customer_id, 'limit' => 100]);
 
                 foreach ($invoices as $invoice) {
-                    array_push($user_invoices, (object) [
+                    $user_invoices[] = (object) [
                         'id' => $invoice->id,
                         'created' => \Carbon\Carbon::parse($invoice->created)->isoFormat('MMMM Do YYYY, h:mm:ss a'),
                         'total' => number_format(($invoice->total / 100), 2, '.', ' '),
                         'download' => $invoice->invoice_pdf,
-                    ]);
+                    ];
                 }
             }
         } else {
@@ -148,40 +149,31 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
             $responseJson = json_decode($response->body());
 
             foreach ($responseJson->data as $invoice) {
-                array_push($user_invoices, (object) [
+                $user_invoices[] = (object) [
                     'id' => $invoice->id,
                     'created' => \Carbon\Carbon::parse($invoice->created_at)->isoFormat('MMMM Do YYYY, h:mm:ss a'),
                     'total' => number_format(($invoice->details->totals->subtotal / 100), 2, '.', ' '),
                     'download' => '/settings/invoices/'.$invoice->id,
-                ]);
+                ];
             }
         }
 
         return $user_invoices;
     }
 
-    /**
-     * @return bool
-     */
-    public function canImpersonate()
+    public function canImpersonate(): bool
     {
         // If user is admin they can impersonate
         return $this->hasRole('admin');
     }
 
-    /**
-     * @return bool
-     */
-    public function isAdmin()
+    public function isAdmin(): bool
     {
         // return if the user has a role of admin
         return $this->hasRole('admin');
     }
 
-    /**
-     * @return bool
-     */
-    public function canBeImpersonated()
+    public function canBeImpersonated(): bool
     {
         // Any user that is not an admin can be impersonated
         return ! $this->hasRole('admin');
@@ -206,7 +198,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
 
     public function changelogs()
     {
-        return $this->belongsToMany('Wave\Changelog');
+        return $this->belongsToMany(\Wave\Changelog::class);
     }
 
     public function createApiKey($name)
@@ -216,7 +208,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
 
     public function apiKeys()
     {
-        return $this->hasMany('Wave\ApiKey')->orderBy('created_at', 'DESC');
+        return $this->hasMany(\Wave\ApiKey::class)->orderBy('created_at', 'DESC');
     }
 
     public function avatar()
@@ -258,7 +250,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return (bool) ($panel->getId() === 'admin' && auth()->user()->hasRole('admin'));
+        return $panel->getId() === 'admin' && auth()->user()->hasRole('admin');
     }
 
     /*** PUT ALL THESE below into a trait */
@@ -316,7 +308,7 @@ class User extends AuthUser implements FilamentUser, HasAvatar, JWTSubject
     //  */
     // public function setRole($name)
     // {
-    //     $role = Role::where('name', '=', $name)->first();
+    //     $role = Role::query()->where('name', '=', $name)->first();
 
     //     if ($role) {
     //         $this->role()->associate($role);

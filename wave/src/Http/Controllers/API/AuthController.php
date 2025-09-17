@@ -58,7 +58,7 @@ class AuthController extends Controller
 
         if (isset($request->key)) {
 
-            $key = ApiKey::where('key', '=', $request->key)->first();
+            $key = ApiKey::query()->where('key', '=', $request->key)->first();
 
             if (isset($key->id)) {
                 $key->update([
@@ -67,11 +67,14 @@ class AuthController extends Controller
 
                 return response()->json(['access_token' => JWTAuth::fromUser($key->user, ['exp' => config('wave.api.key_token_expires', 1)])]);
             }
+
             abort('400', 'Invalid Api Key');
 
         } else {
             abort('401', 'Unauthorized');
         }
+
+        return null;
 
     }
 
@@ -87,14 +90,14 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:250',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $user = User::create([
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'username' => $request->username,

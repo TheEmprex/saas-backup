@@ -10,7 +10,7 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table): void {
             $table->increments('id');
             $table->unsignedInteger('parent_id')->nullable();
             $table->integer('order')->default(1);

@@ -6,17 +6,13 @@ namespace Wave\Http\Middleware;
 
 use Closure;
 // use Illuminate\Support\Facades\Auth;
-use Illuminate\Contracts\Auth\Factory as Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Wave\ApiToken;
 
 class TokenMiddleware
 {
-    protected $auth;
-
-    public function __construct(Auth $auth)
+    public function __construct(protected \Illuminate\Contracts\Auth\Factory $auth)
     {
-        $this->auth = $auth;
     }
 
     /**
@@ -29,7 +25,7 @@ class TokenMiddleware
     public function handle($request, Closure $next, $guard = null)
     {
         if ($request->token && strlen($request->token) <= 60) {
-            $api_token = ApiToken::where('token', '=', $request->token)->first();
+            $api_token = ApiToken::query()->where('token', '=', $request->token)->first();
 
             if (isset($api_token->id)) {
                 $token = JWTAuth::fromUser($api_token->user);

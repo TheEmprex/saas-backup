@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -69,6 +71,6 @@ class ShiftReview extends Model
 
     public function hasIssues(): bool
     {
-        return !$this->on_time || !$this->completed_tasks || !$this->followed_instructions || !$this->professional_behavior;
+        return ! $this->on_time || ! $this->completed_tasks || ! $this->followed_instructions || ! $this->professional_behavior;
     }
 }

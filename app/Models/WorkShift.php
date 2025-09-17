@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -60,7 +62,7 @@ class WorkShift extends Model
         return $this->status === 'completed';
     }
 
-    public function calculateEarnings()
+    public function calculateEarnings(): void
     {
         $this->total_minutes = $this->shift_end->diffInMinutes($this->shift_start);
         $this->total_earnings = ($this->total_minutes / 60) * $this->hourly_rate;

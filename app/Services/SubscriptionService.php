@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\SubscriptionPlan;
+use App\Models\User;
 use App\Models\UserSubscription;
 use Carbon\Carbon;
 
@@ -15,12 +17,12 @@ class SubscriptionService
     public function assignFreePlan(User $user): UserSubscription
     {
         $planName = $user->isAgency() ? 'Agency Free' : 'Chatter Free';
-        
-        $plan = SubscriptionPlan::where('name', $planName)->firstOrFail();
-        
+
+        $plan = SubscriptionPlan::query()->where('name', $planName)->firstOrFail();
+
         return $this->assignPlan($user, $plan);
     }
-    
+
     /**
      * Assign a subscription plan to a user.
      */
@@ -28,7 +30,7 @@ class SubscriptionService
     {
         // End any existing active subscription
         $this->endCurrentSubscription($user);
-        
+
         return UserSubscription::create([
             'user_id' => $user->id,
             'subscription_plan_id' => $plan->id,
@@ -36,52 +38,52 @@ class SubscriptionService
             'expires_at' => $expiresAt,
         ]);
     }
-    
+
     /**
      * End a user's current subscription.
      */
     public function endCurrentSubscription(User $user): void
     {
         $currentSubscription = $user->currentSubscription();
-        
+
         if ($currentSubscription) {
             $currentSubscription->update([
                 'expires_at' => now(),
             ]);
         }
     }
-    
+
     /**
      * Get available subscription plans for a user type.
      */
     public function getAvailablePlans(string $userType): array
     {
         if (in_array($userType, ['ofm_agency', 'chatting_agency', 'agency'])) {
-            return SubscriptionPlan::where('name', 'like', 'Agency%')->get()->toArray();
+            return SubscriptionPlan::query()->where('name', 'like', 'Agency%')->get()->toArray();
         }
-        
+
         if ($userType === 'chatter') {
-            return SubscriptionPlan::where('name', 'like', 'Chatter%')->get()->toArray();
+            return SubscriptionPlan::query()->where('name', 'like', 'Chatter%')->get()->toArray();
         }
-        
+
         return [];
     }
-    
+
     /**
      * Check if a user can upgrade to a specific plan.
      */
     public function canUpgradeToPlan(User $user, SubscriptionPlan $plan): bool
     {
         $currentSubscription = $user->currentSubscription();
-        
-        if (!$currentSubscription) {
+
+        if (! $currentSubscription) {
             return true; // Can upgrade from no subscription
         }
-        
+
         // Allow any plan change (upgrade or downgrade)
         return $plan->id !== $currentSubscription->subscription_plan_id;
     }
-    
+
     /**
      * Calculate upgrade pricing without assigning plan.
      */
@@ -89,26 +91,26 @@ class SubscriptionService
     {
         $currentSubscription = $user->currentSubscription();
         $currentPlan = $currentSubscription ? $currentSubscription->subscriptionPlan : null;
-        
-        if (!$currentSubscription) {
+
+        if (! $currentSubscription) {
             // No current subscription
             return [
                 'type' => 'new_subscription',
                 'amount_to_charge' => $newPlan->price,
                 'proration_credit' => 0,
                 'net_amount' => $newPlan->price,
-                'message' => 'New subscription will be created.'
+                'message' => 'New subscription will be created.',
             ];
         }
-        
+
         // Calculate prorated amounts
-        $remainingDays = $currentSubscription->expires_at ? 
-            max(0, $currentSubscription->expires_at->diffInDays(now())) : 0;
-        
+        $remainingDays = $currentSubscription->expires_at
+            ? max(0, $currentSubscription->expires_at->diffInDays(now())) : 0;
+
         $daysInMonth = now()->daysInMonth;
         $proratedCredit = ($currentPlan->price / $daysInMonth) * $remainingDays;
         $proratedNewCharge = ($newPlan->price / $daysInMonth) * $remainingDays;
-        
+
         if ($newPlan->price > $currentPlan->price) {
             // Upgrade: charge difference for remaining days + full amount for next month
             $upgradeCharge = $proratedNewCharge - $proratedCredit;
@@ -122,16 +124,16 @@ class SubscriptionService
             $type = 'downgrade';
             $message = 'Subscription will be downgraded.';
         }
-        
+
         return [
             'type' => $type,
             'amount_to_charge' => $newPlan->price,
             'proration_credit' => $proratedCredit,
             'net_amount' => $netAmount,
-            'message' => $message
+            'message' => $message,
         ];
     }
-    
+
     /**
      * Get downgrade warnings without changing subscription.
      */
@@ -139,36 +141,24 @@ class SubscriptionService
     {
         $currentStats = $this->getSubscriptionStats($user);
         $warnings = [];
-        
+
         // Check if current usage exceeds new plan limits
         if ($newPlan->job_post_limit && $currentStats['job_posts_used'] > $newPlan->job_post_limit) {
             $warnings[] = "You've used {$currentStats['job_posts_used']} job posts this month, but the new plan only allows {$newPlan->job_post_limit}.";
         }
-        
+
         if ($newPlan->chat_application_limit && $currentStats['applications_used'] > $newPlan->chat_application_limit) {
             $warnings[] = "You've used {$currentStats['applications_used']} applications this month, but the new plan only allows {$newPlan->chat_application_limit}.";
         }
-        
+
         // Check feature usage
-        if (!$newPlan->featured_status && $this->userHasActiveFeaturedJobs($user)) {
+        if (! $newPlan->featured_status && $this->userHasActiveFeaturedJobs($user)) {
             $warnings[] = "You have active featured jobs, but the new plan doesn't include featured job benefits.";
         }
-        
+
         return $warnings;
     }
-    
-    /**
-     * Check if user has active featured jobs.
-     */
-    private function userHasActiveFeaturedJobs(User $user): bool
-    {
-        return $user->jobPosts()
-            ->where('is_featured', true)
-            ->where('status', 'active')
-            ->where('expires_at', '>', now())
-            ->exists();
-    }
-    
+
     /**
      * Get plan change preview without making changes.
      */
@@ -176,8 +166,8 @@ class SubscriptionService
     {
         $currentSubscription = $user->currentSubscription();
         $currentPlan = $currentSubscription ? $currentSubscription->subscriptionPlan : null;
-        
-        if (!$currentSubscription) {
+
+        if (! $currentSubscription) {
             return [
                 'type' => 'new_subscription',
                 'current_plan' => null,
@@ -186,25 +176,26 @@ class SubscriptionService
                 'next_billing_date' => now()->addMonth()->format('Y-m-d'),
                 'features_gained' => $this->getFeatureComparison($currentPlan, $newPlan)['gained'],
                 'features_lost' => [],
-                'warnings' => []
+                'warnings' => [],
             ];
         }
-        
-        $remainingDays = $currentSubscription->expires_at ? 
-            max(0, $currentSubscription->expires_at->diffInDays(now())) : 0;
-        
+
+        $remainingDays = $currentSubscription->expires_at
+            ? max(0, $currentSubscription->expires_at->diffInDays(now())) : 0;
+
         $isUpgrade = $newPlan->price > $currentPlan->price;
         $featureComparison = $this->getFeatureComparison($currentPlan, $newPlan);
-        
+
         $warnings = [];
-        if (!$isUpgrade) {
+
+        if (! $isUpgrade) {
             $currentStats = $this->getSubscriptionStats($user);
-            
+
             if ($newPlan->job_post_limit && $currentStats['job_posts_used'] > $newPlan->job_post_limit) {
                 $warnings[] = "Current usage ({$currentStats['job_posts_used']} job posts) exceeds new plan limit ({$newPlan->job_post_limit}).";
             }
         }
-        
+
         return [
             'type' => $isUpgrade ? 'upgrade' : 'downgrade',
             'current_plan' => $currentPlan->name,
@@ -214,67 +205,18 @@ class SubscriptionService
             'remaining_days' => $remainingDays,
             'features_gained' => $featureComparison['gained'],
             'features_lost' => $featureComparison['lost'],
-            'warnings' => $warnings
+            'warnings' => $warnings,
         ];
     }
-    
-    /**
-     * Compare features between two plans.
-     */
-    private function getFeatureComparison($currentPlan, $newPlan): array
-    {
-        $currentFeatures = $currentPlan ? [
-            'job_post_limit' => $currentPlan->job_post_limit,
-            'chat_application_limit' => $currentPlan->chat_application_limit,
-            'unlimited_chats' => $currentPlan->unlimited_chats,
-            'advanced_filters' => $currentPlan->advanced_filters,
-            'analytics' => $currentPlan->analytics,
-            'priority_listings' => $currentPlan->priority_listings,
-            'featured_status' => $currentPlan->featured_status,
-        ] : [];
-        
-        $newFeatures = [
-            'job_post_limit' => $newPlan->job_post_limit,
-            'chat_application_limit' => $newPlan->chat_application_limit,
-            'unlimited_chats' => $newPlan->unlimited_chats,
-            'advanced_filters' => $newPlan->advanced_filters,
-            'analytics' => $newPlan->analytics,
-            'priority_listings' => $newPlan->priority_listings,
-            'featured_status' => $newPlan->featured_status,
-        ];
-        
-        $gained = [];
-        $lost = [];
-        
-        foreach ($newFeatures as $feature => $newValue) {
-            $currentValue = $currentFeatures[$feature] ?? null;
-            
-            if ($feature === 'job_post_limit' || $feature === 'chat_application_limit') {
-                if ($newValue > $currentValue) {
-                    $gained[] = ucfirst(str_replace('_', ' ', $feature)) . ': ' . ($newValue ?: 'Unlimited');
-                } elseif ($newValue < $currentValue) {
-                    $lost[] = ucfirst(str_replace('_', ' ', $feature)) . ': reduced to ' . ($newValue ?: 'Unlimited');
-                }
-            } else {
-                if ($newValue && !$currentValue) {
-                    $gained[] = ucfirst(str_replace('_', ' ', $feature));
-                } elseif (!$newValue && $currentValue) {
-                    $lost[] = ucfirst(str_replace('_', ' ', $feature));
-                }
-            }
-        }
-        
-        return ['gained' => $gained, 'lost' => $lost];
-    }
-    
+
     /**
      * Get subscription statistics for a user.
      */
     public function getSubscriptionStats(User $user): array
     {
         $subscription = $user->currentSubscription();
-        
-        if (!$subscription) {
+
+        if (! $subscription) {
             return [
                 'has_subscription' => false,
                 'plan_name' => null,
@@ -285,18 +227,18 @@ class SubscriptionService
                 'expires_at' => null,
             ];
         }
-        
+
         $plan = $subscription->subscriptionPlan;
         $currentMonth = now()->format('Y-m');
-        
+
         $jobPostsUsed = $user->jobPosts()
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])
             ->count();
-            
+
         $applicationsUsed = $user->jobApplications()
             ->whereRaw('DATE_FORMAT(created_at, "%Y-%m") = ?', [$currentMonth])
             ->count();
-        
+
         return [
             'has_subscription' => true,
             'plan_name' => $plan->name,
@@ -314,21 +256,21 @@ class SubscriptionService
             ],
         ];
     }
-    
+
     /**
      * Check if a user's subscription is about to expire.
      */
     public function isSubscriptionExpiringSoon(User $user, int $daysThreshold = 7): bool
     {
         $subscription = $user->currentSubscription();
-        
-        if (!$subscription || !$subscription->expires_at) {
+
+        if (! $subscription || ! $subscription->expires_at) {
             return false;
         }
-        
+
         return $subscription->expires_at->diffInDays(now()) <= $daysThreshold;
     }
-    
+
     /**
      * Get expired subscriptions that need to be handled.
      */
@@ -339,5 +281,64 @@ class SubscriptionService
             ->whereNull('processed_at') // Assuming we add this column to track processing
             ->get()
             ->toArray();
+    }
+
+    /**
+     * Check if user has active featured jobs.
+     */
+    private function userHasActiveFeaturedJobs(User $user): bool
+    {
+        return $user->jobPosts()
+            ->where('is_featured', true)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
+
+    /**
+     * Compare features between two plans.
+     */
+    private function getFeatureComparison($currentPlan, \App\Models\SubscriptionPlan $newPlan): array
+    {
+        $currentFeatures = $currentPlan ? [
+            'job_post_limit' => $currentPlan->job_post_limit,
+            'chat_application_limit' => $currentPlan->chat_application_limit,
+            'unlimited_chats' => $currentPlan->unlimited_chats,
+            'advanced_filters' => $currentPlan->advanced_filters,
+            'analytics' => $currentPlan->analytics,
+            'priority_listings' => $currentPlan->priority_listings,
+            'featured_status' => $currentPlan->featured_status,
+        ] : [];
+
+        $newFeatures = [
+            'job_post_limit' => $newPlan->job_post_limit,
+            'chat_application_limit' => $newPlan->chat_application_limit,
+            'unlimited_chats' => $newPlan->unlimited_chats,
+            'advanced_filters' => $newPlan->advanced_filters,
+            'analytics' => $newPlan->analytics,
+            'priority_listings' => $newPlan->priority_listings,
+            'featured_status' => $newPlan->featured_status,
+        ];
+
+        $gained = [];
+        $lost = [];
+
+        foreach ($newFeatures as $feature => $newValue) {
+            $currentValue = $currentFeatures[$feature] ?? null;
+
+            if ($feature === 'job_post_limit' || $feature === 'chat_application_limit') {
+                if ($newValue > $currentValue) {
+                    $gained[] = ucfirst(str_replace('_', ' ', $feature)).': '.($newValue ?: 'Unlimited');
+                } elseif ($newValue < $currentValue) {
+                    $lost[] = ucfirst(str_replace('_', ' ', $feature)).': reduced to '.($newValue ?: 'Unlimited');
+                }
+            } elseif ($newValue && ! $currentValue) {
+                $gained[] = ucfirst(str_replace('_', ' ', $feature));
+            } elseif (! $newValue && $currentValue) {
+                $lost[] = ucfirst(str_replace('_', ' ', $feature));
+            }
+        }
+
+        return ['gained' => $gained, 'lost' => $lost];
     }
 }

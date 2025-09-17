@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -22,10 +24,10 @@ class JobPostController extends Controller
         // Search filters
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('requirements', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('requirements', 'like', "%{$search}%");
             });
         }
 
@@ -102,14 +104,16 @@ class JobPostController extends Controller
         $jobData['status'] = 'active';
         $jobData['current_applications'] = 0;
         $jobData['views'] = 0;
-        
+
         // Convert arrays to JSON
         if (isset($jobData['tags'])) {
             $jobData['tags'] = json_encode($jobData['tags']);
         }
+
         if (isset($jobData['working_hours'])) {
             $jobData['working_hours'] = json_encode($jobData['working_hours']);
         }
+
         if (isset($jobData['required_traffic_sources'])) {
             $jobData['required_traffic_sources'] = json_encode($jobData['required_traffic_sources']);
         }
@@ -132,7 +136,7 @@ class JobPostController extends Controller
             'user.userType',
             'user.profile',
             'applications.user',
-            'applications.user.userType'
+            'applications.user.userType',
         ]));
     }
 
@@ -176,14 +180,16 @@ class JobPostController extends Controller
         }
 
         $jobData = $validator->validated();
-        
+
         // Convert arrays to JSON
         if (isset($jobData['tags'])) {
             $jobData['tags'] = json_encode($jobData['tags']);
         }
+
         if (isset($jobData['working_hours'])) {
             $jobData['working_hours'] = json_encode($jobData['working_hours']);
         }
+
         if (isset($jobData['required_traffic_sources'])) {
             $jobData['required_traffic_sources'] = json_encode($jobData['required_traffic_sources']);
         }
