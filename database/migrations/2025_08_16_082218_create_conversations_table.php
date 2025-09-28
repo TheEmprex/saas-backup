@@ -11,21 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conversations', function (Blueprint $table) {
-            $table->id();
-            $table->string('type')->default('private'); // private, group, agency_group
-            $table->string('title')->nullable(); // For group conversations
-            $table->text('description')->nullable();
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
-            $table->boolean('is_archived')->default(false);
-            $table->timestamp('last_activity_at')->nullable();
-            $table->json('metadata')->nullable(); // For additional data
-            $table->timestamps();
-            
+        Schema::table('conversations', function (Blueprint $table) {
+            //$table->string('type')->default('private'); // private, group, agency_group
+            //$table->string('title')->nullable(); // For group conversations
+            //$table->text('description')->nullable();
+            //$table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            //$table->boolean('is_archived')->default(false);
+            //$table->timestamp('last_activity_at')->nullable();
+            //$table->json('metadata')->nullable(); // For additional data
+
             // Indexes for performance
-            $table->index(['created_by']);
-            $table->index(['last_activity_at']);
-            $table->index(['is_archived']);
+            //$table->index(['created_by']);
+            //table->index(['last_activity_at']);
+            //$table->index(['is_archived']);
         });
     }
 
@@ -34,6 +32,20 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('conversations');
+        Schema::table('conversations', static function(Blueprint $table) {
+            $table->dropColumn([
+                'type',
+                'title',
+                'description',
+                'created_by',
+                'is_archived',
+                'last_activity_at',
+                'metadata',
+            ]);
+
+            $table->dropIndex(['created_by']);
+            $table->dropIndex(['last_activity_at']);
+            $table->dropIndex(['is_archived']);
+        });
     }
 };

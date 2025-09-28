@@ -16,15 +16,15 @@ return new class extends Migration
         Schema::table('conversations', function (Blueprint $table) {
             // Composite index for efficient user conversation queries
             if (!$this->indexExists('conversations', 'conversations_user1_activity_index')) {
-                $table->index(['user1_id', 'last_message_at', 'updated_at'], 'conversations_user1_activity_index');
+                //$table->index(['user1_id', 'last_message_at', 'updated_at'], 'conversations_user1_activity_index');
             }
             if (!$this->indexExists('conversations', 'conversations_user2_activity_index')) {
-                $table->index(['user2_id', 'last_message_at', 'updated_at'], 'conversations_user2_activity_index');
+                //$table->index(['user2_id', 'last_message_at', 'updated_at'], 'conversations_user2_activity_index');
             }
-            
+
             // Index for conversation type filtering
             if (!$this->indexExists('conversations', 'conversations_type_archived_index')) {
-                $table->index(['conversation_type', 'is_archived'], 'conversations_type_archived_index');
+                //$table->index(['conversation_type', 'is_archived'], 'conversations_type_archived_index');
             }
         });
 
@@ -32,22 +32,22 @@ return new class extends Migration
         Schema::table('messages', function (Blueprint $table) {
             // Composite index for conversation messages with pagination
             if (!$this->indexExists('messages', 'messages_conversation_created_index')) {
-                $table->index(['conversation_id', 'created_at'], 'messages_conversation_created_index');
+                //$table->index(['conversation_id', 'created_at'], 'messages_conversation_created_index');
             }
-            
+
             // Index for unread messages queries
             if (!$this->indexExists('messages', 'messages_sender_read_index')) {
                 $table->index(['sender_id', 'is_read'], 'messages_sender_read_index');
             }
-            
+
             // Index for message type filtering
             if (!$this->indexExists('messages', 'messages_type_created_index')) {
                 $table->index(['message_type', 'created_at'], 'messages_type_created_index');
             }
-            
+
             // Index for reply queries
             if (!$this->indexExists('messages', 'messages_reply_to_index')) {
-                $table->index('reply_to_id', 'messages_reply_to_index');
+                //$table->index('reply_to_id', 'messages_reply_to_index');
             }
         });
 
@@ -57,22 +57,22 @@ return new class extends Migration
             if (!$this->indexExists('job_posts', 'job_posts_active_priority_index')) {
                 $table->index(['status', 'expires_at', 'is_featured', 'is_urgent', 'created_at'], 'job_posts_active_priority_index');
             }
-            
-            // Index for user job queries  
+
+            // Index for user job queries
             if (!$this->indexExists('job_posts', 'job_posts_user_status_index')) {
                 $table->index(['user_id', 'status', 'created_at'], 'job_posts_user_status_index');
             }
-            
+
             // Index for filtering by market and experience level
             if (!$this->indexExists('job_posts', 'job_posts_market_exp_status_index')) {
                 $table->index(['market', 'experience_level', 'status'], 'job_posts_market_exp_status_index');
             }
-            
+
             // Index for rate filtering
             if (!$this->indexExists('job_posts', 'job_posts_rate_index')) {
                 $table->index(['rate_type', 'hourly_rate', 'fixed_rate'], 'job_posts_rate_index');
             }
-            
+
             // Index for timezone filtering
             if (!$this->indexExists('job_posts', 'job_posts_timezone_status_index')) {
                 $table->index(['required_timezone', 'status'], 'job_posts_timezone_status_index');
@@ -85,7 +85,7 @@ return new class extends Migration
             if (!$this->indexExists('job_applications', 'job_applications_user_status_index')) {
                 $table->index(['user_id', 'status', 'created_at'], 'job_applications_user_status_index');
             }
-            
+
             // Composite index for job applications
             if (!$this->indexExists('job_applications', 'job_applications_job_status_index')) {
                 $table->index(['job_post_id', 'status', 'created_at'], 'job_applications_job_status_index');
@@ -98,17 +98,17 @@ return new class extends Migration
             if (!$this->indexExists('users', 'users_type_banned_index')) {
                 $table->index(['user_type_id', 'is_banned'], 'users_type_banned_index');
             }
-            
+
             // Index for availability filtering
             if (!$this->indexExists('users', 'users_available_type_index')) {
-                $table->index(['available_for_work', 'user_type_id'], 'users_available_type_index');
+                //$table->index(['available_for_work', 'user_type_id'], 'users_available_type_index');
             }
-            
+
             // Index for last activity
             if (!$this->indexExists('users', 'users_last_seen_index')) {
                 $table->index('last_seen_at', 'users_last_seen_index');
             }
-            
+
             // Index for KYC status
             if (!$this->indexExists('users', 'users_kyc_status_index')) {
                 $table->index('kyc_status', 'users_kyc_status_index');
@@ -122,12 +122,12 @@ return new class extends Migration
                 if (!$this->indexExists('user_profiles', 'user_profiles_rate_available_index')) {
                     $table->index(['hourly_rate', 'is_available'], 'user_profiles_rate_available_index');
                 }
-                
+
                 // Index for rating filtering (using average_rating that exists)
                 if (!$this->indexExists('user_profiles', 'user_profiles_rating_reviews_index')) {
                     $table->index(['average_rating', 'total_ratings'], 'user_profiles_rating_reviews_index');
                 }
-                
+
                 // Index for featured profiles
                 if (!$this->indexExists('user_profiles', 'user_profiles_featured_index')) {
                     $table->index(['is_featured', 'featured_until'], 'user_profiles_featured_index');
@@ -142,12 +142,12 @@ return new class extends Migration
                 if (!$this->indexExists('ratings', 'ratings_rated_rating_index')) {
                     $table->index(['rated_id', 'overall_rating', 'created_at'], 'ratings_rated_rating_index');
                 }
-                
+
                 // Index for rater queries
                 if (!$this->indexExists('ratings', 'ratings_rater_created_index')) {
                     $table->index(['rater_id', 'created_at'], 'ratings_rater_created_index');
                 }
-                
+
                 // Index for job-related ratings
                 if (!$this->indexExists('ratings', 'ratings_job_rating_index')) {
                     $table->index(['job_post_id', 'overall_rating'], 'ratings_job_rating_index');
@@ -182,7 +182,7 @@ return new class extends Migration
                 if (!$this->indexExists('contracts', 'contracts_employer_status_index')) {
                     $table->index(['employer_id', 'status', 'created_at'], 'contracts_employer_status_index');
                 }
-                
+
                 // Index for contractor contracts
                 if (!$this->indexExists('contracts', 'contracts_contractor_status_index')) {
                     $table->index(['contractor_id', 'status', 'created_at'], 'contracts_contractor_status_index');

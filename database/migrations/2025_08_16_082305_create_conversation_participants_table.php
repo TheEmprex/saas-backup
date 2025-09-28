@@ -11,22 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conversation_participants', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('conversation_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->timestamp('joined_at')->useCurrent();
+        Schema::table('conversation_participants', function (Blueprint $table) {
+            //$table->id();
+            //$table->foreignId('conversation_id')->constrained()->onDelete('cascade');
+            //$table->foreignId('user_id')->constrained()->onDelete('cascade');
+            //$table->timestamp('joined_at')->useCurrent();
             $table->timestamp('last_read_at')->nullable();
-            $table->string('role')->default('participant'); // participant, admin, moderator
+            //$table->string('role')->default('participant'); // participant, admin, moderator
             $table->boolean('is_muted')->default(false);
             $table->boolean('can_add_participants')->default(false);
-            $table->timestamps();
-            
+            //$table->timestamps();
+
             // Unique constraint to prevent duplicate participants
-            $table->unique(['conversation_id', 'user_id']);
-            
+            //$table->unique(['conversation_id', 'user_id']);
+
             // Indexes for performance
-            $table->index(['user_id']);
+            //$table->index(['user_id']);
             $table->index(['last_read_at']);
         });
     }
