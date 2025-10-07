@@ -23,8 +23,8 @@ class MessagingController extends BaseController
     ) {
         $this->middleware('auth');
         $this->middleware('throttle:60,1')->only([
-            'sendMessage', 
-            'updateTyping', 
+            'sendMessage',
+            'updateTyping',
             'addReaction'
         ]);
     }
@@ -36,10 +36,10 @@ class MessagingController extends BaseController
     {
         try {
             $user = Auth::user();
-            
+
             // Update user's online status
             $this->messagingService->updateOnlineStatus(
-                $user->id, 
+                $user->id,
                 true,
                 null,
                 [
@@ -47,10 +47,10 @@ class MessagingController extends BaseController
                     'ip_address' => request()->ip(),
                 ]
             );
-            
+
             $conversations = $this->messagingService->getConversationsForUser($user->id);
             $onlineUsers = $this->messagingService->getOnlineUsers($user->id);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -64,7 +64,7 @@ class MessagingController extends BaseController
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load messaging interface'
@@ -79,7 +79,7 @@ class MessagingController extends BaseController
     {
         try {
             $conversations = $this->messagingService->getConversationsForUser(Auth::id());
-            
+
             return response()->json([
                 'success' => true,
                 'data' => ['conversations' => $conversations]
@@ -89,7 +89,7 @@ class MessagingController extends BaseController
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load conversations'
@@ -107,7 +107,7 @@ class MessagingController extends BaseController
                 'page' => 'integer|min:1',
                 'per_page' => 'integer|min:1|max:100'
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -115,12 +115,12 @@ class MessagingController extends BaseController
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $page = $request->get('page', 1);
             $perPage = $request->get('per_page', 50);
-            
+
             $result = $this->messagingService->getMessages($conversationId, Auth::id(), $page, $perPage);
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $result
@@ -131,9 +131,9 @@ class MessagingController extends BaseController
                 'conversation_id' => $conversationId,
                 'error' => $e->getMessage()
             ]);
-            
+
             $statusCode = str_contains($e->getMessage(), 'Unauthorized') ? 403 : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $statusCode === 403 ? 'Unauthorized access' : 'Failed to load messages'
@@ -148,14 +148,14 @@ class MessagingController extends BaseController
     {
         try {
             $messageData = MessageData::fromRequest($request->validated(), Auth::id());
-            
+
             // Handle file upload if present
             if ($request->hasFile('file')) {
                 $fileData = $this->messagingService->handleFileUpload(
                     $request->file('file'),
                     $messageData->conversationId ?? 0
                 );
-                
+
                 $messageData = MessageData::withFile(
                     $messageData->senderId,
                     $messageData->content,
@@ -165,9 +165,9 @@ class MessagingController extends BaseController
                     $messageData->replyToId
                 );
             }
-            
+
             $message = $this->messagingService->sendMessage($messageData);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Message sent successfully',
@@ -179,9 +179,9 @@ class MessagingController extends BaseController
                 'error' => $e->getMessage(),
                 'request_data' => $request->except(['file'])
             ]);
-            
+
             $statusCode = str_contains($e->getMessage(), 'Unauthorized') ? 403 : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $statusCode === 403 ? 'Unauthorized access' : 'Failed to send message'
@@ -196,7 +196,7 @@ class MessagingController extends BaseController
     {
         try {
             $this->messagingService->markMessageAsRead($messageId, Auth::id());
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Message marked as read'
@@ -207,9 +207,9 @@ class MessagingController extends BaseController
                 'message_id' => $messageId,
                 'error' => $e->getMessage()
             ]);
-            
+
             $statusCode = str_contains($e->getMessage(), 'Unauthorized') ? 403 : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $statusCode === 403 ? 'Unauthorized access' : 'Failed to mark message as read'
@@ -227,7 +227,7 @@ class MessagingController extends BaseController
                 'conversation_id' => 'required|integer|exists:conversations,id',
                 'is_typing' => 'required|boolean',
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -235,13 +235,13 @@ class MessagingController extends BaseController
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $this->messagingService->updateTypingStatus(
                 $request->conversation_id,
                 Auth::id(),
                 $request->is_typing
             );
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Typing status updated'
@@ -251,9 +251,9 @@ class MessagingController extends BaseController
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
-            
+
             $statusCode = str_contains($e->getMessage(), 'Unauthorized') ? 403 : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $statusCode === 403 ? 'Unauthorized access' : 'Failed to update typing status'
@@ -268,7 +268,7 @@ class MessagingController extends BaseController
     {
         try {
             $typing = $this->messagingService->getTypingIndicators($conversationId, Auth::id());
-            
+
             return response()->json([
                 'success' => true,
                 'data' => ['typing' => $typing]
@@ -279,9 +279,9 @@ class MessagingController extends BaseController
                 'conversation_id' => $conversationId,
                 'error' => $e->getMessage()
             ]);
-            
+
             $statusCode = str_contains($e->getMessage(), 'Unauthorized') ? 403 : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $statusCode === 403 ? 'Unauthorized access' : 'Failed to load typing indicators'
@@ -299,7 +299,7 @@ class MessagingController extends BaseController
                 'is_online' => 'required|boolean',
                 'status_message' => 'nullable|string|max:255',
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -307,7 +307,7 @@ class MessagingController extends BaseController
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $this->messagingService->updateOnlineStatus(
                 Auth::id(),
                 $request->is_online,
@@ -317,7 +317,7 @@ class MessagingController extends BaseController
                     'ip_address' => $request->ip(),
                 ]
             );
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Online status updated'
@@ -327,7 +327,7 @@ class MessagingController extends BaseController
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update online status'
@@ -342,7 +342,7 @@ class MessagingController extends BaseController
     {
         try {
             $onlineUsers = $this->messagingService->getOnlineUsers(Auth::id());
-            
+
             return response()->json([
                 'success' => true,
                 'data' => ['online_users' => $onlineUsers]
@@ -352,7 +352,7 @@ class MessagingController extends BaseController
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to load online users'
@@ -369,7 +369,7 @@ class MessagingController extends BaseController
             $validator = Validator::make($request->all(), [
                 'q' => 'required|string|min:2|max:100'
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -377,9 +377,9 @@ class MessagingController extends BaseController
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $users = $this->messagingService->searchUsers($request->q, Auth::id());
-            
+
             return response()->json([
                 'success' => true,
                 'data' => ['users' => $users]
@@ -389,7 +389,7 @@ class MessagingController extends BaseController
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to search users'
@@ -406,7 +406,7 @@ class MessagingController extends BaseController
             $validator = Validator::make($request->all(), [
                 'emoji' => 'required|string|max:10', // Allow for multi-character emojis
             ]);
-            
+
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -414,13 +414,13 @@ class MessagingController extends BaseController
                     'errors' => $validator->errors()
                 ], 422);
             }
-            
+
             $reactions = $this->messagingService->addMessageReaction(
                 $messageId,
                 Auth::id(),
                 $request->emoji
             );
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Reaction updated',
@@ -432,9 +432,9 @@ class MessagingController extends BaseController
                 'message_id' => $messageId,
                 'error' => $e->getMessage()
             ]);
-            
+
             $statusCode = str_contains($e->getMessage(), 'Unauthorized') ? 403 : 500;
-            
+
             return response()->json([
                 'success' => false,
                 'message' => $statusCode === 403 ? 'Unauthorized access' : 'Failed to update reaction'

@@ -40,7 +40,7 @@ class MessagingService
     public function getMessages(int $conversationId, int $userId, int $page = 1, int $perPage = 50): array
     {
         $conversation = Conversation::findOrFail($conversationId);
-        
+
         if (!$conversation->hasParticipant($userId)) {
             throw new \Exception('Unauthorized access to conversation');
         }
@@ -80,7 +80,7 @@ class MessagingService
     public function sendMessage(MessageData $messageData): Message
     {
         $conversation = $this->getOrCreateConversation($messageData);
-        
+
         if (!$conversation->hasParticipant($messageData->senderId)) {
             throw new \Exception('Unauthorized access to conversation');
         }
@@ -120,10 +120,10 @@ class MessagingService
     {
         $fileName = $file->getClientOriginalName();
         $fileSize = $file->getSize();
-        
+
         // Determine message type based on file
         $messageType = $this->determineMessageTypeFromFile($file);
-        
+
         $path = $file->store('messages/' . $conversationId, 'public');
         $fileUrl = Storage::url($path);
 
@@ -141,7 +141,7 @@ class MessagingService
     public function markMessageAsRead(int $messageId, int $userId): void
     {
         $message = Message::findOrFail($messageId);
-        
+
         if (!$message->conversation->hasParticipant($userId)) {
             throw new \Exception('Unauthorized access to message');
         }
@@ -152,7 +152,7 @@ class MessagingService
         }
 
         $message->markAsReadBy($userId);
-        
+
         $user = User::find($userId);
         broadcast(new MessageRead($message, $user));
     }
@@ -163,7 +163,7 @@ class MessagingService
     public function updateTypingStatus(int $conversationId, int $userId, bool $isTyping): void
     {
         $conversation = Conversation::findOrFail($conversationId);
-        
+
         if (!$conversation->hasParticipant($userId)) {
             throw new \Exception('Unauthorized access to conversation');
         }
@@ -184,10 +184,10 @@ class MessagingService
     public function updateOnlineStatus(int $userId, bool $isOnline, ?string $statusMessage = null, array $metadata = []): void
     {
         UserOnlineStatus::updateStatus($userId, $isOnline, $statusMessage, $metadata);
-        
+
         // Update user's last_seen_at
         User::where('id', $userId)->update(['last_seen_at' => now()]);
-        
+
         $user = User::find($userId);
         broadcast(new UserOnlineStatusChanged($user, $isOnline, now()));
     }
@@ -207,8 +207,8 @@ class MessagingService
                 return [
                     'id' => $status->user->id,
                     'name' => $status->user->name,
-                    'avatar' => $status->user->avatar 
-                        ? asset('storage/' . $status->user->avatar) 
+                    'avatar' => $status->user->avatar
+                        ? asset('storage/' . $status->user->avatar)
                         : asset('images/default-avatar.png'),
                     'status_message' => $status->status_message,
                     'last_seen_at' => $status->last_seen_at->toISOString(),
@@ -225,7 +225,8 @@ class MessagingService
             return collect();
         }
 
-        return User::where('id', '!=', $excludeUserId)
+        return User::query()
+            ->where('id', '!=', $excludeUserId)
             ->whereNotNull('email_verified_at')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
@@ -242,8 +243,8 @@ class MessagingService
                     'name' => $user->name,
                     'email' => $user->email,
                     'username' => $user->username,
-                    'avatar' => $user->avatar 
-                        ? asset('storage/' . $user->avatar) 
+                    'avatar' => $user->avatar
+                        ? asset('storage/' . $user->avatar)
                         : asset('images/default-avatar.png'),
                     'is_online' => UserOnlineStatus::isOnline($user->id),
                 ];
@@ -256,13 +257,13 @@ class MessagingService
     public function addMessageReaction(int $messageId, int $userId, string $emoji): array
     {
         $message = Message::findOrFail($messageId);
-        
+
         if (!$message->conversation->hasParticipant($userId)) {
             throw new \Exception('Unauthorized access to message');
         }
 
         $message->addReaction($emoji, $userId);
-        
+
         return $message->fresh()->reactions ?? [];
     }
 
@@ -272,7 +273,7 @@ class MessagingService
     public function getTypingIndicators(int $conversationId, int $excludeUserId): Collection
     {
         $conversation = Conversation::findOrFail($conversationId);
-        
+
         if (!$conversation->hasParticipant($excludeUserId)) {
             throw new \Exception('Unauthorized access to conversation');
         }
@@ -295,11 +296,11 @@ class MessagingService
         if ($messageData->conversationId) {
             return Conversation::findOrFail($messageData->conversationId);
         }
-        
+
         if ($messageData->recipientId) {
             return Conversation::findOrCreateBetweenUsers($messageData->senderId, $messageData->recipientId);
         }
-        
+
         throw new \Exception('Either conversation_id or recipient_id is required');
     }
 
@@ -307,7 +308,7 @@ class MessagingService
     {
         $otherUser = $conversation->otherParticipant($userId);
         $isOnline = $otherUser ? UserOnlineStatus::isOnline($otherUser->id) : false;
-        
+
         return [
             'id' => $conversation->id,
             'title' => $conversation->getDisplayNameForUser($userId),
@@ -324,8 +325,8 @@ class MessagingService
                 'is_mine' => $conversation->lastMessage->sender_id === $userId,
             ] : null,
             'unread_count' => $conversation->getUnreadCountForUser($userId),
-            'last_activity' => $conversation->last_message_at 
-                ? $conversation->last_message_at->toISOString() 
+            'last_activity' => $conversation->last_message_at
+                ? $conversation->last_message_at->toISOString()
                 : $conversation->updated_at->toISOString(),
         ];
     }
@@ -343,8 +344,8 @@ class MessagingService
             'formatted_file_size' => $message->formatted_file_size,
             'sender_id' => $message->sender_id,
             'sender_name' => $message->sender->name,
-            'sender_avatar' => $message->sender->avatar 
-                ? asset('storage/' . $message->sender->avatar) 
+            'sender_avatar' => $message->sender->avatar
+                ? asset('storage/' . $message->sender->avatar)
                 : asset('images/default-avatar.png'),
             'is_mine' => $message->sender_id === $userId,
             'is_read' => $message->is_read,
@@ -371,7 +372,7 @@ class MessagingService
     private function determineMessageTypeFromFile(UploadedFile $file): string
     {
         $mimeType = $file->getMimeType();
-        
+
         if (str_starts_with($mimeType, 'image/')) {
             return 'image';
         } elseif (str_starts_with($mimeType, 'video/')) {
@@ -379,7 +380,7 @@ class MessagingService
         } elseif (str_starts_with($mimeType, 'audio/')) {
             return 'audio';
         }
-        
+
         return 'file';
     }
 }
