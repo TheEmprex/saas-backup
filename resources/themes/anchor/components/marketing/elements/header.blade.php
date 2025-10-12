@@ -1,7 +1,7 @@
-<header 
-    x-data="{ 
-        mobileMenuOpen: false, 
-        scrolled: false, 
+<header
+    x-data="{
+        mobileMenuOpen: false,
+        scrolled: false,
         showOverlay: false,
         topOffset: '10',
         evaluateScrollPosition(){
@@ -10,7 +10,7 @@
             } else {
                 this.scrolled = false;
             }
-        } 
+        }
     }"
     x-init="
         window.addEventListener('resize', function() {
@@ -23,13 +23,13 @@
         });
         evaluateScrollPosition();
         window.addEventListener('scroll', function() {
-            evaluateScrollPosition(); 
+            evaluateScrollPosition();
         })
-    " 
+    "
     class="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm"
 >
     <x-container>
-        <div class="z-30 flex items-center justify-between h-24 md:space-x-8">
+        <div class="z-30 flex items-center justify-between h-20 md:space-x-8">
             <div class="z-20 flex items-center justify-between w-full md:w-auto">
                 <div class="relative z-20 inline-flex">
                     <a href="{{ route('home') }}" class="flex items-center justify-center space-x-3 font-bold text-zinc-900 dark:text-zinc-100">
@@ -42,6 +42,17 @@
                         <svg x-show="mobileMenuOpen" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
+            </div>
+
+            <div class="sm:hidden md:block md:visible">
+                @guest
+                    <div class="flex space-x-2 align-middle">
+                        <x-button href="{{ route('custom.login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
+                        <x-button href="{{ route('custom.register') }}" tag="a" class="w-full text-sm text-center">Sign Up</x-button>
+                    </div>
+                @else
+                    <x-button href="{{ route('dashboard') }}" tag="a" class="w-full text-sm">View Dashboard</x-button>
+                @endguest
             </div>
 
             <!-- Desktop Navigation -->
@@ -151,7 +162,7 @@
                     <div class="pt-4 border-t border-gray-200">
                         <a href="{{ route('pricing') }}" class="block text-sm font-medium text-gray-900 mb-3">Pricing</a>
                         <a href="{{ route('blog') }}" class="block text-sm font-medium text-gray-900 mb-4">Blog</a>
-                        
+
                         @guest
                             <div class="space-y-3 pt-4">
                                 <x-button href="{{ route('custom.login') }}" tag="a" class="w-full text-sm" color="secondary">Login</x-button>
@@ -165,7 +176,7 @@
                     </div>
                 </div>
             </nav>
-            
+
             @guest
                 <div class="relative z-30 items-center justify-center flex-shrink-0 hidden h-full space-x-3 text-sm md:flex">
                     <x-button href="{{ route('custom.login') }}" tag="a" class="text-sm" color="secondary">Login</x-button>

@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .gradient-bg { 
+        .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             min-height: 100vh;
         }
@@ -48,7 +48,7 @@
             from { opacity: 0; transform: translateX(-20px); }
             to { opacity: 1; transform: translateX(0); }
         }
-        
+
         /* Button fixes */
         .btn-clickable {
             pointer-events: auto !important;
@@ -59,18 +59,18 @@
             transform: translateY(-2px) !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
         }
-        
+
         /* Remove any unwanted borders or underlines on buttons */
         a.no-underline, a.no-underline:hover, a.no-underline:focus, a.no-underline:active {
             text-decoration: none !important;
         }
-        
+
         /* Button styling enhancements */
         .button-enhanced {
             position: relative;
             overflow: hidden;
         }
-        
+
         .button-enhanced::before {
             content: '';
             position: absolute;
@@ -81,21 +81,21 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             transition: left 0.5s;
         }
-        
+
         .button-enhanced:hover::before {
             left: 100%;
         }
-        
+
         /* User Type Selection Styles */
         .user-type-card.selected {
             border-color: #6366f1 !important;
             background-color: #f8fafc;
         }
-        
+
         .user-type-card.selected .user-type-radio {
             border-color: #6366f1;
         }
-        
+
         .user-type-card.selected .selected-indicator {
             display: block !important;
         }
@@ -104,7 +104,7 @@
 <body class="h-full bg-gray-50 auth-page">
     <div class="min-h-full flex">
         <!-- Left Panel - Branding -->
-        <div class="hidden md:flex md:flex-1 md:flex-col md:justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 gradient-bg relative overflow-hidden">
+        <div class="hidden md:flex md:flex-1 md:flex-col py-4 px-4 sm:px-6 lg:px-20 xl:px-24 gradient-bg relative overflow-hidden">
             <div class="mx-auto w-full max-w-sm lg:w-96 text-white relative">
                 <div class="fade-in">
                     <!-- Logo -->
@@ -121,14 +121,14 @@
                     <!-- Hero Content -->
                     <div class="mb-12">
                         <h2 class="text-4xl font-bold mb-4 leading-tight">
-                            Join the 
+                            Join the
                             <span class="text-yellow-300">Elite Network</span>
                             of Professionals
                         </h2>
                         <p class="text-xl text-white/90 mb-8">
                             Get verified, connect with top agencies, and unlock premium opportunities in the adult content industry.
                         </p>
-                        
+
                         <!-- Benefits -->
                         <div class="space-y-4">
                             <div class="flex items-center space-x-3 slide-in">
@@ -200,7 +200,7 @@
                     <div class="text-center mb-8">
                         <h2 class="text-3xl font-bold text-gray-900 mb-2">Create your premium account</h2>
                         <p class="text-gray-600">Join thousands of verified professionals</p>
-                        
+
                         <!-- Progress Indicator -->
                         <div class="flex items-center justify-center mt-6 mb-4">
                             <div class="flex items-center space-x-2">
@@ -251,7 +251,7 @@
 
                     <form class="space-y-5" action="{{ route('custom.register.post') }}" method="POST">
                         @csrf
-                        
+
                         <!-- Name Field -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
@@ -261,8 +261,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                     </svg>
                                 </div>
-                                <input id="name" name="name" type="text" required 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="name" name="name" type="text" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Enter your full name" value="{{ old('name') }}">
                             </div>
                         </div>
@@ -276,8 +276,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
                                     </svg>
                                 </div>
-                                <input id="email" name="email" type="email" required 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="email" name="email" type="email" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Enter your email address" value="{{ old('email') }}">
                             </div>
                         </div>
@@ -285,7 +285,7 @@
                         <!-- Phone Field -->
                         <div>
                             <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-2">
-                                Phone Number 
+                                Phone Number
                                 <span class="text-gray-500 font-normal">(Optional)</span>
                             </label>
                             <div class="relative">
@@ -294,8 +294,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                     </svg>
                                 </div>
-                                <input id="phone_number" name="phone_number" type="tel" 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="phone_number" name="phone_number" type="tel"
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Enter your phone number" value="{{ old('phone_number') }}">
                             </div>
                             <p class="mt-1 text-xs text-gray-500">Helps prevent duplicate accounts and improves security</p>
@@ -304,7 +304,7 @@
                         <!-- User Type Field -->
                         <div>
                             <label for="user_type_id" class="block text-sm font-medium text-gray-700 mb-3">Choose Your Account Type *</label>
-                            
+
                             <!-- User Type Selection -->
                             <div class="mb-4">
                                 <!-- Hiring Entities Section -->
@@ -319,8 +319,8 @@
                                     </div>
                                     <div class="grid grid-cols-1 gap-2">
                                         @foreach($userTypes->where('can_hire', true) as $userType)
-                                        <div class="user-type-card cursor-pointer border border-gray-200 rounded-lg p-2 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200" 
-                                             data-type="{{ $userType->id }}" 
+                                        <div class="user-type-card cursor-pointer border border-gray-200 rounded-lg p-2 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200"
+                                             data-type="{{ $userType->id }}"
                                              onclick="selectUserType({{ $userType->id }})">
                                             <div class="flex items-center justify-between">
                                                 <div class="flex items-center space-x-2">
@@ -352,8 +352,8 @@
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         @foreach($userTypes->where('can_hire', false) as $userType)
-                                        <div class="user-type-card cursor-pointer border border-gray-200 rounded-lg p-2 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200" 
-                                             data-type="{{ $userType->id }}" 
+                                        <div class="user-type-card cursor-pointer border border-gray-200 rounded-lg p-2 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
+                                             data-type="{{ $userType->id }}"
                                              onclick="selectUserType({{ $userType->id }})">
                                             <div class="flex items-center justify-between">
                                                 <div class="flex items-center space-x-2">
@@ -373,10 +373,10 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Hidden input for form submission -->
                             <input type="hidden" id="user_type_id" name="user_type_id" value="{{ old('user_type_id') }}" required>
-                            
+
                             <!-- Important Note -->
                             <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
                                 <div class="flex items-start">
@@ -403,8 +403,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                     </svg>
                                 </div>
-                                <input id="password" name="password" type="password" required 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="password" name="password" type="password" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Enter password (min 8 characters)">
                             </div>
                         </div>
@@ -418,8 +418,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
                                 </div>
-                                <input id="password_confirmation" name="password_confirmation" type="password" required 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="password_confirmation" name="password_confirmation" type="password" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Confirm your password">
                             </div>
                         </div>
@@ -433,9 +433,9 @@
                                 </div>
                                 <div class="ml-3 text-sm">
                                     <label for="terms" class="text-gray-700">
-                                        I agree to OnlyVerified's 
-                                        <a href="{{ route('terms-of-service') }}" target="_blank" class="text-indigo-600 hover:text-indigo-500 font-medium">Terms of Service</a> 
-                                        and 
+                                        I agree to OnlyVerified's
+                                        <a href="{{ route('terms-of-service') }}" target="_blank" class="text-indigo-600 hover:text-indigo-500 font-medium">Terms of Service</a>
+                                        and
                                         <a href="{{ route('privacy-policy') }}" target="_blank" class="text-indigo-600 hover:text-indigo-500 font-medium">Privacy Policy</a>
                                     </label>
                                 </div>
@@ -444,7 +444,7 @@
 
                         <!-- Submit Button -->
                         <div>
-                            <button type="submit" 
+                            <button type="submit"
                                     class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -467,7 +467,7 @@
                             </div>
 
                             <div class="mt-6">
-                                <a href="{{ route('custom.login') }}" 
+                                <a href="{{ route('custom.login') }}"
                                    class="w-full inline-flex items-center justify-center py-4 px-6 border-2 border-gray-300 rounded-xl shadow-lg text-base font-semibold text-gray-800 bg-white hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 group no-underline"
                                    style="text-decoration: none !important;">
                                     <svg class="h-5 w-5 text-gray-600 mr-2 group-hover:text-indigo-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,24 +482,24 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         function selectUserType(typeId) {
             // Remove selection from all cards
             document.querySelectorAll('.user-type-card').forEach(card => {
                 card.classList.remove('selected');
             });
-            
+
             // Add selection to clicked card
             const selectedCard = document.querySelector(`[data-type="${typeId}"]`);
             if (selectedCard) {
                 selectedCard.classList.add('selected');
             }
-            
+
             // Set the hidden input value
             document.getElementById('user_type_id').value = typeId;
         }
-        
+
         // Initialize selection if there's an old value
         document.addEventListener('DOMContentLoaded', function() {
             const oldValue = document.getElementById('user_type_id').value;

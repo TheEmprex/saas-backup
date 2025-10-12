@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .gradient-bg { 
+        .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
             min-height: 100vh;
         }
@@ -41,7 +41,7 @@
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+
         /* Button fixes */
         .btn-clickable {
             pointer-events: auto !important;
@@ -52,18 +52,18 @@
             transform: translateY(-2px) !important;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
         }
-        
+
         /* Remove any unwanted borders or underlines on buttons */
         a.no-underline, a.no-underline:hover, a.no-underline:focus, a.no-underline:active {
             text-decoration: none !important;
         }
-        
+
         /* Button styling enhancements */
         .button-enhanced {
             position: relative;
             overflow: hidden;
         }
-        
+
         .button-enhanced::before {
             content: '';
             position: absolute;
@@ -74,7 +74,7 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             transition: left 0.5s;
         }
-        
+
         .button-enhanced:hover::before {
             left: 100%;
         }
@@ -83,7 +83,7 @@
 <body class="h-full bg-gray-50 auth-page">
     <div class="min-h-full flex">
         <!-- Left Panel - Branding -->
-        <div class="hidden md:flex md:flex-1 md:flex-col md:justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 gradient-bg relative overflow-hidden">
+        <div class="hidden md:flex md:flex-1 md:flex-col py-4 px-4 sm:px-6 lg:px-20 xl:px-24 gradient-bg relative overflow-hidden">
             <div class="mx-auto w-full max-w-sm lg:w-96 text-white">
                 <div class="fade-in">
                     <!-- Logo -->
@@ -100,13 +100,13 @@
                     <!-- Hero Content -->
                     <div class="mb-12">
                         <h2 class="text-4xl font-bold mb-4 leading-tight">
-                            Welcome Back to the 
+                            Welcome Back to the
                             <span class="text-yellow-300">Elite Network</span>
                         </h2>
                         <p class="text-xl text-white/90 mb-8">
                             Connect with verified agencies, top talents, and premium opportunities in the adult content industry.
                         </p>
-                        
+
                         <!-- Features -->
                         <div class="space-y-4">
                             <div class="flex items-center space-x-3">
@@ -200,8 +200,8 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
                                     </svg>
                                 </div>
-                                <input id="email" name="email" type="email" required 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="email" name="email" type="email" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Enter your email address" value="{{ old('email') }}">
                             </div>
                         </div>
@@ -214,15 +214,15 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                     </svg>
                                 </div>
-                                <input id="password" name="password" type="password" required 
-                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400" 
+                                <input id="password" name="password" type="password" required
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:border-gray-400"
                                        placeholder="Enter your password">
                             </div>
                         </div>
 
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <input id="remember" name="remember" type="checkbox" 
+                                <input id="remember" name="remember" type="checkbox"
                                        class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                                 <label for="remember" class="ml-2 block text-sm text-gray-700">
                                     Keep me signed in
@@ -236,7 +236,7 @@
                         </div>
 
                         <div>
-                            <button type="submit" 
+                            <button type="submit"
                                     class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                                 <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                                     <svg class="h-5 w-5 text-white group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,7 +258,7 @@
                             </div>
 
                             <div class="mt-6">
-                                <a href="{{ route('custom.register') }}" 
+                                <a href="{{ route('custom.register') }}"
                                    class="w-full inline-flex items-center justify-center py-4 px-6 border-2 border-gray-300 rounded-xl shadow-lg text-base font-semibold text-gray-800 bg-white hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1 group no-underline"
                                    style="text-decoration: none !important;">
                                     <svg class="h-5 w-5 text-gray-600 mr-2 group-hover:text-indigo-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
