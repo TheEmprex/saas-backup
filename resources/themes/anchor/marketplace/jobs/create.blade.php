@@ -16,7 +16,7 @@
                 </svg>
             </div>
             <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Post a 
+                Post a
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Job</span>
             </h1>
             <p class="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">Connect with qualified chatters and grow your OnlyFans ecosystem business with the perfect talent</p>
@@ -102,7 +102,7 @@
                 </div>
             </div>
         @endif
-        
+
         <!-- Subscription Usage Info -->
         @if(isset($plan) && $plan)
             <div class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-700 rounded-2xl p-6 mb-6 shadow-sm">
@@ -119,7 +119,7 @@
                         {{ $plan->name }} Plan
                     </div>
                 </div>
-                
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                     <!-- Job Posts Usage -->
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
@@ -142,7 +142,7 @@
                             {{ $remainingJobPosts === 999 ? 'Unlimited' : $remainingJobPosts }} remaining this month
                         </p>
                     </div>
-                    
+
                     <!-- Featured Jobs -->
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center mb-2">
@@ -167,7 +167,7 @@
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Per featured job</p>
                         @endif
                     </div>
-                    
+
                     <!-- Urgent Badge -->
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center mb-2">
@@ -183,7 +183,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Per urgent job</p>
                     </div>
                 </div>
-                
+
                 @if($remainingJobPosts <= 0)
                     <div class="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border border-red-200 dark:border-red-700 rounded-xl p-4">
                         <div class="flex items-center justify-between">
@@ -212,7 +212,7 @@
 
         <form id="jobPostForm" action="{{ route('marketplace.jobs.store') }}" method="POST" class="space-y-6" {{ auth()->user()->requiresVerification() ? 'style=display:none;' : '' }}>
             @csrf
-            
+
             <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg p-8">
                 <div class="flex items-center mb-6">
                     <div class="inline-flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
@@ -222,13 +222,13 @@
                     </div>
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Job Details</h2>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Title *</label>
-                        <input 
-                            type="text" 
-                            name="title" 
+                        <input
+                            type="text"
+                            name="title"
                             value="{{ old('title') }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             placeholder="e.g., English Market Chatter Needed"
@@ -269,9 +269,9 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Expected Hours per Week *</label>
-                        <input 
-                            type="number" 
-                            name="expected_hours_per_week" 
+                        <input
+                            type="number"
+                            name="expected_hours_per_week"
                             value="{{ old('expected_hours_per_week') }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             min="1"
@@ -282,9 +282,9 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration (months) *</label>
-                        <input 
-                            type="number" 
-                            name="duration_months" 
+                        <input
+                            type="number"
+                            name="duration_months"
                             value="{{ old('duration_months') }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             min="1"
@@ -295,9 +295,9 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Minimum Typing Speed (WPM)</label>
-                        <input 
-                            type="number" 
-                            name="min_typing_speed" 
+                        <input
+                            type="number"
+                            name="min_typing_speed"
                             value="{{ old('min_typing_speed') }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             min="20"
@@ -307,9 +307,9 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
-                        <input 
-                            type="date" 
-                            name="start_date" 
+                        <input
+                            type="date"
+                            name="start_date"
                             value="{{ old('start_date', date('Y-m-d')) }}"
                             min="{{ date('Y-m-d') }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -319,9 +319,9 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Maximum Applications *</label>
-                        <input 
-                            type="number" 
-                            name="max_applications" 
+                        <input
+                            type="number"
+                            name="max_applications"
                             value="{{ old('max_applications', 50) }}"
                             class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                             min="1"
@@ -333,8 +333,8 @@
 
                 <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Job Description *</label>
-                    <textarea 
-                        name="description" 
+                    <textarea
+                        name="description"
                         rows="6"
                         class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Describe the role, responsibilities, and what you're looking for..."
@@ -344,8 +344,8 @@
 
                 <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Requirements</label>
-                    <textarea 
-                        name="requirements" 
+                    <textarea
+                        name="requirements"
                         rows="4"
                         class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="List specific requirements and qualifications..."
@@ -354,8 +354,8 @@
 
                 <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Benefits</label>
-                    <textarea 
-                        name="benefits" 
+                    <textarea
+                        name="benefits"
                         rows="4"
                         class="w-full rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                         placeholder="What benefits do you offer? (flexible hours, bonuses, etc.)"
@@ -375,7 +375,7 @@
                         <p class="text-sm text-gray-500 dark:text-gray-400">Define when and where you need your team member to work</p>
                     </div>
                 </div>
-                
+
                 <!-- Required Working Hours -->
                 <div class="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-lg p-6 mb-6 border border-indigo-200 dark:border-indigo-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -384,7 +384,7 @@
                         </svg>
                         Required Working Hours
                     </h3>
-                    
+
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Your Timezone -->
                         <div>
@@ -421,7 +421,7 @@
                                 📍 What timezone are you posting from?
                             </p>
                         </div>
-                        
+
                         <!-- Start Time -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
@@ -429,9 +429,9 @@
                                 Start Time
                             </label>
                             <div class="relative">
-                                <input 
-                                    type="time" 
-                                    name="required_start_time" 
+                                <input
+                                    type="time"
+                                    name="required_start_time"
                                     value="{{ old('required_start_time') }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 text-lg font-mono"
                                     required
@@ -446,7 +446,7 @@
                                 🌅 Earliest time chatters should be available
                             </p>
                         </div>
-                        
+
                         <!-- End Time -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
@@ -454,9 +454,9 @@
                                 End Time
                             </label>
                             <div class="relative">
-                                <input 
-                                    type="time" 
-                                    name="required_end_time" 
+                                <input
+                                    type="time"
+                                    name="required_end_time"
                                     value="{{ old('required_end_time') }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-red-500 focus:ring-2 focus:ring-red-500 text-lg font-mono"
                                     required
@@ -472,7 +472,7 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <!-- Example & Help Text -->
                     <div class="mt-6 p-4 bg-white dark:bg-zinc-800 rounded-lg border border-indigo-200 dark:border-indigo-700">
                         <div class="flex items-start">
@@ -482,7 +482,7 @@
                             <div>
                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">How it works:</h4>
                                 <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
-                                    <strong>Example:</strong> If you're in Paris and need chatters available from 11am-4pm Paris time, 
+                                    <strong>Example:</strong> If you're in Paris and need chatters available from 11am-4pm Paris time,
                                     a chatter in Philippines (4pm-10pm PH time) would be a perfect match!
                                 </p>
                                 <p class="text-xs text-gray-500 dark:text-gray-400">
@@ -492,7 +492,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Working Days -->
                 <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -501,7 +501,7 @@
                         </svg>
                         Required Working Days
                     </h3>
-                    
+
                     <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
                         @php
                             $days = [
@@ -516,18 +516,16 @@
                         @endphp
                         @foreach($days as $value => $day)
                             <label class="relative group cursor-pointer">
-                                <input 
-                                    type="checkbox" 
-                                    name="required_days[]" 
+                                <input
+                                    type="checkbox"
+                                    name="required_days[]"
                                     value="{{ $value }}"
                                     {{ in_array($value, old('required_days', [])) ? 'checked' : '' }}
                                     class="sr-only peer"
                                 >
-                                <div class="bg-white dark:bg-zinc-800 border-2 border-gray-200 dark:border-zinc-600 rounded-lg p-3 text-center transition-all duration-200 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30 peer-checked:border-blue-500 peer-checked:text-blue-700 dark:peer-checked:text-blue-300 hover:border-blue-300 group-hover:shadow-md">
-                                    <div class="text-lg mb-1">{{ $day['emoji'] }}</div>
+                                <div class="bg-white dark:bg-zinc-800 border-2 border-gray-200 dark:border-zinc-600 rounded-lg p-3 text-center transition-all duration-200 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30 peer-checked:border-blue-500 peer-checked:text-blue-700 dark:peer-checked:text-blue-300 hover:border-blue-300 group-hover:shadow-md flex-col">
                                     <div class="text-xs font-medium text-gray-900 dark:text-white peer-checked:text-blue-700 dark:peer-checked:text-blue-300">
-                                        <span class="hidden sm:inline">{{ $day['name'] }}</span>
-                                        <span class="sm:hidden">{{ $day['short'] }}</span>
+                                        <span>{{ $day['short'] }}</span>
                                     </div>
                                 </div>
                             </label>
@@ -540,7 +538,7 @@
                         Select specific days if you need guaranteed coverage, or leave empty for flexible scheduling
                     </p>
                 </div>
-                
+
                 <!-- Working Hours -->
                 <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
@@ -549,7 +547,7 @@
                         </svg>
                         Preferred Working Hours
                     </h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
@@ -557,9 +555,9 @@
                                 Start Time
                             </label>
                             <div class="relative">
-                                <input 
-                                    type="time" 
-                                    name="preferred_start_time" 
+                                <input
+                                    type="time"
+                                    name="preferred_start_time"
                                     value="{{ old('preferred_start_time') }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 text-lg font-mono"
                                 >
@@ -573,16 +571,16 @@
                                 ⏰ When should work begin each day?
                             </p>
                         </div>
-                        
+
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                                 <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
                                 End Time
                             </label>
                             <div class="relative">
-                                <input 
-                                    type="time" 
-                                    name="preferred_end_time" 
+                                <input
+                                    type="time"
+                                    name="preferred_end_time"
                                     value="{{ old('preferred_end_time') }}"
                                     class="w-full rounded-lg border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-500 text-lg font-mono"
                                 >
@@ -597,14 +595,14 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <div class="mt-4 p-4 bg-white dark:bg-zinc-800 rounded-lg border border-green-200 dark:border-green-800">
                         <p class="text-xs text-gray-600 dark:text-gray-300 flex items-start">
                             <svg class="w-4 h-4 mr-2 mt-0.5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <span>
-                                <strong>Pro Tip:</strong> Leave time fields empty if you prefer flexible hours. 
+                                <strong>Pro Tip:</strong> Leave time fields empty if you prefer flexible hours.
                                 Times are based on the selected timezone above.
                             </span>
                         </p>
@@ -621,15 +619,15 @@
                     </div>
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Compensation</h2>
                 </div>
-                
+
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Payment Type *</label>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="flex items-center text-gray-900 dark:text-white">
-                                <input 
-                                    type="radio" 
-                                    name="rate_type" 
+                                <input
+                                    type="radio"
+                                    name="rate_type"
                                     value="hourly"
                                     {{ old('rate_type') === 'hourly' ? 'checked' : '' }}
                                     class="mr-2"
@@ -640,9 +638,9 @@
                         </div>
                         <div>
                             <label class="flex items-center text-gray-900 dark:text-white">
-                                <input 
-                                    type="radio" 
-                                    name="rate_type" 
+                                <input
+                                    type="radio"
+                                    name="rate_type"
                                     value="fixed"
                                     {{ old('rate_type') === 'fixed' ? 'checked' : '' }}
                                     class="mr-2"
@@ -653,9 +651,9 @@
                         </div>
                         <div>
                             <label class="flex items-center text-gray-900 dark:text-white">
-                                <input 
-                                    type="radio" 
-                                    name="rate_type" 
+                                <input
+                                    type="radio"
+                                    name="rate_type"
                                     value="commission"
                                     {{ old('rate_type') === 'commission' ? 'checked' : '' }}
                                     class="mr-2"
@@ -678,9 +676,9 @@
                                 </label>
                                 <div class="mt-2 relative">
                                     <span class="absolute left-3 top-2 text-gray-500">$</span>
-                                    <input 
-                                        type="number" 
-                                        name="hourly_rate" 
+                                    <input
+                                        type="number"
+                                        name="hourly_rate"
                                         value="{{ old('hourly_rate') }}"
                                         class="w-full pl-8 rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         step="0.01"
@@ -710,9 +708,9 @@
                                 <div class="mt-2 space-y-2">
                                     <div class="relative">
                                         <span class="absolute left-3 top-2 text-gray-500">$</span>
-                                        <input 
-                                            type="number" 
-                                            name="fixed_rate" 
+                                        <input
+                                            type="number"
+                                            name="fixed_rate"
                                             value="{{ old('fixed_rate') }}"
                                             class="w-full pl-8 rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                             step="0.01"
@@ -746,9 +744,9 @@
                                     <span class="text-sm text-gray-700 dark:text-gray-300">Specific Percentage</span>
                                 </label>
                                 <div class="mt-2 relative">
-                                    <input 
-                                        type="number" 
-                                        name="commission_percentage" 
+                                    <input
+                                        type="number"
+                                        name="commission_percentage"
                                         value="{{ old('commission_percentage') }}"
                                         class="w-full pr-8 rounded-md border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         step="0.01"
@@ -781,13 +779,13 @@
                     </div>
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Job Visibility</h2>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="flex items-center text-gray-900 dark:text-white">
-                            <input 
-                                type="checkbox" 
-                                name="is_featured" 
+                            <input
+                                type="checkbox"
+                                name="is_featured"
                                 value="1"
                                 {{ old('is_featured') ? 'checked' : '' }}
                                 class="mr-2"
@@ -803,9 +801,9 @@
 
                     <div>
                         <label class="flex items-center text-gray-900 dark:text-white">
-                            <input 
-                                type="checkbox" 
-                                name="is_urgent" 
+                            <input
+                                type="checkbox"
+                                name="is_urgent"
                                 value="1"
                                 {{ old('is_urgent') ? 'checked' : '' }}
                                 class="mr-2"
@@ -842,11 +840,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-            
+
             <!-- Success Message -->
             <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Job Posted Successfully! 🎉</h3>
             <p class="text-gray-600 dark:text-gray-300 mb-6" id="jobTitle">Your job listing is now live and visible to chatters.</p>
-            
+
             <!-- Action Buttons -->
             <div class="space-y-3">
                 <a href="#" id="viewJobBtn" class="block w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
@@ -856,7 +854,7 @@
                     </svg>
                     View My Job
                 </a>
-                
+
                 <button onclick="closeSuccessModal()" class="block w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                     Post Another Job
                 </button>
@@ -875,11 +873,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
             </div>
-            
+
             <!-- Error Message -->
             <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Unable to Post Job</h3>
             <p class="text-gray-600 dark:text-gray-300 mb-6" id="errorMessage">An error occurred while posting your job.</p>
-            
+
             <!-- Action Buttons -->
             <div class="space-y-3">
                 <a href="{{ route('subscription.plans') }}" id="upgradeBtn" class="block w-full bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 hidden">
@@ -888,7 +886,7 @@
                     </svg>
                     Upgrade Subscription
                 </a>
-                
+
                 <button type="button" onclick="closeErrorModal()" class="block w-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                     Try Again
                 </button>
@@ -905,19 +903,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const timezoneSelect = document.querySelector('select[name="required_timezone"]');
     const workingDaysSection = document.querySelector('.bg-blue-50');
     const workingHoursSection = document.querySelector('.bg-green-50');
-    
+
     // Enhanced day button functionality
     dayButtons.forEach(button => {
         button.addEventListener('change', function() {
             const label = this.closest('label');
             const dayCard = label.querySelector('div');
-            
+
             if (this.checked) {
                 // Add selected styling
                 dayCard.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-700');
                 dayCard.classList.add('dark:bg-blue-900/30', 'dark:border-blue-500', 'dark:text-blue-300');
                 dayCard.classList.remove('bg-white', 'border-gray-200', 'dark:bg-zinc-800', 'dark:border-zinc-600');
-                
+
                 // Add pulse animation
                 dayCard.classList.add('animate-pulse');
                 setTimeout(() => dayCard.classList.remove('animate-pulse'), 200);
@@ -928,7 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dayCard.classList.add('bg-white', 'border-gray-200', 'dark:bg-zinc-800', 'dark:border-zinc-600');
             }
         });
-        
+
         // Handle keyboard interaction
         button.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -938,7 +936,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Quick day selection shortcuts
     function selectWeekdays() {
         ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach(day => {
@@ -949,7 +947,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     function selectWeekends() {
         ['saturday', 'sunday'].forEach(day => {
             const checkbox = document.querySelector(`input[value="${day}"]`);
@@ -959,21 +957,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     function selectAllDays() {
         dayButtons.forEach(button => {
             button.checked = true;
             button.dispatchEvent(new Event('change'));
         });
     }
-    
+
     function clearAllDays() {
         dayButtons.forEach(button => {
             button.checked = false;
             button.dispatchEvent(new Event('change'));
         });
     }
-    
+
     // Add quick selection buttons
     const quickSelectDiv = document.createElement('div');
     quickSelectDiv.className = 'mt-4 flex flex-wrap gap-2';
@@ -991,38 +989,38 @@ document.addEventListener('DOMContentLoaded', function() {
             🗑️ Clear All
         </button>
     `;
-    
+
     // Insert quick select buttons after the day grid
     const dayGrid = document.querySelector('.grid.grid-cols-2.sm\\:grid-cols-4.lg\\:grid-cols-7');
     if (dayGrid && dayGrid.parentNode) {
         dayGrid.parentNode.insertBefore(quickSelectDiv, dayGrid.nextSibling);
     }
-    
+
     // Make functions globally available
     window.selectWeekdays = selectWeekdays;
     window.selectWeekends = selectWeekends;
     window.selectAllDays = selectAllDays;
     window.clearAllDays = clearAllDays;
-    
+
     // Note: Removed timezone flexible checkbox functionality as we now use a simpler timezone + time range approach
-    
+
     // === RATE TYPE FUNCTIONALITY ===
     const rateTypeInputs = document.querySelectorAll('input[name="rate_type"]');
     const rateInputs = document.querySelectorAll('.rate-input');
-    
+
     function showRateInput() {
         console.log('🎯 showRateInput called');
-        
+
         // Hide all rate inputs first
         rateInputs.forEach(input => {
             input.style.display = 'none';
             console.log('🙈 Hiding:', input.id);
         });
-        
+
         // Show selected rate input
         const selectedType = document.querySelector('input[name="rate_type"]:checked');
         console.log('🎯 Selected rate type:', selectedType ? selectedType.value : 'none');
-        
+
         if (selectedType) {
             const targetInput = document.getElementById(selectedType.value + '-rate');
             console.log('🎯 Target input:', targetInput ? targetInput.id : 'not found');
@@ -1032,11 +1030,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-    
+
     // More robust function to ensure rate inputs are shown
     function ensureRateInputVisible() {
         console.log('🔄 ensureRateInputVisible called');
-        
+
         const checkedRadio = document.querySelector('input[name="rate_type"]:checked');
         if (checkedRadio) {
             console.log('✅ Found checked radio:', checkedRadio.value);
@@ -1049,13 +1047,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
+
     // Handle TBD/Amount radio buttons within each rate type
     function handleRateTypeRadios() {
         // Hourly rate TBD/amount toggle
         const hourlyRateTypeRadios = document.querySelectorAll('input[name="hourly_rate_type"]');
         const hourlyAmountInput = document.getElementById('hourly_amount_input');
-        
+
         hourlyRateTypeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 const hourlyTbdHidden = document.getElementById('hourly_tbd_hidden');
@@ -1071,12 +1069,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-        
+
         // Fixed rate TBD/amount toggle
         const fixedRateTypeRadios = document.querySelectorAll('input[name="fixed_rate_type"]');
         const fixedAmountInput = document.getElementById('fixed_amount_input');
         const fixedPeriodSelect = document.getElementById('fixed_period_select');
-        
+
         fixedRateTypeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 const fixedTbdHidden = document.getElementById('fixed_tbd_hidden');
@@ -1096,11 +1094,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-        
+
         // Commission rate TBD/amount toggle
         const commissionRateTypeRadios = document.querySelectorAll('input[name="commission_rate_type"]');
         const commissionAmountInput = document.getElementById('commission_amount_input');
-        
+
         commissionRateTypeRadios.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value === 'tbd') {
@@ -1113,29 +1111,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-        
+
         // Initialize states based on checked radios
         const checkedHourlyRateType = document.querySelector('input[name="hourly_rate_type"]:checked');
         if (checkedHourlyRateType && checkedHourlyRateType.value === 'tbd') {
             checkedHourlyRateType.dispatchEvent(new Event('change'));
         }
-        
+
         const checkedFixedRateType = document.querySelector('input[name="fixed_rate_type"]:checked');
         if (checkedFixedRateType && checkedFixedRateType.value === 'tbd') {
             checkedFixedRateType.dispatchEvent(new Event('change'));
         }
-        
+
         const checkedCommissionRateType = document.querySelector('input[name="commission_rate_type"]:checked');
         if (checkedCommissionRateType && checkedCommissionRateType.value === 'tbd') {
             checkedCommissionRateType.dispatchEvent(new Event('change'));
         }
     }
-    
+
     // Initialize TBD/Amount radio functionality
     handleRateTypeRadios();
-    
+
     // Multiple approaches to ensure rate input visibility
-    
+
     // 1. Direct event listeners on rate type radios
     rateTypeInputs.forEach(input => {
         console.log('🔧 Adding listeners to:', input.value);
@@ -1146,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ensureRateInputVisible();
             }, 10);
         });
-        
+
         input.addEventListener('click', function() {
             console.log('🖱️ Radio clicked:', this.value);
             setTimeout(() => {
@@ -1155,7 +1153,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 10);
         });
     });
-    
+
     // 2. Document-level event delegation for radio buttons
     document.addEventListener('click', function(e) {
         if (e.target.type === 'radio' && e.target.name === 'rate_type') {
@@ -1166,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 10);
         }
     });
-    
+
     // 3. Document-level change listener
     document.addEventListener('change', function(e) {
         if (e.target.name === 'rate_type') {
@@ -1177,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 10);
         }
     });
-    
+
     // 4. MutationObserver to catch any DOM changes
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
@@ -1193,12 +1191,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Observe all rate type radio buttons
     rateTypeInputs.forEach(input => {
         observer.observe(input, { attributes: true, attributeFilter: ['checked'] });
     });
-    
+
     // 5. Periodic check to ensure visibility (fallback)
     let visibilityCheckCount = 0;
     const visibilityInterval = setInterval(() => {
@@ -1211,55 +1209,55 @@ document.addEventListener('DOMContentLoaded', function() {
                 ensureRateInputVisible();
             }
         }
-        
+
         // Stop periodic check after 30 seconds to avoid performance issues
         if (visibilityCheckCount > 60) {
             clearInterval(visibilityInterval);
             console.log('⏰ Stopped periodic visibility checks');
         }
     }, 500);
-    
+
     // 6. Initial setup with delays to ensure DOM is ready
     setTimeout(() => {
         console.log('⏰ Initial setup (100ms delay)');
         showRateInput();
         ensureRateInputVisible();
     }, 100);
-    
+
     setTimeout(() => {
         console.log('⏰ Secondary setup (500ms delay)');
         ensureRateInputVisible();
     }, 500);
-    
+
     setTimeout(() => {
         console.log('⏰ Final setup (1000ms delay)');
         ensureRateInputVisible();
     }, 1000);
-    
+
     // Handle form submission with AJAX for popup notification
     const form = document.getElementById('jobPostForm');
     console.log('🚀 FORM FOUND:', form ? 'YES' : 'NO');
-    
+
     if (form) {
         console.log('🎯 FORM ACTION:', form.action);
-        
+
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             console.log('🔥 FORM SUBMITTED! Intercepting with AJAX...');
-            
+
             const formData = new FormData(form);
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
-            
+
             // Show loading state
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Posting Job...';
-            
+
             // Add multiple AJAX indicators
             formData.append('ajax', '1');
-            
+
             console.log('📦 FORM DATA PREPARED');
-            
+
             // Use fetch for better error handling
             fetch(form.action, {
                 method: 'POST',
@@ -1272,10 +1270,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => {
                 console.log('📡 RESPONSE RECEIVED:', response.status);
                 console.log('📡 RESPONSE TYPE:', response.headers.get('content-type'));
-                
+
                 return response.text().then(text => {
                     console.log('📄 RAW RESPONSE:', text.substring(0, 500));
-                    
+
                     try {
                         const data = JSON.parse(text);
                         console.log('✅ JSON PARSED:', data);
@@ -1289,11 +1287,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 console.log('🎯 PROCESSING DATA:', data);
-                
+
                 // Reset button state
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-                
+
                 if (data.success) {
                     console.log('🎉 SUCCESS! Showing modal...');
                     showSuccessModal(data.job);
@@ -1304,11 +1302,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('💥 FETCH ERROR:', error);
-                
+
                 // Reset button state
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
-                
+
                 // Show error modal
                 showErrorModal('Network error. Please try again.');
             });
@@ -1324,25 +1322,25 @@ function showSuccessModal(jobData) {
     const modalContent = document.getElementById('successModalContent');
     const jobTitle = document.getElementById('jobTitle');
     const viewJobBtn = document.getElementById('viewJobBtn');
-    
+
     if (!modal) {
         alert('SUCCESS: Job "' + jobData.title + '" posted successfully!');
         return;
     }
-    
+
     // Update modal content
     if (jobTitle) {
         jobTitle.textContent = `"${jobData.title}" is now live and visible to chatters.`;
     }
-    
+
     if (viewJobBtn) {
         viewJobBtn.href = jobData.url || '#';
     }
-    
+
     // Show modal with proper animation
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
-    
+
     // Trigger animation after a brief moment
     requestAnimationFrame(() => {
         if (modalContent) {
@@ -1356,11 +1354,11 @@ function showSuccessModal(jobData) {
 function closeSuccessModal() {
     const modal = document.getElementById('successModal');
     const modalContent = document.getElementById('successModalContent');
-    
+
     // Hide with animation
     modalContent.classList.add('scale-95');
     modalContent.classList.remove('scale-100');
-    
+
     setTimeout(() => {
         modal.classList.add('hidden');
         // Reset form for posting another job
@@ -1388,7 +1386,7 @@ function testPopup() {
 // Test AJAX call function
 function testAjaxCall() {
     console.log('Testing AJAX call...');
-    
+
     fetch('/test-ajax', {
         method: 'POST',
         headers: {
@@ -1424,17 +1422,17 @@ function showErrorModal(errorMessage) {
     const modalContent = document.getElementById('errorModalContent');
     const errorMessageEl = document.getElementById('errorMessage');
     const upgradeBtn = document.getElementById('upgradeBtn');
-    
+
     if (!modal) {
         alert('ERROR: ' + errorMessage);
         return;
     }
-    
+
     // Update modal content
     if (errorMessageEl) {
         errorMessageEl.textContent = errorMessage;
     }
-    
+
     // Show upgrade button if it's a subscription limit error
     if (upgradeBtn) {
         if (errorMessage.toLowerCase().includes('subscription') || errorMessage.toLowerCase().includes('limit') || errorMessage.toLowerCase().includes('upgrade')) {
@@ -1443,11 +1441,11 @@ function showErrorModal(errorMessage) {
             upgradeBtn.classList.add('hidden');
         }
     }
-    
+
     // Show modal with proper animation
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
-    
+
     // Trigger animation after a brief moment
     requestAnimationFrame(() => {
         if (modalContent) {
@@ -1462,23 +1460,23 @@ function closeErrorModal() {
     console.log('🔴 Closing error modal...');
     const modal = document.getElementById('errorModal');
     const modalContent = document.getElementById('errorModalContent');
-    
+
     if (!modal) {
         console.log('❌ Error modal not found!');
         return;
     }
-    
+
     if (!modalContent) {
         console.log('❌ Error modal content not found!');
         modal.classList.add('hidden');
         modal.style.display = 'none';
         return;
     }
-    
+
     // Hide with animation
     modalContent.classList.add('scale-95');
     modalContent.classList.remove('scale-100');
-    
+
     setTimeout(() => {
         modal.classList.add('hidden');
         modal.style.display = 'none';
@@ -1496,13 +1494,13 @@ document.getElementById('errorModal').addEventListener('click', function(e) {
 // Test job posting with popup
 function testJobPostAjax() {
     console.log('Testing job post AJAX with popup...');
-    
+
     // Get some basic form data
     const formData = new FormData();
     formData.append('title', 'Test Job from AJAX');
     formData.append('_token', document.querySelector('input[name="_token"]')?.value || '');
     formData.append('ajax', '1');
-    
+
     fetch('/test-job-post', {
         method: 'POST',
         headers: {

@@ -15,28 +15,28 @@ class JobController extends Controller
     public function show(int $id): View
     {
         $job = JobPost::with('user.userProfile')->findOrFail($id);
-        
+
         return view('theme::marketplace.jobs.show', compact('job'));
     }
 
     public function create(): View
     {
         $user = Auth::user();
-        
+
         // Check if user can post jobs (only agencies)
-        if (!$user->isAgency()) {
+        if (!$user->isAgency() && $user->userType !== null) {
             return view('theme::marketplace.jobs.access-denied');
         }
-        
+
         // Get subscription info
         $subscription = $user->currentSubscription();
         $plan = $subscription ? $subscription->subscriptionPlan : null;
-        
+
         // Get usage stats
         $remainingJobPosts = $user->getRemainingJobPosts();
         $usedJobPosts = $user->getJobPostsUsedThisMonth();
         $totalJobPosts = $plan ? $plan->job_post_limit : 0;
-        
+
         return view('theme::marketplace.jobs.create', compact(
             'user', 'subscription', 'plan', 'remainingJobPosts', 'usedJobPosts', 'totalJobPosts'
         ));
@@ -45,32 +45,32 @@ class JobController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        
+
         // Properly detect AJAX requests
         $isAjax = $request->ajax() || $request->wantsJson() || $request->has('ajax') || $request->header('X-Requested-With') === 'XMLHttpRequest';
-        
+
         // Check if user is authorized to post jobs (only agencies)
-        if (!$user->isAgency()) {
+        if (!$user->isAgency() && $user->userType !== null) {
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Only agencies are authorized to post jobs.'
                 ]);
             }
-            
+
             return redirect()->back()
                 ->with('error', 'Only agencies are authorized to post jobs.');
         }
-        
+
         // Check if user can post jobs
-        if (!$user->canPostJob()) {
+        if (!$user->canPostJob() && $user->userType !== null) {
             if ($isAjax) {
                 return response()->json([
                     'success' => false,
                     'error' => 'You have reached your job posting limit for this month. Please upgrade your subscription.'
                 ]);
             }
-            
+
             return redirect()->back()
                 ->with('error', 'You have reached your job posting limit for this month. Please upgrade your subscription.');
         }
@@ -115,7 +115,7 @@ class JobController extends Controller
         // For now, skip payment logic to get basic functionality working
         // Create job directly
         $job = JobPost::create($validated);
-        
+
         // Increment the permanent job post counter
         $stats = \App\Models\UserMonthlyStat::getOrCreateForMonth(Auth::id());
         $stats->incrementJobsPosted();
@@ -158,24 +158,24 @@ class JobController extends Controller
     public function edit(int $id): View
     {
         $job = JobPost::findOrFail($id);
-        
+
         // Check if user owns this job
         if ($job->user_id !== Auth::id()) {
             abort(403, 'You are not authorized to edit this job.');
         }
-        
+
         return view('theme::marketplace.jobs.edit', compact('job'));
     }
 
     public function update(Request $request, int $id): RedirectResponse
     {
         $job = JobPost::findOrFail($id);
-        
+
         // Check if user owns this job
         if ($job->user_id !== Auth::id()) {
             abort(403, 'You are not authorized to edit this job.');
         }
-        
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -216,12 +216,12 @@ class JobController extends Controller
     public function destroy(int $id): RedirectResponse
     {
         $job = JobPost::findOrFail($id);
-        
+
         // Check if user owns this job
         if ($job->user_id !== Auth::id()) {
             abort(403, 'You are not authorized to delete this job.');
         }
-        
+
         $job->delete();
 
         return redirect()->route('marketplace.my-jobs')
@@ -231,38 +231,38 @@ class JobController extends Controller
     public function promote(Request $request, int $id): RedirectResponse
     {
         $job = JobPost::findOrFail($id);
-        
+
         // Check if user owns this job
         if ($job->user_id !== Auth::id()) {
             abort(403, 'You are not authorized to promote this job.');
         }
-        
+
         $validated = $request->validate([
             'type' => 'required|in:featured,urgent',
         ]);
-        
+
         $type = $validated['type'];
         $cost = $type === 'featured' ? 10.00 : 5.00;
         $fieldName = 'is_' . $type;
-        
+
         // Check if job is already promoted with this type
         if ($job->$fieldName) {
             return redirect()->route('marketplace.my-jobs')
                 ->with('error', 'Job is already ' . $type . '.');
         }
-        
+
         // For now, skip payment processing and just update the job
         // In production, you would process payment here
-        
+
         $job->update([$fieldName => true]);
-        
+
         $message = 'Job has been made ' . $type . ' successfully! ';
         if ($type === 'featured') {
             $message .= 'Your job will now appear at the top of search results.';
         } else {
             $message .= 'Your job will now show an urgent indicator.';
         }
-        
+
         return redirect()->route('marketplace.my-jobs')
             ->with('success', $message);
     }
@@ -272,7 +272,7 @@ class JobController extends Controller
         try {
             $job = JobPost::findOrFail($id);
             $user = Auth::user()->load('userProfile', 'userType');
-            
+
             // Check if user is authorized to apply to jobs (not agencies)
             if ($user->isAgency()) {
                 if ($request->expectsJson()) {
@@ -283,7 +283,7 @@ class JobController extends Controller
                 }
                 return redirect()->back()->with('error', 'Agencies cannot apply to jobs. You can only post jobs.');
             }
-            
+
             // Check if user already applied (including withdrawn applications)
             $existingApplication = JobApplication::where('job_post_id', $id)
                 ->where('user_id', Auth::id())
@@ -339,10 +339,10 @@ class JobController extends Controller
                 'proposed_rate' => 'required|numeric|min:0',
                 'available_hours' => 'required|integer|min:1|max:160',
             ];
-            
+
             // For now, don't require typing tests to simplify application process
             $requiresTypingTest = false;
-            
+
             $validated = $request->validate($validationRules);
 
             DB::transaction(function() use ($validated, $job, $id, $requiresTypingTest) {
@@ -354,7 +354,7 @@ class JobController extends Controller
                     'available_hours' => $validated['available_hours'],
                     'status' => 'pending',
                 ];
-                
+
                 // Add typing test data if provided
                 if ($requiresTypingTest) {
                     $applicationData['typing_test_wpm'] = $validated['typing_test_wpm'];
@@ -363,7 +363,7 @@ class JobController extends Controller
                     $applicationData['typing_test_taken_at'] = now();
                     $applicationData['typing_test_passed'] = $validated['typing_test_wpm'] >= ($job->min_typing_speed ?? 30) && $validated['typing_test_accuracy'] >= 85;
                 }
-                
+
                 // Create application
                 JobApplication::create($applicationData);
 
@@ -381,7 +381,7 @@ class JobController extends Controller
 
             return redirect()->route('marketplace.jobs.show', $id)
                 ->with('success', 'Your application has been submitted successfully!');
-                
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -396,7 +396,7 @@ class JobController extends Controller
                 'user_id' => Auth::id(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -406,7 +406,7 @@ class JobController extends Controller
             throw $e;
         }
     }
-    
+
     private function requiresTypingTest(JobPost $job, $user): bool
     {
         // Check if job requires typing test for chatter positions only
@@ -420,7 +420,7 @@ class JobController extends Controller
     public function applications(int $id): View
     {
         $job = JobPost::with('applications.user.userProfile')->findOrFail($id);
-        
+
         return view('theme::marketplace.jobs.applications', compact('job'));
     }
 
@@ -428,7 +428,7 @@ class JobController extends Controller
     {
         $job = JobPost::findOrFail($jobId);
         $application = JobApplication::findOrFail($applicationId);
-        
+
         $validated = $request->validate([
             'status' => 'required|in:pending,accepted,rejected',
         ]);
@@ -444,7 +444,7 @@ class JobController extends Controller
             ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
         return view('theme::jobs.applications', compact('applications'));
     }
 
@@ -453,10 +453,10 @@ class JobController extends Controller
         $jobs = JobPost::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
         return view('theme::jobs.index', compact('jobs'));
     }
-    
+
     public function testAjax(Request $request)
     {
         // Simple test endpoint
@@ -474,9 +474,9 @@ class JobController extends Controller
     public function testJobPost(Request $request)
     {
         // Test job posting without any restrictions for popup testing
-        
+
         $isAjax = $request->ajax() || $request->wantsJson() || $request->has('ajax');
-        
+
         // Mock a successful job creation
         if ($isAjax) {
             return response()->json([
@@ -489,7 +489,7 @@ class JobController extends Controller
                 ]
             ]);
         }
-        
+
         // Regular form submission fallback
         return redirect()->route('marketplace.jobs.index')
             ->with('success', 'Test job posted successfully!');

@@ -51,7 +51,7 @@
                 <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-8 mb-6">
                     <div class="mb-6">
                         <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ $job->title }}</h1>
-                        
+
                         <div class="flex items-center flex-wrap gap-4 mb-6">
                             <div class="flex items-center text-gray-600">
                                 <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
@@ -62,7 +62,7 @@
                                     <div class="text-sm text-gray-500">Posted {{ $job->created_at->diffForHumans() }}</div>
                                 </div>
                             </div>
-                            
+
                             @if($job->user->userProfile && $job->user->userProfile->average_rating > 0)
                                 <div class="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
                                     <div class="flex text-yellow-400 mr-2">
@@ -103,7 +103,15 @@
                                 </div>
                                 <div class="text-right">
                                     <div class="text-sm text-gray-600">Contract Type</div>
-                                    <div class="font-semibold text-gray-900 capitalize">{{ $job->contract_type }}</div>
+                                    <div class="font-semibold text-gray-900 capitalize">
+                                        @if($job->contract_type === 'full_time')
+                                            Full Time
+                                        @elseif($job->contract_type === 'part_time')
+                                            Part Time
+                                        @else
+                                            Contract
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -207,7 +215,7 @@
                                     {{ number_format($percentage, 1) }}% filled
                                 </div>
                             </div>
-                            
+
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <div class="flex items-center mb-2">
                                     <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +228,7 @@
                                 </div>
                                 <div class="text-sm text-gray-600 mt-1">Weekly commitment</div>
                             </div>
-                            
+
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <div class="flex items-center mb-2">
                                     <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -239,7 +247,7 @@
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <div class="bg-gray-50 rounded-lg p-4">
                                 <div class="flex items-center mb-2">
                                     <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,7 +268,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Timezone & Availability Section -->
                     @if($job->required_timezone || $job->timezone_flexible || $job->required_days || $job->preferred_start_time || $job->preferred_end_time)
                     <div class="bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 mt-6">
@@ -270,7 +278,7 @@
                             </svg>
                             Timezone & Availability
                         </h3>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Timezone Requirements -->
                             @if($job->required_timezone || $job->timezone_flexible)
@@ -281,7 +289,7 @@
                                     </svg>
                                     <span class="font-semibold text-gray-900">Timezone Requirements</span>
                                 </div>
-                                
+
                                 @if($job->required_timezone)
                                     <div class="mb-2">
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
@@ -304,7 +312,7 @@
                                         </span>
                                     </div>
                                 @endif
-                                
+
                                 @if($job->timezone_flexible)
                                     <div class="flex items-center text-green-700">
                                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -315,7 +323,7 @@
                                 @endif
                             </div>
                             @endif
-                            
+
                             <!-- Working Hours -->
                             @if($job->preferred_start_time || $job->preferred_end_time)
                             <div class="bg-white/70 backdrop-blur-sm rounded-lg p-4">
@@ -325,7 +333,7 @@
                                     </svg>
                                     <span class="font-semibold text-gray-900">Preferred Hours</span>
                                 </div>
-                                
+
                                 <div class="space-y-2">
                                     @if($job->preferred_start_time)
                                         <div class="flex items-center">
@@ -335,7 +343,7 @@
                                             </span>
                                         </div>
                                     @endif
-                                    
+
                                     @if($job->preferred_end_time)
                                         <div class="flex items-center">
                                             <span class="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
@@ -345,7 +353,7 @@
                                         </div>
                                     @endif
                                 </div>
-                                
+
                                 @if($job->preferred_start_time && $job->preferred_end_time)
                                     @php
                                         $start = \Carbon\Carbon::parse($job->preferred_start_time);
@@ -359,7 +367,7 @@
                             </div>
                             @endif
                         </div>
-                        
+
                         <!-- Working Days -->
                         @if($job->required_days)
                             <div class="mt-6">
@@ -369,7 +377,7 @@
                                     </svg>
                                     <span class="font-semibold text-gray-900">Required Working Days</span>
                                 </div>
-                                
+
                                 <div class="flex flex-wrap gap-2">
                                     @php
                                         $dayLabels = [
@@ -383,14 +391,14 @@
                                         ];
                                         $requiredDays = is_array($job->required_days) ? $job->required_days : json_decode($job->required_days, true) ?? [];
                                     @endphp
-                                    
+
                                     @foreach($dayLabels as $day => $label)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ in_array($day, $requiredDays) ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-400' }}">
                                             📅 {{ $label }}
                                         </span>
                                     @endforeach
                                 </div>
-                                
+
                                 <div class="mt-2 text-xs text-gray-500">
                                     {{ count($requiredDays) }} day{{ count($requiredDays) != 1 ? 's' : '' }} per week required
                                 </div>
@@ -410,8 +418,8 @@
                                 $userApplication = $job->applications()->where('user_id', auth()->id())->first();
                                 $hasApplied = $userApplication !== null;
                             @endphp
-                            
-                            
+
+
                             @if($hasApplied)
                                 <div class="text-center">
                                     @if($userApplication->status === 'withdrawn')
@@ -484,7 +492,7 @@
                                     <form id="job-application-form" action="{{ route('marketplace.jobs.apply', $job->id) }}" method="POST">
                                         @csrf
                                         <h3 class="text-lg font-semibold mb-4">Apply for this job</h3>
-                                        
+
                                         <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
                                             <div class="flex items-center">
                                                 <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -501,12 +509,12 @@
                                                 </span>
                                             </div>
                                         </div>
-                                    
+
                                         <div class="mb-4">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Cover Letter</label>
-                                            <textarea 
-                                                name="cover_letter" 
-                                                rows="4" 
+                                            <textarea
+                                                name="cover_letter"
+                                                rows="4"
                                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                 placeholder="Tell the employer why you're perfect for this job..."
                                                 required
@@ -527,17 +535,17 @@
                                             <div class="relative">
                                                 @if($job->rate_type !== 'commission')
                                                     <span class="absolute left-3 top-2 text-gray-500">$</span>
-                                                    <input 
-                                                        type="number" 
-                                                        name="proposed_rate" 
+                                                    <input
+                                                        type="number"
+                                                        name="proposed_rate"
                                                         class="w-full pl-8 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                         step="0.01"
                                                         required
                                                     >
                                                 @else
-                                                    <input 
-                                                        type="number" 
-                                                        name="proposed_rate" 
+                                                    <input
+                                                        type="number"
+                                                        name="proposed_rate"
                                                         class="w-full pr-8 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                         step="0.01"
                                                         max="100"
@@ -550,9 +558,9 @@
 
                                         <div class="mb-4">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Available Hours per Week</label>
-                                            <input 
-                                                type="number" 
-                                                name="available_hours" 
+                                            <input
+                                                type="number"
+                                                name="available_hours"
                                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                                 min="1"
                                                 max="160"
@@ -605,16 +613,16 @@
                             @endif
                         </div>
                     </div>
-                    
+
                     @if($job->user->userProfile && $job->user->userProfile->bio)
                         <p class="text-sm text-gray-600 mb-3">{{ Str::limit($job->user->userProfile->bio, 150) }}</p>
                     @endif
-                    
+
                     <div class="text-sm text-gray-500">
                         <div>Member since {{ $job->user->created_at->format('M Y') }}</div>
                         <div>{{ $job->user->jobPosts()->count() }} jobs posted</div>
                     </div>
-                    
+
                     @auth
                         @if(auth()->user()->id !== $job->user_id)
                             <div class="mt-4">
@@ -663,7 +671,7 @@ function showNotification(title, message, type = 'success') {
     const popupTitle = document.getElementById('popup-title');
     const popupMessage = document.getElementById('popup-message');
     const popupIcon = document.getElementById('popup-icon');
-    
+
     // Set colors based on type
     if (type === 'success') {
         popupIcon.className = 'w-6 h-6 text-green-500';
@@ -672,12 +680,12 @@ function showNotification(title, message, type = 'success') {
         popupIcon.className = 'w-6 h-6 text-red-500';
         popupIcon.innerHTML = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>';
     }
-    
+
     popupTitle.textContent = title;
     popupMessage.textContent = message;
-    
+
     popup.classList.remove('hidden');
-    
+
     // Auto-hide after 5 seconds
     setTimeout(() => {
         closeNotification();
@@ -695,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (applicationForm) {
         applicationForm.addEventListener('submit', function(e) {
             const submitButton = document.getElementById('submit-application');
-            
+
             // Disable submit button and show loading state
             submitButton.disabled = true;
             submitButton.innerHTML = `
@@ -705,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </svg>
                 Submitting...
             `;
-            
+
             // Let the form submit normally - no preventDefault
         });
     }
