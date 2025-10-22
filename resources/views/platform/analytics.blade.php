@@ -1,4 +1,4 @@
-<x-layouts.app>
+@extends('theme::app')
 
 <x-app.container>
 <div class="bg-gray-50 dark:bg-zinc-900 min-h-screen">
@@ -8,7 +8,7 @@
             <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">OnlyFans Ecosystem Analytics</h1>
             <p class="text-gray-600 dark:text-gray-400">Real-time insights and performance metrics for the professional marketplace</p>
         </div>
-        
+
         <!-- Key Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
@@ -32,7 +32,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-center justify-between">
                     <div>
@@ -54,7 +54,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-center justify-between">
                     <div>
@@ -76,7 +76,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300">
                 <div class="flex items-center justify-between">
                     <div>
@@ -99,7 +99,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <!-- Earnings Trend -->
@@ -109,7 +109,7 @@
                     <canvas id="earningsChart"></canvas>
                 </div>
             </div>
-            
+
             <!-- Top Markets -->
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Top Markets</h3>
@@ -131,7 +131,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- User Growth Chart -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">User Growth (Last 30 Days)</h3>
@@ -139,7 +139,7 @@
                 <canvas id="userGrowthChart"></canvas>
             </div>
         </div>
-        
+
         <!-- Performance Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
@@ -152,7 +152,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Platform Activity</h4>
                 <div class="space-y-3">
@@ -170,7 +170,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Quality Metrics</h4>
                 <div class="space-y-3">
@@ -189,7 +189,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Real-time Activity Feed -->
         <div class="bg-white dark:bg-zinc-800 rounded-xl shadow-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Real-time Activity</h3>
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // User Growth Chart
     const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
     const userGrowthChart = new Chart(userGrowthCtx, {
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
+
     // Real-time activity feed
     function updateActivityFeed() {
         const activities = [
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
             { type: 'user', message: 'New user registered: Professional Chatter', time: '12 mins ago', icon: '👤' },
             { type: 'success', message: 'Job completed: "Live Chat Support - Gaming"', time: '15 mins ago', icon: '✅' }
         ];
-        
+
         const feed = document.getElementById('activityFeed');
         feed.innerHTML = activities.map(activity => `
             <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `).join('');
     }
-    
+
     // Initial load and periodic updates
     updateActivityFeed();
     setInterval(updateActivityFeed, 30000); // Update every 30 seconds

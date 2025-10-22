@@ -1,10 +1,10 @@
-@extends('layouts.app')
+@extends('theme::app')
 
 @section('content')
 <div class="container mx-auto p-6">
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <h2 class="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Edit User Subscription</h2>
-        
+
         <form method="POST" action="{{ route('admin.users.subscription.update', $user) }}">
             @csrf
             <div class="mb-6">

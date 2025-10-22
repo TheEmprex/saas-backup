@@ -41,33 +41,33 @@ class AdminController extends Controller
         $newUsersThisMonth = User::whereMonth('created_at', now()->month)->count();
         $bannedUsers = User::where('is_banned', true)->count();
         $emailVerifiedUsers = User::whereNotNull('email_verified_at')->count();
-        
+
         // Job statistics
         $totalJobs = JobPost::count();
         $activeJobs = JobPost::where('status', 'active')->count();
         $jobsToday = JobPost::whereDate('created_at', today())->count();
         $totalApplications = JobApplication::count();
         $applicationsToday = JobApplication::whereDate('created_at', today())->count();
-        
+
         // Verification statistics
         $kycPendingCount = KycVerification::where('status', 'pending')->count();
         $earningsPendingCount = EarningsVerification::where('status', 'pending')->count();
-        
+
         // Subscription statistics
         $activeSubscriptions = UserSubscription::where('expires_at', '>', now())
             ->orWhereNull('expires_at')
             ->count();
-        
+
         // Message statistics
         $totalMessages = Message::count();
         $messagesToday = Message::whereDate('created_at', today())->count();
-        
+
         // Recent users
         $recentUsers = User::with(['userType', 'kycVerification', 'earningsVerification'])
             ->latest()
             ->take(10)
             ->get();
-        
+
         // Users requiring attention (banned, pending verification, etc.)
         $usersRequiringAttention = User::with(['userType', 'kycVerification', 'earningsVerification'])
             ->where(function($query) {
@@ -83,7 +83,7 @@ class AdminController extends Controller
             ->latest()
             ->take(10)
             ->get();
-        
+
         $stats = [
             // User stats
             'total_users' => $totalUsers,
@@ -93,14 +93,14 @@ class AdminController extends Controller
             'banned_users' => $bannedUsers,
             'email_verified_users' => $emailVerifiedUsers,
             'email_unverified_users' => $totalUsers - $emailVerifiedUsers,
-            
+
             // Job stats
             'total_jobs' => $totalJobs,
             'active_jobs' => $activeJobs,
             'jobs_today' => $jobsToday,
             'total_applications' => $totalApplications,
             'applications_today' => $applicationsToday,
-            
+
             // Verification stats
             'kyc_pending' => $kycPendingCount,
             'kyc_approved' => KycVerification::where('status', 'approved')->count(),
@@ -108,10 +108,10 @@ class AdminController extends Controller
             'earnings_pending' => $earningsPendingCount,
             'earnings_approved' => EarningsVerification::where('status', 'approved')->count(),
             'earnings_rejected' => EarningsVerification::where('status', 'rejected')->count(),
-            
+
             // Subscription stats
             'active_subscriptions' => $activeSubscriptions,
-            
+
             // Message stats
             'total_messages' => $totalMessages,
             'messages_today' => $messagesToday,
@@ -126,13 +126,13 @@ class AdminController extends Controller
     public function kycVerifications(Request $request)
     {
         $query = KycVerification::with('user')->latest();
-        
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         $verifications = $query->paginate(20);
-        
+
         return view('admin.kyc.index', compact('verifications'));
     }
 
@@ -172,13 +172,13 @@ class AdminController extends Controller
     public function earningsVerifications(Request $request)
     {
         $query = EarningsVerification::with('user')->latest();
-        
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         $verifications = $query->paginate(20);
-        
+
         return view('admin.earnings.index', compact('verifications'));
     }
 
@@ -260,7 +260,7 @@ class AdminController extends Controller
     {
         $query = User::with(['userType', 'kycVerification', 'earningsVerification', 'subscriptions'])
             ->withCount(['jobPosts', 'jobApplications', 'sentMessages']);
-        
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -270,14 +270,14 @@ class AdminController extends Controller
                   ->orWhere('username', 'like', "%{$search}%");
             });
         }
-        
+
         // Filter by user type
         if ($request->filled('user_type')) {
             $query->whereHas('userType', function($q) use ($request) {
                 $q->where('name', $request->user_type);
             });
         }
-        
+
         // Filter by status
         if ($request->filled('status')) {
             switch ($request->status) {
@@ -305,14 +305,14 @@ class AdminController extends Controller
                     break;
             }
         }
-        
+
         // Sort
         $sortBy = $request->get('sort', 'created_at');
         $sortDir = $request->get('direction', 'desc');
         $query->orderBy($sortBy, $sortDir);
-        
+
         $users = $query->paginate(20);
-        
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -334,7 +334,7 @@ class AdminController extends Controller
             'ratingsReceived',
             'ratingsGiven'
         ]);
-        
+
         return view('admin.users.show', compact('user'));
     }
 
@@ -346,14 +346,14 @@ class AdminController extends Controller
         $request->validate([
             'reason' => 'required|string|max:1000'
         ]);
-        
+
         $user->ban($request->reason);
-        
+
         $message = 'User has been banned successfully.';
         if ($user->isAdmin()) {
             $message .= ' Note: This is an admin user - admin privileges may be maintained.';
         }
-        
+
         return back()->with('success', $message);
     }
 
@@ -363,7 +363,7 @@ class AdminController extends Controller
     public function unbanUser(User $user)
     {
         $user->unban();
-        
+
         return back()->with('success', 'User has been unbanned successfully.');
     }
 
@@ -375,7 +375,7 @@ class AdminController extends Controller
         $user->update([
             'email_verified_at' => now()
         ]);
-        
+
         return back()->with('success', 'User email has been verified successfully.');
     }
 
@@ -387,7 +387,7 @@ class AdminController extends Controller
         $user->update([
             'email_verified_at' => null
         ]);
-        
+
         return back()->with('success', 'User email verification has been reset.');
     }
 
@@ -398,12 +398,12 @@ class AdminController extends Controller
     {
         // Soft delete or hard delete based on your preference
         $user->delete();
-        
+
         $message = 'User has been deleted successfully.';
         if ($user->isAdmin()) {
             $message = 'Admin user has been deleted. Note: This may affect system administration.';
         }
-        
+
         return redirect()->route('admin.users.index')
             ->with('success', $message);
     }
@@ -415,14 +415,14 @@ class AdminController extends Controller
     {
         // Store original admin user ID in session
         session(['impersonating_admin' => auth()->id()]);
-        
+
         auth()->login($user);
-        
+
         $message = 'You are now impersonating ' . $user->name;
         if ($user->isAdmin()) {
             $message .= ' Warning: You are impersonating another admin user.';
         }
-        
+
         return redirect()->route('dashboard')
             ->with('success', $message);
     }
@@ -435,15 +435,15 @@ class AdminController extends Controller
         if (!session()->has('impersonating_admin')) {
             return redirect()->route('dashboard');
         }
-        
+
         $adminId = session('impersonating_admin');
         session()->forget('impersonating_admin');
-        
+
         $admin = User::find($adminId);
         if ($admin) {
             auth()->login($admin);
         }
-        
+
         return redirect()->route('admin.dashboard')
             ->with('success', 'Stopped impersonating user.');
     }
@@ -455,7 +455,7 @@ class AdminController extends Controller
     {
         $query = JobPost::with(['user', 'applications'])
             ->withCount('applications');
-        
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -468,14 +468,14 @@ class AdminController extends Controller
                   });
             });
         }
-        
+
         // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         $jobs = $query->latest()->paginate(20);
-        
+
         return view('admin.jobs.index', compact('jobs'));
     }
 
@@ -485,7 +485,7 @@ class AdminController extends Controller
     public function showJob(JobPost $job)
     {
         $job->load(['user', 'applications.user']);
-        
+
         return view('admin.jobs.show', compact('job'));
     }
 
@@ -495,7 +495,7 @@ class AdminController extends Controller
     public function deleteJob(JobPost $job)
     {
         $job->delete();
-        
+
         return redirect()->route('admin.jobs.index')
             ->with('success', 'Job has been deleted successfully.');
     }
@@ -507,7 +507,7 @@ class AdminController extends Controller
     {
         $query = Message::with(['sender', 'recipient'])
             ->latest();
-        
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -523,9 +523,9 @@ class AdminController extends Controller
                   });
             });
         }
-        
+
         $messages = $query->paginate(50);
-        
+
         return view('admin.messages.index', compact('messages'));
     }
 
@@ -535,10 +535,10 @@ class AdminController extends Controller
     public function deleteMessage(Message $message)
     {
         $message->delete();
-        
+
         return back()->with('success', 'Message has been deleted successfully.');
     }
-    
+
     /**
      * Manage user subscription - show form
      */
@@ -547,10 +547,10 @@ class AdminController extends Controller
         $user->load(['subscriptions.subscriptionPlan', 'userType']);
         $subscriptionPlans = SubscriptionPlan::all();
         $userTypes = UserType::where('active', true)->get();
-        
-        return view('admin.users.edit-subscription', compact('user', 'subscriptionPlans', 'userTypes'));
+
+        return view('admin.users.edit_subscription', compact('user', 'subscriptionPlans', 'userTypes'));
     }
-    
+
     /**
      * Update user subscription
      */
@@ -562,7 +562,7 @@ class AdminController extends Controller
             'expires_at' => 'nullable|date|after:now',
             'duration_months' => 'nullable|integer|min:1|max:120'
         ]);
-        
+
         DB::transaction(function () use ($request, $user) {
             // Remove existing active subscriptions if action is 'add' or 'remove'
             if (in_array($request->action, ['add', 'remove'])) {
@@ -571,40 +571,40 @@ class AdminController extends Controller
                     ->orWhereNull('expires_at')
                     ->update(['expires_at' => now()]);
             }
-            
+
             if ($request->action === 'add' && $request->subscription_plan_id) {
                 $expiresAt = null;
-                
+
                 if ($request->duration_months) {
                     $expiresAt = now()->addMonths($request->duration_months);
                 } elseif ($request->expires_at) {
                     $expiresAt = $request->expires_at;
                 }
-                
+
                 UserSubscription::create([
                     'user_id' => $user->id,
                     'subscription_plan_id' => $request->subscription_plan_id,
                     'started_at' => now(),
                     'expires_at' => $expiresAt,
                 ]);
-                
+
             } elseif ($request->action === 'extend' && $request->subscription_plan_id) {
                 $currentSubscription = $user->currentSubscription();
-                
+
                 if ($currentSubscription) {
-                    $newExpirationDate = $currentSubscription->expires_at 
+                    $newExpirationDate = $currentSubscription->expires_at
                         ? $currentSubscription->expires_at->addMonths($request->duration_months ?? 1)
                         : now()->addMonths($request->duration_months ?? 1);
-                    
+
                     $currentSubscription->update([
                         'expires_at' => $newExpirationDate
                     ]);
                 } else {
                     // Create new subscription if none exists
-                    $expiresAt = $request->duration_months 
+                    $expiresAt = $request->duration_months
                         ? now()->addMonths($request->duration_months)
                         : ($request->expires_at ?? now()->addMonth());
-                    
+
                     UserSubscription::create([
                         'user_id' => $user->id,
                         'subscription_plan_id' => $request->subscription_plan_id,
@@ -614,17 +614,17 @@ class AdminController extends Controller
                 }
             }
         });
-        
+
         $actionMessage = match($request->action) {
             'add' => 'Subscription added successfully.',
             'remove' => 'Subscription removed successfully.',
             'extend' => 'Subscription extended successfully.',
         };
-        
+
         return redirect()->route('admin.users.show', $user)
             ->with('success', $actionMessage);
     }
-    
+
     /**
      * Update user type
      */
@@ -633,25 +633,25 @@ class AdminController extends Controller
         $request->validate([
             'user_type_id' => 'required|exists:user_types,id'
         ]);
-        
+
         $oldUserType = $user->userType;
         $newUserType = UserType::find($request->user_type_id);
-        
+
         // Update the user type
         $user->update([
             'user_type_id' => $request->user_type_id
         ]);
-        
+
         $message = "User type changed from {$oldUserType?->display_name} to {$newUserType->display_name} successfully.";
-        
+
         // Add warning for admin users
         if ($user->isAdmin()) {
             $message .= ' Note: This is an admin user - admin privileges are maintained regardless of user type.';
         }
-        
+
         return back()->with('success', $message);
     }
-    
+
     /**
      * Create/Update KYC verification directly for a user
      */
@@ -661,9 +661,9 @@ class AdminController extends Controller
             'status' => 'required|in:pending,approved,rejected',
             'rejection_reason' => 'nullable|string|max:1000'
         ]);
-        
+
         $kyc = $user->kycVerification;
-        
+
         if ($kyc) {
             // Update existing KYC
             $kyc->update([
@@ -701,10 +701,10 @@ class AdminController extends Controller
             ]);
             $message = 'KYC verification created successfully.';
         }
-        
+
         return back()->with('success', $message);
     }
-    
+
     /**
      * Create/Update Earnings verification directly for a user
      */
@@ -714,9 +714,9 @@ class AdminController extends Controller
             'status' => 'required|in:pending,approved,rejected',
             'rejection_reason' => 'nullable|string|max:1000'
         ]);
-        
+
         $earnings = $user->earningsVerification;
-        
+
         if ($earnings) {
             // Update existing earnings verification
             $earnings->update([
@@ -742,40 +742,40 @@ class AdminController extends Controller
             ]);
             $message = 'Earnings verification created successfully.';
         }
-        
+
         return back()->with('success', $message);
     }
-    
+
     /**
      * Remove KYC verification for a user
      */
     public function removeKycVerification(User $user)
     {
         $kyc = $user->kycVerification;
-        
+
         if ($kyc) {
             $kyc->delete();
             return back()->with('success', 'KYC verification removed successfully.');
         }
-        
+
         return back()->with('error', 'No KYC verification found for this user.');
     }
-    
+
     /**
      * Remove Earnings verification for a user
      */
     public function removeEarningsVerification(User $user)
     {
         $earnings = $user->earningsVerification;
-        
+
         if ($earnings) {
             $earnings->delete();
             return back()->with('success', 'Earnings verification removed successfully.');
         }
-        
+
         return back()->with('error', 'No earnings verification found for this user.');
     }
-    
+
     /**
      * Quick subscription actions (AJAX)
      */
@@ -785,7 +785,7 @@ class AdminController extends Controller
             'action' => 'required|in:remove_current,add_free,add_premium',
             'plan_id' => 'nullable|exists:subscription_plans,id'
         ]);
-        
+
         DB::transaction(function () use ($request, $user) {
             switch ($request->action) {
                 case 'remove_current':
@@ -794,14 +794,14 @@ class AdminController extends Controller
                         ->orWhereNull('expires_at')
                         ->update(['expires_at' => now()]);
                     break;
-                    
+
                 case 'add_free':
                     // Remove existing subscriptions
                     $user->subscriptions()
                         ->where('expires_at', '>', now())
                         ->orWhereNull('expires_at')
                         ->update(['expires_at' => now()]);
-                        
+
                     // Add free plan (assuming plan ID 1 is free)
                     $freePlan = SubscriptionPlan::where('price', 0)->first();
                     if ($freePlan) {
@@ -813,7 +813,7 @@ class AdminController extends Controller
                         ]);
                     }
                     break;
-                    
+
                 case 'add_premium':
                     if ($request->plan_id) {
                         // Remove existing subscriptions
@@ -821,7 +821,7 @@ class AdminController extends Controller
                             ->where('expires_at', '>', now())
                             ->orWhereNull('expires_at')
                             ->update(['expires_at' => now()]);
-                            
+
                         UserSubscription::create([
                             'user_id' => $user->id,
                             'subscription_plan_id' => $request->plan_id,
@@ -832,11 +832,11 @@ class AdminController extends Controller
                     break;
             }
         });
-        
+
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Action completed successfully.']);
         }
-        
+
         return back()->with('success', 'Subscription updated successfully.');
     }
 
@@ -898,7 +898,7 @@ class AdminController extends Controller
             'applications_today' => JobApplication::whereDate('created_at', today())->count(),
             'messages_today' => Message::whereDate('created_at', today())->count(),
         ];
-        
+
         return response()->json($stats);
     }
 }

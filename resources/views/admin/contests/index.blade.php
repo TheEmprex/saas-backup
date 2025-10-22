@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('theme::app')
 
 @section('content')
 <div class="container mx-auto p-6">

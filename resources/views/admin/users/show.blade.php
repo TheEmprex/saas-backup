@@ -57,10 +57,13 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                                <div class="flex items-center">
+                                <div class="flex-col">
                                     @if($user->is_banned)
-                                        <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                        <span class="text-red-600 dark:text-red-400">Banned</span>
+                                        <div class="flex items-center">
+                                            <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                            <span class="text-red-600 dark:text-red-400">Banned</span>
+                                        </div>
+                                        <span class="text-gray-400 text-sm">{{$user->ban_reason}}</span>
                                     @else
                                         <span class="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                                         <span class="text-green-600 dark:text-green-400">Active</span>
@@ -190,7 +193,7 @@
                                             <p class="text-sm text-gray-500 dark:text-gray-500 mt-1">{{ $job->created_at->diffForHumans() }}</p>
                                         </div>
                                         <div class="text-right">
-                                            <span class="inline-block px-2 py-1 text-xs rounded-full 
+                                            <span class="inline-block px-2 py-1 text-xs rounded-full
                                                 {{ $job->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                                                 {{ ucfirst($job->status) }}
                                             </span>
@@ -220,7 +223,7 @@
                                 </button>
                             </form>
                         @else
-                            <button type="button" onclick="document.getElementById('ban-modal').style.display='block'" 
+                            <button type="button" onclick="document.getElementById('ban-modal').style.display='block'"
                                     class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg">
                                 Ban User
                             </button>
@@ -251,7 +254,7 @@
                             </form>
                         @endif
 
-                        <form method="POST" action="{{ route('admin.users.delete', $user) }}" 
+                        <form method="POST" action="{{ route('admin.users.delete', $user) }}"
                               onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.')" class="w-full">
                             @csrf
                             @method('DELETE')
@@ -296,11 +299,11 @@
                                             @endif
                                         </div>
                                         <div class="flex flex-col items-end space-y-2">
-                                            <span class="inline-block px-2 py-1 text-xs rounded-full 
+                                            <span class="inline-block px-2 py-1 text-xs rounded-full
                                                 {{ $subscription->expires_at && $subscription->expires_at->isPast() ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                                 {{ $subscription->expires_at && $subscription->expires_at->isPast() ? 'Expired' : 'Active' }}
                                             </span>
-                                            
+
                                             <!-- Quick Actions -->
                                             <div class="flex space-x-1">
                                                 @if(!$subscription->expires_at || $subscription->expires_at->isFuture())
@@ -309,12 +312,12 @@
                                                         @csrf
                                                         <input type="hidden" name="action" value="remove">
                                                         <input type="hidden" name="subscription_id" value="{{ $subscription->id }}">
-                                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs px-2 py-1 border border-red-300 rounded" 
+                                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs px-2 py-1 border border-red-300 rounded"
                                                                 onclick="return confirm('Remove this subscription?')">
                                                             Remove
                                                         </button>
                                                     </form>
-                                                    
+
                                                     <!-- Extend Subscription -->
                                                     <form method="POST" action="{{ route('admin.users.subscription.quick-action', $user) }}" class="inline">
                                                         @csrf
@@ -339,7 +342,7 @@
                                     </svg>
                                 </div>
                                 <p class="text-gray-500 dark:text-gray-400 mb-4">No active subscriptions</p>
-                                
+
                                 <!-- Quick Add Subscription Buttons -->
                                 <div class="space-x-2">
                                     <form method="POST" action="{{ route('admin.users.subscription.quick-action', $user) }}" class="inline">
@@ -361,7 +364,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 <!-- User Type Management -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
@@ -383,7 +386,7 @@
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <div>
                                 <label for="user_type_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Change User Type</label>
                                 <select name="user_type_id" id="user_type_id" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
@@ -395,19 +398,19 @@
                                     @endforeach
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label for="reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for Change</label>
-                                <input type="text" name="reason" id="reason" 
-                                       class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                <input type="text" name="reason" id="reason"
+                                       class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                        placeholder="Optional reason for user type change...">
                             </div>
-                            
+
                             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
                                 Update User Type
                             </button>
                         </form>
-                        
+
                         <!-- Update KYC Verification -->
                         <form method="POST" action="{{ route('admin.users.kyc.update', $user) }}" class="mt-4">
                             @csrf
@@ -456,11 +459,11 @@
                     <div class="mb-4">
                         <label for="ban-reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for ban</label>
                         <textarea name="reason" id="ban-reason" rows="3" required
-                                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                  class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                   placeholder="Please provide a reason for banning this user..."></textarea>
                     </div>
                     <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="document.getElementById('ban-modal').style.display='none'" 
+                        <button type="button" onclick="document.getElementById('ban-modal').style.display='none'"
                                 class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
                             Cancel
                         </button>

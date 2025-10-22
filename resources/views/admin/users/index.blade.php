@@ -24,9 +24,9 @@
                     <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Search Users
                     </label>
-                    <input type="text" 
-                           id="search" 
-                           name="search" 
+                    <input type="text"
+                           id="search"
+                           name="search"
                            value="{{ request('search') }}"
                            placeholder="Name, email, username..."
                            class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring-blue-500">
@@ -141,7 +141,7 @@
                                             </div>
                                             <div class="text-sm text-gray-500 dark:text-gray-400">{{ $user->email }}</div>
                                             @if($user->username)
-                                                <div class="text-xs text-gray-400">@{{ $user->username }}</div>
+                                                <div class="text-xs text-gray-400">{{ "@$user->username" }}</div>
                                             @endif
                                         </div>
                                     </div>
@@ -315,9 +315,9 @@
                     <label for="banReason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Ban Reason <span class="text-red-500">*</span>
                     </label>
-                    <textarea id="banReason" 
-                              name="reason" 
-                              rows="3" 
+                    <textarea id="banReason"
+                              name="reason"
+                              rows="3"
                               required
                               placeholder="Please provide a reason for banning this user..."
                               class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-red-500 focus:ring-red-500"></textarea>

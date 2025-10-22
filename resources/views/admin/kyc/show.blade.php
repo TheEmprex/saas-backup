@@ -95,19 +95,19 @@
                         <!-- ID Documents -->
                         <div class="mb-6">
                             <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Verification Documents</h4>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 @if($verification->id_document_front_path)
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ID Document (Front)</label>
                                         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-2">
-                                            <img src="{{ route('admin.kyc.preview', [$verification, 'id_document_front']) }}" 
-                                                 alt="ID Document Front" 
+                                            <img src="{{ route('admin.kyc.preview', [$verification, 'id_document_front']) }}"
+                                                 alt="ID Document Front"
                                                  class="w-full h-48 object-cover rounded cursor-pointer hover:opacity-80"
                                                  onclick="openImageModal(this.src)">
                                         </div>
                                         <div class="mt-2 text-center">
-                                            <a href="{{ route('admin.kyc.download', [$verification, 'id_document_front']) }}" 
+                                            <a href="{{ route('admin.kyc.download', [$verification, 'id_document_front']) }}"
                                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                 Download
                                             </a>
@@ -119,13 +119,13 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ID Document (Back)</label>
                                         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-2">
-                                            <img src="{{ route('admin.kyc.preview', [$verification, 'id_document_back']) }}" 
-                                                 alt="ID Document Back" 
+                                            <img src="{{ route('admin.kyc.preview', [$verification, 'id_document_back']) }}"
+                                                 alt="ID Document Back"
                                                  class="w-full h-48 object-cover rounded cursor-pointer hover:opacity-80"
                                                  onclick="openImageModal(this.src)">
                                         </div>
                                         <div class="mt-2 text-center">
-                                            <a href="{{ route('admin.kyc.download', [$verification, 'id_document_back']) }}" 
+                                            <a href="{{ route('admin.kyc.download', [$verification, 'id_document_back']) }}"
                                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                 Download
                                             </a>
@@ -137,13 +137,13 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Selfie</label>
                                         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-2">
-                                            <img src="{{ route('admin.kyc.preview', [$verification, 'selfie']) }}" 
-                                                 alt="Selfie" 
+                                            <img src="{{ route('admin.kyc.preview', [$verification, 'selfie']) }}"
+                                                 alt="Selfie"
                                                  class="w-full h-48 object-cover rounded cursor-pointer hover:opacity-80"
                                                  onclick="openImageModal(this.src)">
                                         </div>
                                         <div class="mt-2 text-center">
-                                            <a href="{{ route('admin.kyc.download', [$verification, 'selfie']) }}" 
+                                            <a href="{{ route('admin.kyc.download', [$verification, 'selfie']) }}"
                                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                 Download
                                             </a>
@@ -155,13 +155,13 @@
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Proof of Address</label>
                                         <div class="border border-gray-300 dark:border-gray-600 rounded-lg p-2">
-                                            <img src="{{ route('admin.kyc.preview', [$verification, 'proof_of_address']) }}" 
-                                                 alt="Proof of Address" 
+                                            <img src="{{ route('admin.kyc.preview', [$verification, 'proof_of_address']) }}"
+                                                 alt="Proof of Address"
                                                  class="w-full h-48 object-cover rounded cursor-pointer hover:opacity-80"
                                                  onclick="openImageModal(this.src)">
                                         </div>
                                         <div class="mt-2 text-center">
-                                            <a href="{{ route('admin.kyc.download', [$verification, 'proof_of_address']) }}" 
+                                            <a href="{{ route('admin.kyc.download', [$verification, 'proof_of_address']) }}"
                                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                                 Download
                                             </a>
@@ -200,7 +200,7 @@
                                 <span class="inline-block bg-red-100 text-red-800 text-sm px-3 py-1 rounded-full">Rejected</span>
                             @endif
                         </div>
-                        
+
                         <div class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
                             <p><strong>Submitted:</strong> {{ $verification->created_at->format('M d, Y H:i') }}</p>
                             @if($verification->verified_at)
@@ -220,7 +220,7 @@
                             <form method="POST" action="{{ route('admin.kyc.update-status', $verification) }}">
                                 @csrf
                                 @method('PATCH')
-                                
+
                                 <div class="mb-4">
                                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
                                     <select name="status" id="status" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
@@ -229,14 +229,14 @@
                                         <option value="rejected">Rejected</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="mb-4" id="rejection-reason-field" style="display: none;">
                                     <label for="rejection_reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rejection Reason</label>
-                                    <textarea name="rejection_reason" id="rejection_reason" rows="3" 
-                                              class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" 
+                                    <textarea name="rejection_reason" id="rejection_reason" rows="3"
+                                              class="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                               placeholder="Please provide a reason for rejection..."></textarea>
                                 </div>
-                                
+
                                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg">
                                     Update Status
                                 </button>
