@@ -29,7 +29,7 @@ class KycController extends Controller
     public function create()
     {
         $user = auth()->user();
-        
+
         // Check if user already has a KYC verification
         if ($user->hasKycSubmitted()) {
             return redirect()->route('kyc.index')
@@ -80,7 +80,7 @@ class KycController extends Controller
 
         // ===== SYSTÈME ANTI-DUPLICATE ULTRA-SOLIDE =====
         $duplicateService = new DuplicateDetectionService();
-        
+
         // 1. Vérifier la blacklist
         $blacklistMatches = $duplicateService->checkBlacklist($data);
         if (!empty($blacklistMatches)) {
@@ -90,7 +90,7 @@ class KycController extends Controller
                 'blacklist_matches' => $blacklistMatches,
                 'ip' => $request->ip()
             ]);
-            
+
             return back()->withErrors([
                 'security' => 'Your KYC application cannot be processed. Please contact support if you believe this is an error.'
             ])->withInput();
@@ -98,7 +98,7 @@ class KycController extends Controller
 
         // 2. Détecter les doublons
         $duplicateReport = $duplicateService->generateDuplicateReport($user, $data);
-        
+
         // Log the duplicate analysis
         Log::info('KYC Duplicate Analysis', $duplicateReport);
 
@@ -121,34 +121,34 @@ class KycController extends Controller
 
         $data['user_id'] = $user->id;
         $data['submitted_at'] = Carbon::now();
-        
+
         // 3. Déterminer le statut initial basé sur l'analyse des doublons
         $recommendation = $duplicateReport['recommendation'];
-        
+
         if (str_contains($recommendation, 'REJECT')) {
             // Rejeter immédiatement et blacklist automatiquement
             $data['status'] = 'rejected';
             $data['rejection_reason'] = 'Duplicate account detected: ' . $recommendation;
             $data['reviewed_at'] = now();
             $data['reviewed_by'] = 1; // System auto-review
-            
+
             // Blacklist this user's data immediately
             IdentityBlacklist::blacklistUser($user, $recommendation, 1);
-            
+
             Log::warning('KYC Auto-rejected for duplicates', [
                 'user_id' => $user->id,
                 'reason' => $recommendation,
                 'duplicate_report' => $duplicateReport
             ]);
-            
+
         } elseif (str_contains($recommendation, 'REQUIRES_REVIEW')) {
             // Marquer pour révision manuelle obligatoire
             $data['status'] = 'requires_review';
-            
+
         } elseif (str_contains($recommendation, 'FLAG')) {
             // Statut pending mais flaggé pour attention
             $data['status'] = 'pending';
-            
+
         } else {
             // Pas de problèmes détectés
             $data['status'] = 'pending';
@@ -173,7 +173,7 @@ class KycController extends Controller
             abort(403);
         }
 
-        return view('theme::kyc.show', compact('kyc'));
+        return view('theme::kyc.show', ['kycVerification'=> $kyc]);
     }
 
     private function storeFile($file, $directory)
@@ -186,7 +186,7 @@ class KycController extends Controller
     public function downloadFile($type, $id)
     {
         $kyc = KycVerification::findOrFail($id);
-        
+
         // Only allow users to download their own files or admins
         if ($kyc->user_id !== auth()->id() && !auth()->user()->hasRole('admin')) {
             abort(403);
