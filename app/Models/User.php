@@ -170,7 +170,7 @@ class User extends WaveUser
 
     public function isAgency(): bool
     {
-        return in_array($this->userType->name, ['ofm_agency', 'chatting_agency']);
+        return in_array($this->userType?->name, ['ofm_agency', 'chatting_agency']);
     }
 
     public function requiresVerification(): bool
